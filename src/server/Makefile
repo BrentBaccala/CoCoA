@@ -22,7 +22,6 @@ default: CoCoAServer
 # Normally this target is used only as part of "make" from the
 # CoCoALib root directory.
 all: CoCoAServer
-	touch all
 
 CoCoAServer: $(OBJS) $(COCOA_LIB)
 	$(COMPILE) $(OBJS) -o CoCoAServer $(LDLIBS)  # just LINKS the object files
