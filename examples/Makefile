@@ -4,6 +4,8 @@ COCOA_ROOT=..
 include $(COCOA_ROOT)/configuration/autoconf.mk
 CWD=examples/
 
+CXXFLAGS += --std=c++11
+
 SRCS=ex-empty.C \
       ex-c++.C \
       ex-AlexanderDual.C \
