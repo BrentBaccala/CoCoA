@@ -196,7 +196,7 @@ namespace CoCoA
 
   std::ostream& operator<<(std::ostream& out, const ErrorInfo& err);
   void ANNOUNCE(std::ostream& out, const ErrorInfo& err);
-  void ThrowError(const ErrorInfo& err);
+  [[noreturn]] void ThrowError(const ErrorInfo& err);
 
 
   namespace ErrorLanguage
