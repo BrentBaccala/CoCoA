@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      ApproxPts</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      ApproxPts</H1>
+<FONT SIZE="4">
+<I>      &copy;  2006-2013 John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#operations">Operations</A>
+      </UL>
+    <LI><A HREF="#toc4">Maintainer documentation for files ApproxPts.H and ApproxPts.C</A>
+    <LI><A HREF="#toc5">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-ApproxPts1.C">ex-ApproxPts1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+<CODE>ApproxPts</CODE> offers three functions for preprocessing sets of approximate
+points whose coordinates are given as values of type <CODE>double</CODE>.  Given a
+large set of approximate points with considerable overlap of the error
+boxes of adjacent points, the preprocessing algorithms determine a smaller
+set of approximate points which preserve the geometrical disposition of the
+original points but with little or no overlap of the error boxes.  In general,
+the output points <B>do not form a subset</B> of the original points.
+</P>
+<P>
+Details of the underlying algorithms are in the article <B>Thinning Out</B>
+<B>Redundant Empirical Data</B> by Abbott, Fassino, Torrente, and published in
+<I>Mathematics in Computer Science</I> (vol. 1, no. 2, pp. 375-392, year
+2007).  For a fully detailed description of the methods and the context in
+which they were developed refer to <B>Laura Torrente's PhD thesis</B>:
+(<I>Applications of Algebra in the Oil Industry</I>, Scuola Normale Superiore
+di Pisa, 2009).  The thesis is available at the URL
+<A HREF="http://www.dima.unige.it/~torrente/PhDThesis.pdf">Laura's thesis</A>
+</P>
+<A NAME="operations"></A>
+<H3>Operations</H3>
+<P>
+Here is a quick summary of the functions.
+</P>
+<PRE>
+   typedef ApproxPts::PointR ApproxPt;  // actually std::vector&lt;RingElem&gt;
+   vector&lt;ApproxPt&gt;  OriginalPoints;    // the coords of the original approx pts
+   vector&lt;RingElem&gt;  epsilon;           // epsilon[i] is semiwidth of error box in dimension i
+   vector&lt;ApproxPt&gt;  NewPoints;         // will be filled with the preprocessed points
+   vector&lt;long&gt;      weights;           // will be filled with the weights of the representatives
+  
+   PreprocessPts(NewPoints, weights, OriginalPoints, epsilon);
+   PreprocessPtsGrid(NewPoints, weights, OriginalPoints, epsilon);
+   PreprocessPtsAggr(NewPoints, weights, OriginalPoints, epsilon);
+   PreprocessPtsSubdiv(NewPoints, weights, OriginalPoints, epsilon);
+</PRE>
+<P></P>
+<P>
+All the algorithms work by partitioning the original points into subsets,
+and then choosing the average of each subset as the representative of those
+original points.  The <B>weight</B> of each representative is just the number
+of original points in the corresponding partition.  The algorithms offer
+differing trade-offs between speed and number of representatives.
+</P>
+<DL>
+<DT><CODE>PreprocessPtsGrid</CODE> This algorithm is the fastest but the results tend to be rather crude; it is possible that some of the preprocessed points are close together.  The subsets in the partition comprise all original points which are closer to a certain fixed grid point than to any other of the grid points.  In other words, viewing the grid as a lattice, the whole space can be covered by grid-translates of the fundamental region; the partitions comprise all original points lying in one of these grid-translates.</DT><DD>
+<P></P>
+<DT><CODE>PreprocessPtsAggr</CODE> This algorithm gives much better results than <CODE>PreprocessPtsGrid</CODE> but can take considerably longer, perhaps requiring an hour's computation for around 10000 original points.  The subsets in the partition are determined by an <B>iterative process of aggregation</B>.  Initially each subset contains a single original point, then iteratively the closest (mergeable) pair of subsets are united into a single new subset, and so on.</DT><DD>
+</DL>
+
+<DL>
+<DT><CODE>PreprocessPtsSubdiv</CODE> This algorithm generally gives the best results (<I>i.e.</I> fewest output points, and best visual disposition of them).  However it can be rather slower than <CODE>PreprocessPtsAggr</CODE> in certain cases (<I>e.g.</I> when the input points are already fairly well separated).  It works best when only few preprocessed points are produced, which will happen if the original points are densely packed compared to their error neighbourhoods.  The subsets in the partition are determined by an <B>iterative process of subdivision</B>.  Initially there is a single subset containing all the original points, then if some original point is too far from the average of the subset to which it belongs, that point is moved to its own new subset, then a redistribution of all original points occurs (reassigning them to optimize the <I>goodness of representation</I>).</DT><DD>
+<P></P>
+<DT><CODE>PreprocessPts</CODE> makes a (not very) intelligent choice between <CODE>PreprocessPtsAggr</CODE> and <CODE>PreprocessPtsSubdiv</CODE> aiming to minimise the computation time.</DT><DD>
+</DL>
+
+<A NAME="toc4"></A>
+<H2>Maintainer documentation for files ApproxPts.H and ApproxPts.C</H2>
+<P>
+All the preprocessing algorithms rescale their inputs so that the error
+widths in each dimension are all equal to 1.  The main work is done with
+these rescaled points, and at the very end the results are scaled back.
+</P>
+<P>
+<CODE>PreprocessPtsGrid</CODE> might be better if we were to use <CODE>std::map</CODE>s, but
+it seems fast enough as is.  From the theory, each input point is
+associated to a unique grid point; <CODE>GridNearPoint</CODE> effects this
+association.  We build up a table of useful grid points by considering each
+input point in turn: if the associated grid point is already in our table
+of grid points, we simply append the new input point to the grid point's
+list of associated original points, otherwise we add the new grid point to
+the table and place the input point as the first element in its list of
+associated original points.  Finally we compute the averages of each list
+of original points associated to a fixed grid point.  These averages are
+our result along with the cardinalities of the corresponding list.
+</P>
+<P>
+<CODE>PreprocessPtsAggr</CODE> implements an <B>aggregative algorithm</B>: initially the
+original points are split into subsets each containing exactly one original
+point, then iteratively nearby subsets are coalesced into larger subsets
+provided each original point of the two subsets is not too far from the
+"centre of gravity" of the coalesced set -- this proviso is necessary as
+otherwise there are pathological examples.
+</P>
+<P>
+<CODE>PreprocessPtsSubdiv</CODE> implements a <B>subdivision algorithm</B>.  Initially all
+original points are placed into a single partition.  Then iteratively we seek
+the original point furthest from the average of its subset.  If this distance is
+below the threshold then we stop (all original points are sufficiently well
+represented by the averages of their subsets).  Otherwise we separate the worst
+represented original point into a new subset initially containing just itself.
+Now we redistribute the original points: we do this by minimizing the sum of
+the squares of the L2 distances of the original points from their respective
+representatives.
+</P>
+<A NAME="toc5"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+I do not like the typedef for <CODE>ApproxPts::ApproxPt</CODE> because the
+name seems very redundant; I am also uneasy about having a <CODE>typedef</CODE>
+in a header file -- perhaps it should be a genuine class?
+</P>
+<P>
+The preprocessing algorithms should really receive input as a pair
+of iterators, and the output should be sent to an output iterator.
+But such an interface would rather uglify the code -- what to do???
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/ApproxPts.html -i txt/ApproxPts.txt -->
+</BODY></HTML>

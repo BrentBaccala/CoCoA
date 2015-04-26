@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingHom</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingHom</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2010 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for the files RingHom.H and RingHom.C</A>
+      <UL>
+      <LI><A HREF="#examples">Examples</A>
+      <LI><A HREF="#constructors">Constructors</A>
+        <UL>
+        <LI><A HREF="#toc4">Embeddings</A>
+        <LI><A HREF="#toc5">Induced homomorphisms</A>
+        <LI><A HREF="#toc6">Homomorphisms on polynomial rings</A>
+        </UL>
+      <LI><A HREF="#toc7">Applying a RingHom</A>
+      <LI><A HREF="#toc8">Composition</A>
+      <LI><A HREF="#toc9">Domain and Codomain</A>
+      <LI><A HREF="#toc10">Kernel</A>
+      <LI><A HREF="#toc11">Member Functions for Operations on Raw Values</A>
+      </UL>
+    <LI><A HREF="#toc12">Maintainer documentation for the files RingHom.H and RingHom.C</A>
+    <LI><A HREF="#toc13">Bugs, Shortcomings and other ideas</A>
+    <LI><A HREF="#toc14">Some very old notes about implementing rings</A>
+      <UL>
+      <LI><A HREF="#toc15">Mapping elements between rings automatically</A>
+      </UL>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for the files RingHom.H and RingHom.C</H2>
+<P>
+The class <CODE>RingHom</CODE> is intended to represent homomorphisms between rings.
+Currently there is no way to represent more general maps between rings.
+It is possible to create a <I>partial</I> homomorphism which can generate
+run-time errors when applied to certain values.
+</P>
+<P>
+The main operations available for <CODE>RingHom</CODE>s are application to a
+<A HREF="RingElem.html"><CODE>RingElem</CODE></A>, and composition: both operations use function application
+syntax (see below for details).
+</P>
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingHom1.C">ex-RingHom1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingHom2.C">ex-RingHom2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingHom3.C">ex-RingHom3.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingHom4.C">ex-RingHom4.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingHom5.C">ex-RingHom5.C</A>
+</UL>
+
+<P></P>
+<A NAME="constructors"></A>
+<H3>Constructors</H3>
+<P>
+Here is a complete list of pseudo-constructors for ring homomorphisms
+(some are defined in other files, <I>e.g.</I> <CODE>QuotientRing.H</CODE> or <CODE>FractionField.H</CODE>).
+You should check also  the documentation for <A HREF="CanonicalHom.html"><CODE>CanonicalHom</CODE></A> which tries to
+offer an easy way of building certain simple canonical homomorphisms.
+</P>
+<UL>
+<LI><CODE>IdentityHom(R)</CODE> --
+  where <CODE>R</CODE> may be any <A HREF="ring.html"><CODE>ring</CODE></A>, gives the identity homomorphism on <CODE>R</CODE>
+</UL>
+
+<A NAME="toc4"></A>
+<H4>Embeddings</H4>
+<UL>
+<LI><CODE>ZZEmbeddingHom(R)</CODE> --
+         gives the unique homomorphism from <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A> to the <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>
+<P></P>
+<LI><CODE>QQEmbeddingHom(R)</CODE> -- <B>may be partial</B>
+         gives the unique homomorphism from <A HREF="RingQQ.html"><CODE>RingQQ</CODE></A> to the <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>.
+         Note that the resulting homomorphism may be only partial
+         (e.g. if Characteristic(R) is not 0, or if the codomain is
+         not a field).
+<P></P>
+<LI><CODE>CoeffEmbeddingHom(P)</CODE> --
+         where <CODE>P</CODE> is a <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>, gives the embedding homomorphism from
+         the coefficient ring into the polynomial ring.
+<P></P>
+<LI><CODE>EmbeddingHom(FrF)</CODE> --
+         where <CODE>FrF</CODE> is a <A HREF="FractionField.html"><CODE>FractionField</CODE></A>, gives the embedding homomorphism
+         from the base ring into the fracion field (i.e. x |-&gt; x/1)
+</UL>
+
+<A NAME="toc5"></A>
+<H4>Induced homomorphisms</H4>
+<UL>
+<LI><CODE>InducedHom(RmodI, phi)</CODE> --
+         where <CODE>RmodI</CODE> is a <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, gives the homomorphism
+   	 R/I --&gt; S induced by <CODE>phi</CODE>: R --&gt; S
+         (which must have the base ring of <CODE>RmodI</CODE> as its domain,
+         and whose kernel must contain the defining ideal of <CODE>RmodI</CODE>)
+<P></P>
+<LI><CODE>InducedHom(FrF, phi)</CODE> -- <B>may be partial</B>
+         where <CODE>FrF</CODE> is a <A HREF="FractionField.html"><CODE>FractionField</CODE></A>, gives the homomorphism induced by
+         <CODE>phi</CODE> (which must have the base ring of <CODE>FrF</CODE> as its domain).  Note that
+         the resulting homomorphism may be only partial (e.g. if ker(<CODE>phi</CODE>) is
+         non-trivial, or if the codomain is not a field).
+</UL>
+
+<A NAME="toc6"></A>
+<H4>Homomorphisms on polynomial rings</H4>
+<UL>
+<LI><CODE>PolyAlgebraHom(Rx, Ry, xImages)</CODE> -- where
+ <UL>
+ <LI><CODE>Rx</CODE> and <CODE>Ry</CODE> are <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A> with the same CoeffRing
+ <LI><CODE>xImages</CODE> is a <CODE>vector</CODE> of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>
+ </UL>
+     gives the homomorphism from <CODE>Rx</CODE> to <CODE>Ry</CODE>
+         mapping coefficients into themselves and mapping the k-th
+         indeterminate of <CODE>Rx</CODE> to the k-th value in <CODE>xImages</CODE> (i.e. having
+         index k-1)
+<P></P>
+<LI><CODE>PolyRingHom(Rx, S, CoeffHom, xImages)</CODE> -- where
+ <UL>
+ <LI><CODE>Rx</CODE> is a <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>
+ <LI><CODE>CoeffHom</CODE> is a homomorphism whose
+         domain is <CODE>CoeffRing(Rx)</CODE> and codomain is <CODE>S</CODE> or CoeffRing(S) (if <CODE>S</CODE> is a <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
+ <LI><CODE>xImages</CODE> is a <CODE>vector</CODE> of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>
+ </UL>
+     gives the homomorphism from <CODE>Rx</CODE> to <CODE>S</CODE>
+         mapping coefficients according to
+         <CODE>CoeffHom</CODE> and mapping the k-th indeterminate of <CODE>Rx</CODE> to the k-th
+         value in <CODE>xImages</CODE> (i.e. having index k-1)
+</UL>
+
+<A NAME="toc7"></A>
+<H3>Applying a RingHom</H3>
+<P>
+A <CODE>RingHom</CODE> may applied using natural syntax:
+-  let phi be an object of type <CODE>RingHom</CODE>
+-  let x be an object of type <A HREF="RingElem.html"><CODE>RingElem</CODE></A>
+-  let n be of type <CODE>long</CODE> or <CODE>int</CODE>
+-  let N be an object of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+-  let q be an object of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>
+</P>
+<PRE>
+    phi(x)  applies phi to x; error if owner(x) != domain(phi)
+    phi(n)  applies phi to the image of n in domain(phi)
+    phi(N)  applies phi to the image of N in domain(phi)
+    phi(q)  applies phi to the image of q in domain(phi)
+</PRE>
+<P>
+In all cases the result is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> belonging to the codomain of
+phi.  Currently <I>partial</I> homomorphisms are allowed, so applying a
+RingHom could trigger an error (<I>e.g.</I> an induced hom from Q to Z/(3)
+applied to 1/3).
+</P>
+<P>
+If the <A HREF="RingElem.html"><CODE>RingElem</CODE></A> supplied belongs to the wrong <A HREF="ring.html"><CODE>ring</CODE></A> (<I>i.e.</I> not the
+domain of the <CODE>RingHom</CODE>) then an exception is thrown with code
+<CODE>ERR::BadRingHomArg1</CODE>.  If the argument belongs to the right <A HREF="ring.html"><CODE>ring</CODE></A> but
+lies outside the domain then an exception with code
+<CODE>ERR::BadRingHomArg2</CODE> is thrown.
+</P>
+<A NAME="toc8"></A>
+<H3>Composition</H3>
+<P>
+Two <CODE>RingHom</CODE>s may be composed using a fairly natural syntax: if we have
+two <CODE>RingHom</CODE>s phi:R -&gt; S  and theta:S -&gt; T then their composition may
+be computed using the syntax
+</P>
+<PRE>
+   theta(phi)   the composite homomorphism "apply phi first then theta"
+</PRE>
+<P></P>
+<P>
+If the domain of the outer homomorphism is different from the codomain of
+the inner homomorphism then an exception is thrown with code
+<CODE>ERR::BadCompose</CODE>.
+</P>
+<A NAME="toc9"></A>
+<H3>Domain and Codomain</H3>
+<P>
+We may ask for the domain and codomain of a <CODE>RingHom</CODE> phi:
+</P>
+<PRE>
+    domain(phi)       gives a const ref to the domain
+    codomain(phi)     gives a const ref to the codomain
+</PRE>
+<P>
+Note that the domain and codomain are merely <A HREF="ring.html"><CODE>ring</CODE></A>s, they "forget"
+any special ring type (such as <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A>).
+</P>
+<A NAME="toc10"></A>
+<H3>Kernel</H3>
+<P>
+Currently it is not possible to ask for the kernel of a <CODE>RingHom</CODE>.
+</P>
+<A NAME="toc11"></A>
+<H3>Member Functions for Operations on Raw Values</H3>
+<P>
+All operations on a <CODE>RingHom</CODE> are invisibly converted into member function
+calls on a <CODE>RingHomBase</CODE>.  It is possible to call these member functions
+directly: the main difference is that the member functions do not perform
+any sanity checking on their arguments (so they should be slightly faster
+but if you hand in incompatible arguments, you'll probably get an ugly
+crash).
+</P>
+<A NAME="toc12"></A>
+<H2>Maintainer documentation for the files RingHom.H and RingHom.C</H2>
+<P>
+These files contain two "generic" classes (<CODE>RingHom</CODE> and <CODE>RingHomBase</CODE>), and
+a trivial concrete class representing the identity ring homomorphism,
+<CODE>IdentityRingHom</CODE>.  Most of this section is dedicated to the two generic
+classes since they represent the primary contribution to the CoCoA
+library.
+</P>
+<P>
+The class <CODE>RingHom</CODE> is little more than a "reference counting smart
+pointer" class to objects of type <CODE>RingHomBase</CODE>; this latter type is
+designed to support intrusive reference counting.  Beyond its role as a
+smart pointer <CODE>RingHom</CODE> offers four "function application" syntaxes:
+</P>
+<PRE>
+    RingElem RingHom::operator()(ConstRefRingElem x) const;
+    RingElem RingHom::operator()(long n) const;
+    RingElem RingHom::operator()(const BigInt&amp; N) const;
+    RingHom RingHom::operator()(const RingHom&amp;) const;
+</PRE>
+<P>
+The first three support a natural syntax for applying the homomorphism to a
+ring element, a small integer, or a large integer.  The last offers a
+fairly natural syntax for creating the composition of two homomorphisms.
+</P>
+<P>
+The class <CODE>RingHomBase</CODE> is a purely abstract class which is used to specify
+the interface which any concrete ring homomorphism class must offer.  In
+particular this base class already includes an intrusive reference counter,
+as required by <CODE>RingHom</CODE>.  It also includes two private data members
+<CODE>myDomainValue</CODE> and <CODE>myCodomainValue</CODE> which store the domain and codomain
+rings.  Note that these data fields are plain <A HREF="ring.html"><CODE>ring</CODE></A>s and so "forget" any
+special ring type which the domain or codomain may have had.  Originally I
+had hoped to preserve any special ring type information, but this seemed to
+lead to a confusing and complex implementation (which probably would never
+have worked as I hoped).  The two <A HREF="ring.html"><CODE>ring</CODE></A> fields may be read using the accessor
+functions:
+</P>
+<PRE>
+      const ring&amp; myDomain() const;
+      const ring&amp; myCodomain() const;
+</PRE>
+<P></P>
+<P>
+A concrete class implementing a ring homomorphism must supply definition
+for the following (pure virtual) functions:
+</P>
+<PRE>
+      virtual void myApply(RingBase::RawValue&amp; image, RingBase::ConstRawValue arg) const;
+      virtual void myOutputSelf(std::ostream&amp; out) const;
+</PRE>
+<P></P>
+<P>
+DO NOTE THAT the two arguments to <CODE>myApply</CODE> normally belong to
+DIFFERENT rings.  <CODE>arg</CODE> belongs to <CODE>myDomain()</CODE> whereas <CODE>image</CODE>
+belongs to <CODE>myCodomain()</CODE>.  The function <CODE>myOutputSelf</CODE> should
+print out a useful description of the homomorphism.
+</P>
+<A NAME="toc13"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+Cannot compute a kernel of a RingHom.
+</P>
+<P>
+Arranging for <CODE>domain(phi)</CODE> and <CODE>codomain(phi)</CODE> to preserve C++ type
+information about the respective rings (<I>e.g.</I> <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A> or <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
+rather than simply <A HREF="ring.html"><CODE>ring</CODE></A>), appears to be difficult to achieve in any
+reasonable manner.  I've decided that it is much simpler just to discard
+all special type information, and return simply <A HREF="ring.html"><CODE>ring</CODE></A>s.  If the user knows
+something more, he can use a "cast" function like <CODE>AsFractionField</CODE>.  Even
+if it were feasible to maintain such C++ type info, there would have to
+n-squared cases to cover all possible combinations of domain and codomain.
+</P>
+<P>
+We should implement more special cases: <I>e.g.</I> same vars different coeff
+ring, PP --&gt; PP, other...  Also need some way of handling canonical
+homomorphisms.
+</P>
+<P>
+Some special cases of homomorphic embeddings R --&gt; S:
+(may belong with the special types of ring to which they are associated)
+</P>
+<UL>
+<LI>(a) S is an identical copy of R
+<LI>(b) S is the same (poly)ring as R but with a different term ordering
+<LI>(c) R, S are the same polynomial ring (same vars and ordering)
+     but with different coefficients
+<LI>(d) each generator of R maps to a power product (or 0) in S
+<LI>(e) S is the same as R but with more variables (is also of type (d))
+<LI>(f) permutation of the variables  (is also of type (d))
+<LI>(g) general homomorphism mapping
+<LI>(h) S is the fraction field of R
+</UL>
+
+<P></P>
+<A NAME="toc14"></A>
+<H2>Some very old notes about implementing rings</H2>
+<P>
+This all needs to be sorted out!
+</P>
+<A NAME="toc15"></A>
+<H3>Mapping elements between rings automatically</H3>
+<P>
+How to decide whether a value can be mapped into the current_ring?
+</P>
+<P>
+If the rings are marked as being equivalent isomorphically then we
+can just use the obvious isomorphism.  A more interesting case is
+when a value resides in a ring which is a natural subring of the
+current_ring e.g. Z inside Q(sqrt(2))[x,y,z].
+</P>
+<P>
+One could argue that to create <CODE>Q(sqrt(2))[x,y,z]</CODE> we had to follow this path
+</P>
+<UL>
+<LI><CODE>Z</CODE> --&gt; fraction field <CODE>Q</CODE>
+<LI><CODE>Q</CODE> --&gt; polynomial ring (1 indet) or DUP extension <CODE>Q[gensym]</CODE>
+<LI><CODE>Q[gensym]</CODE> --&gt; quotient by gensym^2-2 to get <CODE>Q(sqrt(2))</CODE>
+<LI><CODE>Q(sqrt(2))</CODE> --&gt; polynomial ring (3 indets) <CODE>Q(sqrt(2))[x,y,z]</CODE>
+</UL>
+
+<P>
+From this it ought to be easy to identify natural embeddings of <CODE>Z</CODE>,
+<CODE>Q</CODE>, and (possibly) <CODE>Q(sqrt(2))</CODE> in <CODE>Q(sqrt(2))[x,y,z]</CODE>.  We do
+not get an embedding for Q[gensym] since we had to generate the symbol
+<I>gensym</I> and no one else can create the same gensym.  Because of this
+it is not altogether clear that an independently created copy of
+<CODE>Q(sqrt(2))</CODE> can be embedded automatically, since that copy would
+have a different symbol/gensym.  Now if the algebraic extension were
+achieved directly...
+</P>
+<P>
+Would we want <CODE>Q[x]/(x^2-2)</CODE> to be regarded as isomorphically equivalent
+to <CODE>Q[y]/(y^2-2)</CODE>?  In fact there are two possible isoms:  <CODE>x &lt;---&gt; y</CODE>
+and <CODE>x &lt;---&gt; -y</CODE>.  I think that these should not be viewed as isom
+automatically, especially as there is more than one possible choice.
+</P>
+<P>
+In contrast, if <CODE>R = Q[x]/(x^2-2)</CODE>, and <CODE>S = Q[x]/(36-18x^2)</CODE>, and
+<CODE>T = Q[x]/(x^2-2)</CODE>.  It is clear that <CODE>Q[x]</CODE> can be mapped into
+each of <CODE>R</CODE>, <CODE>S</CODE> and <CODE>T</CODE> in a natural way.  Of course, in each
+case <CODE>x</CODE> stands for sqrt(2), and it wouldn't be too hard to spot
+that <CODE>R</CODE> and <CODE>T</CODE> are <I>identical</I>; it is not quite as simple to see
+that <CODE>R</CODE> and <CODE>S</CODE> are isom.  Presumably with a little more effort
+one could create examples where it could be jolly hard to spot that
+two such rings are just the same ring.  For this reason, I think no
+attempt should be made to spot such <I>natural isoms</I> between
+<I>independent</I> rings.  Had <CODE>T</CODE> been created from <CODE>R</CODE> (e.g. by
+making copy via assignment) then they would no longer be independent,
+and a natural isom could be deduced automatically.  Now I think about
+it, a facility to make a copy of a ring WITHOUT the natural isom
+should be made available.
+</P>
+<P>
+There is also a need for a way to specify that one ring embeds
+naturally into another (and via which homomorphism), or indeed that
+they are isomorphic.  Isomorphism could be expressed by giving two
+inverse homs -- the system could then check that the homs are inverse
+on the generators, how it would check that the maps are homs is not so
+clear (perhaps the only maps which can be created are homs).  Oooops,
+this would allow one to declare that <CODE>Z</CODE> and <CODE>Q</CODE> (or <CODE>Z[x]</CODE> and
+<CODE>Q[x]</CODE>) are isom..... need to think more about this!
+</P>
+<P>
+A similar mechanism will be needed for modules (and vector spaces).
+A module should naturally embed into a vector space over the fraction
+field of the base ring....
+</P>
+<P>
+Conceivably someone might want to change the natural embedding between
+two rings.  So a means of finding out what the natural embedding is
+will be necessary, and also a way replacing it.
+</P>
+<P>
+There is also a general question of retracting values into <I>subrings</I>.
+Suppose I have computed 2 in <CODE>Q(x)</CODE>, can I get the integer 2 from
+this?  In this case I think the user must indicate explicitly that a
+retraction is to occur.  Obviously retraction can only be into rings
+<I>on the way</I> to where the value currently resides.
+</P>
+<P>
+Other points to note:
+</P>
+<PRE>
+  Q(x) = Z(x) = FrF(Z[x]) == FrF(FrF(Z)[x])
+</PRE>
+<P></P>
+<P>
+Q(alpha) = FrF(Z[alpha]) though denoms in Q(alpha) can be taken in Z
+</P>
+<P>
+Q[alpha]/I_alpha = FrF(Z[alpha]/I_alpha)   <B>BUT</B> the ideal on LHS
+is an ideal inside Q[alpha] whereas that on RHS is in Z[alpha].
+Furthermore Z[alpha]/I_alpha is <I>hairy</I> if the min poly of alpha is not monic!
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingHom.html -i txt/RingHom.txt -->
+</BODY></HTML>

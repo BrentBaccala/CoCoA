@@ -1,0 +1,145 @@
+Package $binrepr -- Binomial Representation
+
+Export BinExp;
+Export EvalBinExp;
+
+Alias BR := $binrepr,
+      HP := $hp,
+      SP := $sppoly;
+
+Define About()
+  PrintLn "    Author: A.M.Bigatti";
+  PrintLn "    Date: 10 April 2001  (corrected use of \"End;\" 4 July 2002)";
+  PrintLn "    BugFix: new tag handling";
+EndDefine;
+
+
+Define Man()
+  PrintLn "Suggested alias for this package:";
+  PrintLn "    Alias BR := $binrepr;";
+  PrintLn;
+  PrintLn "SYNTAX";
+  PrintLn "    BR.PolyBinRepr_xi(UnivariatePoly): TAGGED(\"BinRepr\")";
+  PrintLn "    BR.PolyBinRepr_xii(UnivariatePoly): TAGGED(\"BinRepr\")";
+  PrintLn;
+  PrintLn "DESCRIPTION";
+  PrintLn;
+  PrintLn;
+  PrintLn ">EXAMPLE<";
+  PrintLn;
+  PrintLn "    BR.Initialize();";
+  PrintLn "    BR.PolyBinRepr_xi(x^2);";
+  PrintLn "    BR.PolyBinRepr_xii(x^2);";
+  PrintLn "    MEMORY.PKG.BinRepr.Constant := 100;";
+  PrintLn "    BR.PolyBinRepr_xi(x^2);";
+  PrintLn "    BR.PolyBinRepr_xii(x^2);";
+EndDefine;
+
+--------------------------------------------------------------
+-- TAG "Bin";     --  [Bin]omial Coefficient
+--     "BinRepr"; --  [Bin]omial [Repr]esentation
+
+-- TYPE BinRepr := LIST(BRTerm);    --> TAGGED "BinRepr"
+--      BRTerm  := Record[BIN, COEFF];
+--      Bin     := [POLY, INT];     --> TAGGED "Bin"
+--      COEFF   := {INT, RAT};
+
+-- Package variables
+Constant := 0;
+
+
+Define PolyBinRepr_xi(P)
+  Idt := UnivariateIndetIndex(P);
+  If Idt=0 Then Error("PolyBinRepr_xi: Expected univariate polynomial"); EndIf;
+  Idt := Indet(Idt);
+  BE := [];  C := $.Constant;
+  While P <> 0 Do
+    I := Deg(P);
+    Append(Ref BE, Record[COEFF := LC(P)*Fact(I), BIN := [Idt+C,I]] );
+    P := P-(LC(P)*Fact(I)*Bin(Idt+C,I));
+  EndWhile;
+  Return $.Tagged(BE,"BinRepr");
+EndDefine;
+
+
+Define PolyBinRepr_xii(P)
+  Idt := UnivariateIndetIndex(P);
+  If Idt=0 Then Error("PolyBinRepr_xii: Expected univariate polynomial"); EndIf;
+  Idt := Indet(Idt);
+  BE := [];  C := $.Constant;
+  While P <> 0 Do
+    I := Deg(P);
+    Append(Ref BE, Record[COEFF := LC(P)*Fact(I), BIN := [Idt+C+I,I]] );
+    P := P-(LC(P)*Fact(I)*Bin(Idt+C+I,I));
+  EndWhile;
+  Return $.Tagged(BE,"BinRepr");
+EndDefine;
+
+
+Define BinExp(...)
+  TopLevel ERR;
+  If Shape(ARGV)=[INT, INT] Then Return $.Aux_BinExp(ARGV[1], ARGV[2]);
+  Elif Shape(ARGV)=[INT, INT, INT, INT] Then
+    Return EvalBinExp($.Aux_BinExp(ARGV[1],ARGV[2]), ARGV[3], ARGV[4]);
+  Else Error(ERR.BAD_PARAMS,"(BinExp arguments must be 2 or 4 INT)");
+  EndIf;
+EndDefine;
+
+
+Define EvalBinExp(BE,Up,Down)
+  Return Sum([HP.TruncBin(B[1]+Up,B[2]+Down) | B In untagged(BE)]);
+EndDefine; -- EvalBinExp
+
+
+Define Aux_BinExp(H,N)
+  TopLevel ERR;
+  If H<0 Or N<=0 Then Error(ERR.BAD_PARAMS, "(BinExp(H,N), H>=0, N>0)"); EndIf;
+  BE:=[];  HH:=H;  NN:=N;
+  While HH <> 0 Do
+    I := NN+1;  BIN := I;  --> BIN:=Bin(NN+1,NN)
+    While BIN <= HH Do  I:=I+1; BIN:=(BIN/(I-NN))*I;  EndWhile;
+    Append(Ref BE,[I-1,NN]);
+    HH := HH - (BIN/I)*(I-NN); NN:=NN-1;
+  EndWhile;
+  Return $.Tagged(BE,"BinExp");
+EndDefine;
+
+
+--------[   pretty printing   ]--------
+
+Define Tagged(X, T)
+  Return tagged(X, T);  // CoCoA-5 builtin "tagged" for packages
+EndDefine; -- Tagged
+
+Define Print_Bin(D, B)
+  Print "Bin(", B[1], ",",B[2], ")" On D;
+EndDefine;
+
+
+Define Print_BinExp(D, BE)
+  If Untagged(BE) = [] Then Print 0 On D;
+  Else
+    Print $.Tagged(BE[1],"Bin") On D;
+    Foreach BIN In Tail(BE) Do Print " + ", $.Tagged(BIN,"Bin") On D; EndForeach;
+  EndIf;
+EndDefine;
+
+
+Define Print_BinRepr(D, BR)
+  SP.PrintFirstCoeff(BR[1].COEFF, False, D);
+  Print " ", $.Tagged(BR[1].BIN,"Bin") On D;
+  Foreach BT In Tail(BR) Do
+    SP.PrintCoeff(BT.COEFF,False,D);
+    Print " ", $.Tagged(BT.BIN,"Bin") On D;
+  EndForeach;
+EndDefine;
+
+----------------------------------------------------------------------
+PrintTagged := Record[
+		      Bin := $.Print_Bin,
+		      BinExp := $.Print_BinExp,
+		      BinRepr := $.Print_BinRepr
+		      ];
+
+EndPackage; -- Package $binrepr
+

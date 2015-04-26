@@ -1,0 +1,83 @@
+SHELL=/bin/sh
+include sources
+OFILES=$(SRC_FILES:.c=.o)
+
+# In a normal CoCoA build CC, CFLAGS, and RANLIB are overridden
+CC=gcc -Wall -pedantic
+CFLAGS= -O2 $(INCLUDES)
+LIBS= -L/usr/local/lib -lm -lgmp
+RANLIB=ranlib
+GMP_INC_DIR=/usr/local/include
+# NB jintf.o is compiled with an additional "-I../cocoa"
+INCLUDES= -I. -I$(GMP_INC_DIR)
+
+all:	$(OFILES)
+
+factor.a:	$(OFILES) jintf.o
+	/bin/rm -f factor.a
+	ar -cq factor.a $(OFILES) jintf.o
+	$(RANLIB) factor.a
+
+# We must compile jintf.c with the correct CoCoA flags
+COC_VERSION     = -DSIS_UNIX -DCA_TEXT
+jintf.o: jintf.c jintf.h
+	$(CC) -c $(CFLAGS) $(COC_VERSION) jintf.c -I../cocoa -I.
+
+
+clean:  testclean
+	/bin/rm -f *.o *~ a.out factor.a core
+
+
+test:	$(OFILES)
+	@echo "Conducting test 1"
+	@$(CC) $(CFLAGS) test1.c -o test1.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test1.run > test1.tmp
+	@-diff test1.tmp test1.out
+	@rm test1.run test1.tmp
+	@echo "Conducting test 1a"
+	@$(CC) $(CFLAGS) test1a.c -o test1a.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test1a.run > test1a.tmp
+	@-diff test1a.tmp test1a.out
+	@rm test1a.run test1a.tmp
+	@echo "Conducting test 2"
+	@$(CC) $(CFLAGS) test2.c -o test2.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test2.run > test2.tmp
+	@-diff test2.tmp test2.out
+	@rm test2.run test2.tmp
+	@echo "Conducting test 3 (fairly long)"
+	@$(CC) $(CFLAGS) test3.c -o test3.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test3.run > test3.tmp
+	@-diff test3.tmp test3.out
+	@rm test3.run test3.tmp
+	@echo "Conducting test 4"
+	@$(CC) $(CFLAGS) test4.c -o test4.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test4.run > test4.tmp
+	@-diff test4.tmp test4.out
+	@rm test4.run test4.tmp
+	@echo "Conducting test 5"
+	@$(CC) $(CFLAGS) test5.c -o test5.run $(OFILES) $(LIBS) DUPFFprint.c
+	@./test5.run > test5.tmp
+	@-diff test5.tmp test5.out
+	@rm test5.run test5.tmp
+	@echo "Conducting test 6"
+	@$(CC) $(CFLAGS) test6.c -o test6.run $(OFILES) $(LIBS) DUPIprint.c
+	@./test6.run > test6.tmp
+	@-diff test6.tmp test6.out
+	@rm test6.run test6.tmp
+	@echo "Conducting test 7"
+	@$(CC) $(CFLAGS) test7.c -o test7.run $(OFILES) $(LIBS)
+	@./test7.run > test7.tmp
+	@-diff test7.tmp test7.out
+	@rm test7.run test7.tmp
+	@echo "Conducting test 8 (long)"
+	@$(CC) $(CFLAGS) test8.c -o test8.run $(OFILES) $(LIBS)
+	@./test8.run < test8.in > test8.tmp
+	@-diff test8.tmp test8.out
+	@rm test8.run test8.tmp
+	@echo 'Testing complete; if you saw only "Conducting test" messages'
+	@echo 'then everything is fine.  Otherwise send the output as a bug'
+	@echo 'report -- thank you for your cooperation.'
+
+testclean:
+	@-rm -f test*.tmp test*.run
+

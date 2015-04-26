@@ -1,0 +1,57 @@
+<< "tests/assert.cocoa5";
+
+PrintLn "Running from "+GetEnv("PWD");
+
+BeginTest("GetEnv");
+Assert(len(GetEnv("__yabba_dabba_doo__"))=0);
+
+BeginTest("123");
+os := OpenOutputString();
+Print 123, " is ", type(123) On os;
+s := close(os);
+AssertEqual(s, "123 is INT");
+
+BeginTest("Closing a closed stream");
+Try
+	close(os);
+	Assert(false);
+UponError e Do
+	AssertEqual(GetErrMesg(e), "This stream is already closed");
+EndTry
+
+BeginTest("Printing to a closed stream");
+Try
+	Print "hi there" on os;
+	Assert(false);
+UponError e Do
+	AssertEqual(GetErrMesg(e), "Cannot print to a closed stream");
+EndTry
+
+PrintTagged := Record[
+  Dots := Func (os, v)
+		For I:=1 To v Do
+			Print "." On os
+		EndFor
+	EndFunc
+];
+
+Define PrintDots(os)
+	three := tagged(3, "Dots");
+	Print three On os;
+	Print 1, 2, untagged(three), three On os;
+EndDefine
+
+BeginTest("Printing dots (on string)");
+os := OpenOutputString();
+PrintDots(os);
+s := close(os);
+AssertEqual(s, "...123...");
+
+BeginTest("Printing dots (on file)");
+filename := "__test__";
+os := OpenOFile(filename);
+PrintLn "hi!" On os;
+PrintDots(os);
+close(os);
+AssertEqual(ContentsOfFile(filename), "hi!\n...123...");
+

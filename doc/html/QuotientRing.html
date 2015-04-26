@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      QuotientRing</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      QuotientRing</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2012 John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for QuotientRing</A>
+      <UL>
+      <LI><A HREF="#toc2">Examples</A>
+      <LI><A HREF="#constructors">Constructors and Pseudo-constructors</A>
+        <UL>
+        <LI><A HREF="#toc4">NewZZmod or NewRingFp?</A>
+        </UL>
+      <LI><A HREF="#query">Query and cast</A>
+      <LI><A HREF="#operations">Operations on QuotientRing</A>
+      <LI><A HREF="#homomorphisms">Homomorphisms</A>
+      </UL>
+    <LI><A HREF="#toc8">Maintainer documentation for QuotientRing, QuotientRingBase, GeneralQuotientRingImpl</A>
+    <LI><A HREF="#toc9">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for QuotientRing</H2>
+<P>
+A <CODE>QuotientRing</CODE> is an abstract class (inheriting from <A HREF="ring.html"><CODE>ring</CODE></A>)
+representing quotients of a <A HREF="ring.html"><CODE>ring</CODE></A> by an <A HREF="ideal.html"><CODE>ideal</CODE></A>.
+</P>
+<P>
+See <A HREF="RingElem.html#QuotientRing"><CODE>RingElem</CODE> QuotientRing</A> for operations on its elements.
+</P>
+<A NAME="toc2"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp2.C">ex-RingFp2.C</A>
+</UL>
+
+<P>
+Extended example of use:
+</P>
+<PRE>
+    RingZZ ZZ = RingZZ();           // a copy of the ring of integers
+    ring ZZmod10 = NewZZmod(10);    // represents ZZ/(10) integers modulo 10
+    ring ZZmod10a = NewQuotientRing(ZZ, ideal(ZZ, 10)); // same as ZZmod10
+  
+    RingHom phi = QuotientingHom(ZZmod10); // ring hom from ZZ to ZZmod10
+    RingElem r(ZZmod10, -3);               // an element of ZZmod10
+    RingElem preimage = CanonRepr(r);      // an element of ZZ = BaseRing(ZZmod10)
+  
+    ring S = NewZZmod(2);              // another ring S, details do not matter much
+    RingHom theta = QuotientingHom(S); // any ring hom from ZZ to S will do instead
+    RingHom theta_bar = NewInducedHom(ZZmod10, theta); // induced ring hom from ZZmod10 to S
+</PRE>
+<P></P>
+<A NAME="constructors"></A>
+<H3>Constructors and Pseudo-constructors</H3>
+<UL>
+<LI><CODE>NewQuotientRing(R, I)</CODE> -- creates a new <A HREF="ring.html"><CODE>ring</CODE></A> representing the
+quotient <CODE>R</CODE>/<CODE>I</CODE>.  <CODE>I</CODE> must be an ideal of <CODE>R</CODE>; odd things may
+happen if <CODE>I</CODE>=<CODE>R</CODE>.  If <CODE>I</CODE> is zero then the result is isomorphic
+to <CODE>R</CODE> but not equal to <CODE>R</CODE>; arithmetic in <CODE>R</CODE> is more efficient
+than arithmetic in <CODE>R</CODE>/ideal(0).
+<LI><CODE>NewZZmod(n)</CODE> -- creates a new <A HREF="ring.html"><CODE>ring</CODE></A> representing the quotient
+<CODE>ZZ</CODE>/ideal(<CODE>n</CODE>) where <CODE>ZZ</CODE> is the ring of integers <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A> and
+<CODE>n</CODE> is an integer.  A CoCoALib error will be thrown if <CODE>n</CODE>=1 or
+<CODE>n</CODE>=-1.  Currently an error will be thrown also if <CODE>n</CODE>=0 (see
+BUGS).
+<LI><CODE>QuotientRing</CODE> -- sort of downcast the ring <CODE>R</CODE> to a quotient ring;
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotQuotRing</CODE> if needed.
+</UL>
+
+<P></P>
+<A NAME="toc4"></A>
+<H4>NewZZmod or NewRingFp?</H4>
+<P>
+If <CODE>n</CODE> is a small prime then <CODE>NewZZmod(n)</CODE> produces the same result as
+<CODE>NewRingFp(n)</CODE> (or perhaps <CODE>NewRingFpDouble(n)</CODE>).  If <CODE>n</CODE> is not a
+small prime then <CODE>NewRingFp(n)</CODE> throws an exception whereas <CODE>NewZZmod(n)</CODE>
+will produce a working quotient ring.
+</P>
+<A NAME="query"></A>
+<H3>Query and cast</H3>
+<UL>
+<LI><CODE>IsQuotientRing(R)</CODE> returns true iff R is implemented as a <CODE>QuotientRing</CODE>
+<LI><CODE>QuotientRingPtr(R)</CODE> returns a pointer to the quotient ring impl (for calling mem fns);
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotQuotRing</CODE> if needed.
+</UL>
+
+<A NAME="operations"></A>
+<H3>Operations on QuotientRing</H3>
+<P>
+In addition to the standard <A HREF="ring.html#operations"><CODE>ring</CODE> operations</A>, a <CODE>QuotientRing</CODE>
+may be used in other functions.
+</P>
+<P>
+Given <CODE>RmodI</CODE> a <CODE>QuotientRing</CODE> (representing R/I)
+built as <CODE>NewQuotientRing(R,I)</CODE> 
+with <CODE>I</CODE> is an <A HREF="ideal.html"><CODE>ideal</CODE></A> of the <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>.
+</P>
+<UL>
+<LI><CODE>BaseRing(RmodI)</CODE> -- a reference to the base ring of <CODE>RmodI</CODE>, namely <CODE>R</CODE>
+<LI><CODE>DefiningIdeal(RmodI)</CODE> -- a reference to the ideal <CODE>I</CODE> used to create <CODE>RmodI</CODE>
+<LI><CODE>ReprRing(RmodI)</CODE> -- a reference to the ring used for internal representation
+of elements of <CODE>RmodI</CODE>
+</UL>
+
+<P></P>
+<A NAME="homomorphisms"></A>
+<H3>Homomorphisms</H3>
+<UL>
+<LI><CODE>QuotientingHom(RmodI)</CODE> -- a reference to the quotienting
+homomorphism from <CODE>R</CODE> to <CODE>RmodI</CODE>
+<LI><CODE>InducedHom(RmodI, phi)</CODE> -- where <CODE>phi</CODE> is a <A HREF="RingHom.html"><CODE>RingHom</CODE></A> from
+<CODE>R</CODE> to <CODE>S</CODE>, creates a new <A HREF="RingHom.html"><CODE>RingHom</CODE></A> from <CODE>RmodI</CODE> to <CODE>S</CODE>.
+Two types of error may occur:
+  <UL>
+  <LI><CODE>ERR::BadInducingHom</CODE> --  if <CODE>domain(phi)</CODE> is not <CODE>BaseRing(RmodI)</CODE>
+  <LI><CODE>ERR::BadInducingHomKer</CODE> -- if <CODE>phi</CODE> does not map the gens of <CODE>I</CODE>
+   to zero.
+  </UL>
+</UL>
+
+<P></P>
+<A NAME="toc8"></A>
+<H2>Maintainer documentation for QuotientRing, QuotientRingBase, GeneralQuotientRingImpl</H2>
+<P>
+While considering the design of this code it may help to keep in mind
+these two canonical implementations:
+</P>
+<DL>
+<DT> <CODE>GeneralQuotientRingImpl</CODE></DT><DD>
+    internally elements are represented as elements of a
+    "representation ring" (which may differ from the base ring) which
+    are kept reduced modulo some ideal (which may differ from the
+    defining ideal)
+<P></P>
+<DT> <CODE>RingFpImpl</CODE></DT><DD>
+   internally elements are represented by machine integers (see doc
+   for RingFpImpl), a representation incompatible with that used for
+   elements of the ring of integers (which is probably the base ring)
+</DL>
+
+<P>
+<CODE>QuotientRingBase</CODE>
+  is an abstract class derived from RingBase, and is the
+base class for all quotient rings.  It adds the following four new pure
+virtual member functions which must be defined in every concrete
+quotient ring:
+</P>
+<PRE>
+      virtual RingElem myCanonRepr(ConstRawValue r) const;
+      virtual void myReduction(RawValue&amp; image, ConstRawValue arg) const;
+      virtual const RingHom&amp; myQuotientingHom() const;
+      virtual RingHom myInducedHomCtor(const RingHom&amp; InducingHom) const;
+</PRE>
+<P></P>
+<P>
+The member function myCanonRepr has to return a copy of the value since
+we cannot be sure that the internal representation is compatible with
+the internal representation of elements of the base ring.
+</P>
+<A NAME="toc9"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+<CODE>IamTrueGCDDomain</CODE> always returns false.  We can be clever in some easy
+cases, but it is hard in general (think of rings of algebraic integers
+which are gcd domains, but not euclidean domains).
+</P>
+<P>
+Should NewZZmod(n) allow the case n==0?  There's no mathematical
+reason to forbid it, but forbidding it may help detect programmer
+errors more quickly -- it seems unlikely that one would really want
+to quotient by ideal(0).
+</P>
+<P>
+FAIRLY SERIOUS CONFUSION:  the code seems to make REPEATED sanity checks see
+</P>
+<PRE>
+    QuotientRingBase::QuotientRingBase
+    NewQuotientRing
+  
+    QuotientRingHomBase::QuotientRingHomBase
+    NewInducedHom
+</PRE>
+<P>
+I suspect that the C++ ctors should use CoCoA_ASSERT instead of checking
+always (and throwing an exception).
+</P>
+<P>
+FURTHER SERIOUS CONFUSION: there is ambiguity about the difference
+between myBaseRing and myReprRing esp. for creating induced
+homomorphisms: given ring R, and ring S = R/I, create ring T = S/J
+An induced hom from T should start from a hom with domain S;
+or is it reasonable to accept a hom with domain R?  In this case
+for T myReprRing is R but myBaseRing is S.
+</P>
+<P>
+Given a RingHom from a QuotientRing it is not generally possible to
+obtain a reference to an "inducing hom": consider the hom from
+ZZ/(2) to ZZ/(2)[x] created by CoeffEmbeddingHom.  A RingHom equivalent
+to the inducing hom can be produced by composing QuotientingHom with
+the given hom.
+</P>
+<P>
+20 March 2004: I have added the possibility of making a trivial ring by
+quotienting: previously this was disallowed for no good reason that I
+could discern.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/QuotientRing.html -i txt/QuotientRing.txt -->
+</BODY></HTML>

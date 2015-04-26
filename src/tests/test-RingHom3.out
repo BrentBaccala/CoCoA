@@ -1,0 +1,10 @@
+Simple test on polynomial ring hom
+RingWithID(3,"ZZ[x[0],x[1]]")  -->  RingWithID(6,"RingWithID(2)[x[0],x[1]]")
+sending x[0]  to  x[0]^2  and
+sending x[1]  to  x[1]^2
+x[0] +2*x[1] in RingWithID(3,"ZZ[x[0],x[1]]")  maps to x[0]^2 +2*x[1]^2 in RingWithID(6,"RingWithID(2)[x[0],x[1]]")
+x[0]^2 +2*x[1]^2 in RingWithID(6,"RingWithID(2)[x[0],x[1]]")  maps to x[0]^4 +2*x[1]^4 in RingWithID(6,"RingWithID(2)[x[0],x[1]]")
+x[0]^2 +2*x[1]^2 in RingWithID(6,"RingWithID(2)[x[0],x[1]]")  maps to x[0]^4 +2*x[1]^4 in RingWithID(4,"RingWithID(2)[x[0],x[1]]")
+x[0] +2*x[1] in RingWithID(3,"ZZ[x[0],x[1]]")  maps to x[0]^2 +2*x[1]^2 in RingWithID(5,"RingWithID(2)[x[0],x[1]]")
+x[0]^2 +2*x[1]^2 in RingWithID(5,"RingWithID(2)[x[0],x[1]]")  maps to x[0]^4 +2*x[1]^4 in RingWithID(5,"RingWithID(2)[x[0],x[1]]")
+x[0]^2 +2*x[1]^2 in RingWithID(5,"RingWithID(2)[x[0],x[1]]")  maps to x[0]^4 +2*x[1]^4 in RingWithID(4,"RingWithID(2)[x[0],x[1]]")

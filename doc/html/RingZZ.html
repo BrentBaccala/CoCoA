@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingZZ</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingZZ</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2007,2012  John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for RingZZ</A>
+      <UL>
+      <LI><A HREF="#examples">Examples</A>
+      <LI><A HREF="#constructors">Constructors and pseudo-constructors</A>
+      <LI><A HREF="#query">Query</A>
+      <LI><A HREF="#homomorphisms">Homomorphisms</A>
+      </UL>
+    <LI><A HREF="#toc6">Maintainer documentation for the class RingZZImpl</A>
+    <LI><A HREF="#toc7">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for RingZZ</H2>
+<P>
+The call <CODE>RingZZ()</CODE> produces the CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> which represents ZZ, the
+ring of integers.  Calling <CODE>RingZZ()</CODE> several times will always produce
+the same unique CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> representing ZZ.
+</P>
+<P>
+Strictly, there is a limit on the size of elements you can create, but
+the limit is typically high enough not to be bothersome.
+</P>
+<P>
+See <A HREF="RingElem.html"><CODE>RingElem</CODE></A> for operations on its elements.
+</P>
+<P>
+Efficiency of arithmetic on elements of <CODE>RingZZ()</CODE> should be reasonable
+rather than spectacular.  If you wish to compute purely with integers
+(without exploiting CoCoALib's rings) then see the documentation in
+<A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+</P>
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingZZ1.C">ex-RingZZ1.C</A>
+</UL>
+
+<P></P>
+<A NAME="constructors"></A>
+<H3>Constructors and pseudo-constructors</H3>
+<UL>
+<LI><CODE>RingZZ()</CODE> -- produces the CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> which represents ZZ.
+   Calling <CODE>RingZZ()</CODE> several times will always produce the same unique
+   ring in CoCoALib.
+</UL>
+
+<P></P>
+<A NAME="query"></A>
+<H3>Query</H3>
+<P>
+Let <CODE>R</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>IsZZ(R)</CODE> -- says whether <CODE>R</CODE> is actually <CODE>RingZZ()</CODE>
+</UL>
+
+<P></P>
+<A NAME="homomorphisms"></A>
+<H3>Homomorphisms</H3>
+<P>
+Let <CODE>S</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>NewZZEmbeddingHom(S)</CODE> -- creates the homomorphism ZZ --&gt; <CODE>S</CODE>
+                             (but see also <A HREF="CanonicalHom.html"><CODE>CanonicalHom</CODE></A>).
+                            ZZ argument is implicit because there is a
+                            unique copy
+</UL>
+
+<P></P>
+<A NAME="toc6"></A>
+<H2>Maintainer documentation for the class RingZZImpl</H2>
+<P>
+The function <CODE>RingZZ()</CODE> simply returns the unique instance of the
+CoCoALib <A HREF="ring.html"><CODE>ring</CODE></A> representing ZZ.  This instance is managed by
+<A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>, see its documentation.
+</P>
+<P>
+The function <CODE>MakeUniqueInstanceOfRingZZ</CODE> is the only function which can
+call the ctor of <CODE>RingZZImpl</CODE>.  The only function which is supposed to
+call <CODE>MakeUniqueInstanceOfRingZZ</CODE> is the ctor of <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>.  I have
+discouraged others from calling <CODE>MakeUniqueInstanceOfRingZZ</CODE> by not putting
+it in the header file <CODE>RingZZ.H</CODE> -- see bugs section in <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>.
+</P>
+<P>
+The class <CODE>RingZZImpl</CODE> is really very simple.  It may look daunting and
+complex because it inherits lots of virtual functions from <CODE>RingBase</CODE>.
+It contains just three data members: a <CODE>MemPool</CODE> for managing the storage
+of the <CODE>mpz_t</CODE> headers, and pointers to the ring's own zero and one elements.
+</P>
+<P>
+The member functions for arithmetic are all quite simple.  The only
+minor difficulty is in the function <CODE>AsMPZ</CODE> which gets at the <CODE>mpz_t</CODE>
+hidden inside a <CODE>RingElemRawPtr</CODE>.  I have decided to stick with the C
+interface to GMP for the moment (even though GMP 4 does offer a C++
+interface).  This appears to be more a personal choice than a technical
+one.
+</P>
+<P>
+Recall (from <A HREF="ring.html"><CODE>ring</CODE></A>) that arithmetic on ring elements always passes
+via the virtual member functions of the concrete rings, and that these
+expect arguments to be of type <CODE>RawPtr</CODE> or <CODE>ConstRawPtr</CODE>.  The arguments
+are pointers to the <CODE>mpz_t</CODE> headers which reside in a region of memory
+controlled by the <A HREF="MemPool.html"><CODE>MemPool</CODE></A> belonging to the <CODE>RingZZImpl</CODE> class.
+</P>
+<P>
+Given that the <CODE>mpz_t</CODE> values must live on the free store, we use a <A HREF="MemPool.html"><CODE>MemPool</CODE></A>
+to handle the space for their headers (which are of fixed size).  Note that
+this <A HREF="MemPool.html"><CODE>MemPool</CODE></A> is NOT what handles the memory used for the digits (or limbs)
+of the GMP integer values!  Currently limb space is handled by whatever is
+the default allocator (<CODE>malloc</CODE>, I suppose).
+</P>
+<P>
+The data members <CODE>myZeroPtr</CODE> and <CODE>myOnePtr</CODE> just hold <CODE>auto_ptr</CODE>s to the zero
+and one elements of the <CODE>RingZZImpl</CODE>.  I used an <CODE>auto_ptr</CODE> to avoid having
+to worry about freeing it in the destructor; the zero and one values cannot be
+<CODE>RingElem</CODE>s because their creation must be deferred.  I opted not to store the
+values in <CODE>RingElem</CODE> fields to avoid any possible problem due to a "race
+condition" where elements of the ring would be constructed before the
+body of the constructor of the ring had begun execution (might be OK
+anyway, but could easily lead to hair-raising bugs (<I>e.g.</I> in the dtor)).
+</P>
+<A NAME="toc7"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+This code is probably not <I>exception safe</I>; I do not know what the
+<CODE>mpz_*</CODE> functions do when there is insufficient memory to proceed.
+Making the code "exception safe" could well be non-trivial: I suspect
+a sort of <CODE>auto_ptr</CODE> to an <CODE>mpz_t</CODE> value might be needed.
+</P>
+<P>
+Should I switch to the C++ interface for GMP integers?
+</P>
+<P>
+It is a shame that the <CODE>mpz_t</CODE> headers are "out of line".  How much this may
+affect run-time performance I don't know.
+</P>
+<P>
+Generation of random elements in <CODE>RingZZ</CODE> is not possible (yet???).
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingZZ.html -i txt/RingZZ.txt -->
+</BODY></HTML>

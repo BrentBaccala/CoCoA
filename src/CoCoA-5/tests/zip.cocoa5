@@ -1,0 +1,7 @@
+ZipFileList("prova.zip");
+
+tryUponTest := ZipRead("prova.zip", "tests/try_upon.cocoa5");
+
+PrintLn tryUponTest;
+
+

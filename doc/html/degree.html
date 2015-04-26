@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      degree</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      degree</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#constructors">Constructors</A>
+      <LI><A HREF="#operations">Operations</A>
+        <UL>
+        <LI><A HREF="#toc5">Arithmetic</A>
+        <LI><A HREF="#toc6">Queries</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer documentation</A>
+    <LI><A HREF="#toc8">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-PolyRing1.C">ex-PolyRing1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingElem1.C">ex-RingElem1.C</A>
+<LI><A HREF="../../examples/index.html#ex-module2.C">ex-module2.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+The class degree is used to represent the values returned by the "deg"
+function applied to power products and (multivariate) polynomials.
+Recall that in general a degree is a value in Z^k; the value of k and
+the way the degree is computed (equiv. weight matrix) are specified when
+creating the PPOrdering object used for making the PPMonoid of the
+polynomial ring -- see the function NewPolyRing.
+</P>
+<P>
+If t1 and t2 are two power products then the degree of their product is
+just the sum of their individual degrees; and naturally, if t1 divides
+t2 then the degree of the quotient is the difference of their degrees.
+The degree values are totally ordered using a lexicographic ordering.
+Note that a degree may have negative components.
+</P>
+<A NAME="constructors"></A>
+<H3>Constructors</H3>
+<P>
+A <CODE>degree</CODE> object may be created by using one of the following functions:
+</P>
+<UL>
+<LI><CODE>degree d1(k);</CODE> -- create a new degree object with value (0,0,...,0), with k zeroes
+<LI><CODE>wdeg(f)</CODE> -- where f is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> belonging to a <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>
+<LI><CODE>wdeg(t)</CODE> -- where t is a <CODE>PPMonoidElem</CODE>  (see <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A>)
+</UL>
+
+<P></P>
+<A NAME="operations"></A>
+<H3>Operations</H3>
+<P>
+The following functions are available for objects of type degree:
+</P>
+<UL>
+<LI><CODE>d1 = d2</CODE>     -- assignment, d1 must be non-const
+<LI><CODE>cout &lt;&lt; d</CODE>   -- print out the degree
+<LI><CODE>GradingDim(d)</CODE> -- get the number of the components
+<LI><CODE>d[s]</CODE> -- get the s-th component of the degree (as a BigInt) (for 0 &lt;= s &lt; k)
+<LI><CODE>SetComponent(d, k, n)</CODE> -- sets the k-th component of d to n (mach.int. or <A HREF="BigInt.html"><CODE>BigInt</CODE></A>)
+</UL>
+
+<P></P>
+<A NAME="toc5"></A>
+<H4>Arithmetic</H4>
+<UL>
+<LI><CODE>d1 + d2</CODE>  -- sum
+<LI><CODE>d1 - d2</CODE>  -- difference (there might be no PP with such a degree)
+<LI><CODE>d1 += d2</CODE> -- equivalent to d1 = d1 + d2
+<LI><CODE>d1 -= d2</CODE> -- equivalent to d1 = d1 - d2
+<LI><CODE>top(d1, d2)</CODE> -- coordinate-by-coordinate maximum (a sort of "lcm")
+<LI><CODE>cmp(d1, d2)</CODE> -- (int) result is &lt;0, =0, &gt;0 according as d1 &lt;,=,&gt; d2
+</UL>
+
+<P></P>
+<A NAME="toc6"></A>
+<H4>Queries</H4>
+<P>
+The six comparison operators may be used for comparing degrees (using
+the lexicographic ordering).
+</P>
+<UL>
+<LI><CODE>IsZero(d)</CODE> -- return true iff d is the zero degree
+</UL>
+
+<P></P>
+<A NAME="toc7"></A>
+<H2>Maintainer documentation</H2>
+<P>
+So far the implementation is very simple.  The primary design choice was to
+use C++ std::vector&lt;&gt;s for holding the values -- indeed a <CODE>degree</CODE> object is
+just a "wrapped up" vector of values of type <CODE>degree::ElementType</CODE>.  For a
+first implementation this conveniently hides issues of memory management
+etc.  Since I do not expect huge numbers of <CODE>degree</CODE> objects to created and
+destroyed, there seems little benefit in trying to use <A HREF="MemPool.html"><CODE>MemPool</CODE></A>s (except it
+might be simpler to detect memory leaks...)  I have preferred to make most
+functions friends rather than members, mostly because I prefer the syntax
+of normal function calls.
+</P>
+<P>
+The <CODE>CheckCompatible</CODE> function is simple so I made it inline.  Note the type
+of the third argument: it is deliberately not (a reference to) a
+<CODE>std::string</CODE> because I wanted to avoid calling a ctor for a <CODE>std::string</CODE>
+unless an error is definitely to be signalled.  I made it a private
+static member function so that within it there is free access to
+<CODE>myCoords</CODE>, the data member of a <CODE>degree</CODE> object; also the call
+<CODE>degree::CheckCompatible</CODE> makes it clear that it is special to degrees.
+</P>
+<P>
+As is generally done in CoCoALib the member function <CODE>mySetComponent</CODE> only uses
+CoCoA_ASSERT for the index range check.  In contrast, the non-member fn <CODE>SetComponent</CODE>
+always performs a check on the index value.  The member fn <CODE>operator[]</CODE> also
+always performs a check on the index value because it is the only way to get
+read access to the degree components.  I used <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A> as the type for
+the index to avoid the nasty surprises C++ can spring with silent conversions
+between various integer types.
+</P>
+<P>
+In implementations of functions on degrees I have preferred to place the
+lengths of the degree vectors in a const local variable: it seems cleaner
+than calling repeatedly <CODE>myCoords.size()</CODE>, and might even be fractionally
+faster.
+</P>
+<P>
+<CODE>operator&lt;&lt;</CODE> <B>no longer</B> handles the case of one-dimensional
+degrees specially so that the value is not printed inside parentheses.
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+The implementation uses <A HREF="BigInt.html"><CODE>BigInt</CODE></A>s internally to hold the values of the degree
+coordinates.  The allows a smooth transition to examples with huge degrees
+but could cause some run-time performance degradation.  If many complaints
+about lack of speed surface, I'll review the implementation.
+</P>
+<P>
+Is public write-access to the components of a degree object desirable? Or is this a bug?
+</P>
+<P>
+No special handling for the case of a grading over Z (i.e. k=1) other
+than for printing.  Is this really a shortcoming?
+</P>
+<P>
+Printing via <CODE>operator&lt;&lt;</CODE> is perhaps rather crude?
+Is the special printing for k=1 really such a clever idea?
+</P>
+<P>
+<CODE>GradingDim(const degree&amp;)</CODE> seems a bit redundant, 
+but it is clearer than "dim" or "size" 
+</P>
+<P>
+Is use of <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A> for the index values such a clever idea?
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/degree.html -i txt/degree.txt -->
+</BODY></HTML>

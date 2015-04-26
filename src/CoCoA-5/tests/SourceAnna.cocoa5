@@ -1,0 +1,3 @@
+RunningSourceAnna := True;
+Source "anna.cocoa5";
+RunningSourceAnna := False;

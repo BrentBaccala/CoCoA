@@ -1,0 +1,121 @@
+== temporary instructions: to be polished!! ==
+
+
+== Pre-Requirements ==
+
+  Compile CoCoAlib  (which in turn needs the GMP library)
+
+----------------------------------------------------------------------
+== Precompiled Qt ==
+
+http://qt.nokia.com/downloads/qt-for-open-source-cpp-development-on-mac-os-x
+[for MacOS 64-bit you must get the "Cocoa" based compilation]
+- On Mac: there was an installation bug in 4.7.0
+
+----------------------------------------------------------------------
+== Compilation of BOOST libraries ==
+
+It is simplest to make a complete BOOST installation; that way you are
+sure to have everything you need -- but a full build can take a while.
+You can try building just those sublibraries needed by CoCoA-5;
+at the moment CoCoA-5 uses the following BOOST sublibraries:
+  filesystem
+  system
+  thread
+
+To build BOOST you must first use their script "bootstrap.sh",
+and then use the script "b2"  (called "bjam" in older versions).
+
+ cd <BOOST_DIR>
+ ./bootstrap.sh --with-libraries="filesystem system thread"
+ sudo ./b2 variant=release threading=multi link=static install
+
+== Linux ==
+  [TO BE CHECKED: Probably 
+     sudo apt-get install libboost-dev libboost-thread-dev
+  is enough ]
+  
+sudo apt-get install libboost-dev libboost-doc libboost-thread-dev\
+  libboost-filesystem-dev libboost-graph-dev libboost-iostreams-dev\
+  libboost-program-options-dev libboost-python-dev libboost-regex-dev\
+  libboost-signals-dev
+
+During direct building of 64-bit BOOST do
+./bootstrap.sh
+sudo ./b2 architecture=x86 address-model=64 variant=release threading=multi link=static install
+
+
+=== 64-bit on MacIntel ===
+  *** create only STATIC libs so the C5 binary can be distributed ***
+==== full installation ====
+  ./bootstrap.sh
+  sudo ./b2 architecture=x86 address-model=32_64 variant=release threading=multi link=static install
+==== minimal local installation: libs in "stage" (instead of "install") ====
+  ./bootstrap.sh --with-libraries="filesystem system thread"
+  ./bjam architecture=x86 address-model=32_64 variant=release threading=multi link=static stage
+
+(Without the "install" keyword it is necessary to set the
+DYLD_LIBRARY_PATH shell variable to tell the dynamic linker where to
+look for the BOOST dynamic libraries.)
+
+== More info ==
+http://www.technoboria.com/2009/12/compiling-boost-on-mac-os-x-for-64bit-builds/
+http://wiki.tiker.net/BoostInstallationHowto
+
+----------------------------------------------------------------------
+== Compilation of QCodeEdit ==
+
+=== on Linux ===
+  cd CoCoALib/src/CoCoA-5/QCodeEdit/
+  qmake QCodeEdit.pro
+  make
+
+  [If you get the error: 'uic: File generated with too recent version of Qt Designer (4.0 vs. 3.3.8b)']
+  step (1) check your shell's PATH, i.e. check that "which uic" indicates the executable you expected
+           if it doesn't then correct your shell's PATH by updating its RC/profile file
+  step (2) update your Qt installation, for instance
+    sudo update-alternatives --config qmake
+    [Select qmake-qt4]
+    qmake QCodeEdit.pro
+    make
+
+=== on Mac ===
+  cd CoCoALib/src/CoCoA-5/QCodeEdit/
+  *** uncomment line about ppc/x86_64 in QCodeEdit.pro ***
+  qmake -spec macx-g++ QCodeEdit.pro
+  make -j2
+
+----------------------------------------------------------------------
+== Compilation of C5 ==
+
+[if necessary (likely) change paths in C5.pro]
+
+=== on Linux ===
+  cd ..
+  qmake C5.pro
+  make -f C5Makefile
+
+=== on Mac ===
+  make gui
+--- (old) instructions for doing it manually ---
+  cd ..
+    *** if necessary (i.e. ppc) remove -arch 386 from C5.pro ***
+    *** if necessary add ppc/x86_64 in C5.pro ***
+  qmake -spec macx-g++ C5.pro
+  make -f C5Makefile clean
+  make -j2 -f C5Makefile 
+  mv C5.app/Contents/MacOS/C5 C5.app/Contents/MacOS/C5.bin
+  cp C5.mac.script C5.app/Contents/MacOS/C5
+  tar czf C5.app/Contents/MacOS/packages.tgz C5.app/Contents/MacOS/packages/
+  mv C5.app/Contents/MacOS/packages.tgz  C5.app/Contents/MacOS/packages-old/
+  rm -rf C5.app/Contents/MacOS/packages/*
+  cp -r packages/*  C5.app/Contents/MacOS/packages/
+-----------------
+
+## for TEXTUAL version to be distributed ##
+  mv /Applications/CoCoA-5/packages/  /Applications/CoCoA-5/packages-before`date "+%Y-%m-%d"`
+  cp emacs/cocoa5.el  /Applications/CoCoA-5/emacs/cocoa5.el
+  cp -r packages/  /Applications/CoCoA-5/packages/
+  cp CoCoAInterpreter  /Applications/CoCoA-5/
+
+

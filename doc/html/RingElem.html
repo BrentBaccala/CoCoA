@@ -1,0 +1,1084 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingElem</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingElem</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005-2010,2012 John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#constructors">Constructors</A>
+      <LI><A HREF="#operations">Operations on RingElems</A>
+        <UL>
+        <LI><A HREF="#toc5">Assignment &amp; Swapping</A>
+        <LI><A HREF="#toc6">Arithmetic</A>
+        <LI><A HREF="#toc7">Queries</A>
+        <LI><A HREF="#toc8">Ordering</A>
+        <LI><A HREF="#FiniteField">More operations on RingElems of a finite field</A>
+        <LI><A HREF="#FractionField">More operations on RingElems of a FractionField</A>
+        <LI><A HREF="#QuotientRing">More operations on RingElems of a QuotientRing</A>
+        <LI><A HREF="#RingTwinFloat">More operations on RingElems of a RingTwinFloat</A>
+        <LI><A HREF="#PolyRing">More operations on RingElems of a PolyRing</A>
+        <LI><A HREF="#SparsePolyRing">More operations on RingElems of a SparsePolyRing</A>
+        <LI><A HREF="#DenseUPolyRing">More operations on RingElems of a DenseUPolyRing</A>
+        </UL>
+      <LI><A HREF="#toc16">Notes on operations</A>
+      <LI><A HREF="#toc17">Writing functions with RingElems as arguments</A>
+      <LI><A HREF="#toc18">ADVANCED USE OF RingElem</A>
+        <UL>
+        <LI><A HREF="#toc19">Fast and Ugly Code</A>
+        <LI><A HREF="#toc20">Fast, Ugly and Unsafe operations on raw values</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc21">Maintainer documentation</A>
+        <UL>
+        <LI><A HREF="#toc22">Further comments about implementation aspects of the above classes.</A>
+        </UL>
+    <LI><A HREF="#toc23">Bugs, Shortcomings and other ideas</A>
+    <LI><A HREF="#toc24">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingElem1.C">ex-RingElem1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp2.C">ex-RingFp2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingQ1.C">ex-RingQ1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingTwinFloat1.C">ex-RingTwinFloat1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingWeyl1.C">ex-RingWeyl1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingZZ1.C">ex-RingZZ1.C</A>
+<LI><A HREF="../../examples/index.html#ex-PolyRing3.C">ex-PolyRing3.C</A>
+<LI><A HREF="../../examples/index.html#ex-NF.C">ex-NF.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+The file <CODE>ring.H</CODE> introduces several classes used for representing
+rings and their elements.  A normal user of the CoCoA library will use
+principally the classes <A HREF="ring.html"><CODE>ring</CODE></A> and <CODE>RingElem</CODE>: an object of type
+<A HREF="ring.html"><CODE>ring</CODE></A> represents a mathematical ring with unity, and objects of
+type <CODE>RingElem</CODE> represent values from some ring.  To make the
+documentation more manageable it has been split into two: this file
+describes operations on a <CODE>RingElem</CODE>, whereas a separate file
+describes the operations directly applicable to <A HREF="ring.html"><CODE>ring</CODE></A>s.
+Documentation about the creation and use of homomorphisms between
+rings can be found in <A HREF="RingHom.html"><CODE>RingHom</CODE></A>.
+</P>
+<P>
+An object of type <CODE>RingElem</CODE> comprises two internal parts: the ring
+to which the value belongs, and the value itself.  For instance, this
+means that the zero elements of different rings are quite different
+objects.
+</P>
+<A NAME="constructors"></A>
+<H3>Constructors</H3>
+<P>
+Normally when creating a new <CODE>RingElem</CODE> we specify both the ring to
+which it belongs, and its initial value in that ring.  Let <CODE>R</CODE> be a
+<A HREF="ring.html"><CODE>ring</CODE></A>.  Let <CODE>n</CODE> be a machine integer or a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  Let <CODE>q</CODE>
+be a rational, <I>i.e.</I> a value of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>.  Let <CODE>r2</CODE> be a
+ring element.
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>RingElem r;</CODE></TD>
+<TD>the zero element of <CODE>RingZZ()</CODE> (special case)</TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially 0</TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, n);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially the image of <CODE>n</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, q);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially the image of <CODE>q</CODE> (or error)</TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, s);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially the value of <A HREF="symbol.html"><CODE>symbol</CODE></A> <CODE>s</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, r2);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, maps <CODE>r2</CODE> into <CODE>R</CODE> via <CODE>CanonicalHom</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, MPZ);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially the value of <CODE>mpz_t MPZ</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r(R, MPQ);</CODE></TD>
+<TD>an element of <CODE>R</CODE>, initially the value of <CODE>mpq_t MPQ</CODE> (or error)</TD>
+</TR>
+</TABLE>
+
+<P>
+<B>Note 1:</B> To create a <CODE>RingElem</CODE> from a value of type <CODE>mpz_class</CODE> you must do
+<CODE>RingElem(R, MPZ.get_mpz_t())</CODE>; analogously for <CODE>mpq_class</CODE>.
+</P>
+<P>
+<B>Note 2:</B> Construction from a rational may fail, <I>e.g.</I> if the denominator is
+a zero divisor in the ring; if it does fail then an exception is
+thrown (with code <CODE>ERR::DivByZero</CODE>).
+</P>
+<P>
+You can create a copy of a ring element in the usual way:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>RingElem r(r2);</CODE></TD>
+<TD>a copy of <CODE>r2</CODE>, element of the same ring</TD>
+</TR>
+<TR>
+<TD><CODE>RingElem r = r2;</CODE></TD>
+<TD>(alternative syntax, discouraged)</TD>
+</TR>
+</TABLE>
+
+<P>
+Naturally the last constructor works only if the denominator of the rational <CODE>q</CODE> is 1.
+</P>
+<P>
+These are not really constructors: you can get the zero and one of a
+<A HREF="ring.html"><CODE>ring</CODE></A> directly using the following:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>zero(R)</CODE></TD>
+<TD>the zero element of <CODE>R</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>one(R)</CODE></TD>
+<TD>the one element of <CODE>R</CODE></TD>
+</TR>
+</TABLE>
+
+<A NAME="operations"></A>
+<H3>Operations on RingElems</H3>
+<P>
+<CODE>RingElem</CODE>s are designed to be easy and safe to use; the various checks
+do incur a certain run-time overhead, so a faster alternative is offered
+(see below in the section <I>Fast and Ugly Code</I>).  Arithmetic operations
+between <CODE>RingElem</CODE>s will fail if they do not belong to the same ring
+(the exception has code <CODE>ERR::MixedRings</CODE>).
+</P>
+<A NAME="toc5"></A>
+<H4>Assignment &amp; Swapping</H4>
+<P>
+Assigning an integer or rational to a <CODE>RingElem</CODE> wil automatically map
+the value into the ring to which the <CODE>RingElem</CODE> belongs.
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>r = n;</CODE></TD>
+<TD>map <CODE>n</CODE> into <CODE>owner(r)</CODE> and assign the result</TD>
+</TR>
+<TR>
+<TD><CODE>r = q;</CODE></TD>
+<TD>map <CODE>q</CODE> into <CODE>owner(r)</CODE> and assign the result</TD>
+</TR>
+<TR>
+<TD><CODE>r = r2;</CODE></TD>
+<TD><CODE>r</CODE> becomes a copy of <CODE>r2</CODE> -- afterwards <CODE>owner(r)==owner(r2)</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>swap(r,s);</CODE></TD>
+<TD>exchange the values (and the owning rings)</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc6"></A>
+<H4>Arithmetic</H4>
+<P>
+Arithmetic operations between <CODE>RingElem</CODE>s will fail if they do not belong
+to the same ring (the exception has code <CODE>ERR::MixedRings</CODE>).  You may
+perform arithmetic between a <CODE>RingElem</CODE> and a machine integer, a <CODE>BigInt</CODE> value
+or a <CODE>BigRat</CODE> value --  the integer/rational is automatically mapped into the
+same ring as the <CODE>RingElem</CODE>.
+</P>
+<P>
+Let <CODE>r</CODE> be a non-const <CODE>RingElem</CODE>,
+and <CODE>r1</CODE>, <CODE>r2</CODE> be potentially const <CODE>RingElem</CODE>s.
+Assume they are all associated to the same ring.
+Then the operations available are: (meanings are obvious)
+</P>
+<UL>
+<LI><CODE>cout &lt;&lt; r1</CODE>   -- output value of <CODE>r1</CODE> (decimal only, see notes)
+<LI><CODE>r1 == r2</CODE>     -- equality test 
+<LI><CODE>r1 != r2</CODE>     -- not-equal test 
+<LI><CODE>-r1</CODE>          -- negation (unary minus) 
+<LI><CODE>r1 + r2</CODE>      -- sum 
+<LI><CODE>r1 - r2</CODE>      -- difference 
+<LI><CODE>r1 * r2</CODE>      -- product 
+<LI><CODE>r1 / r2</CODE>      -- quotient, division must be exact (see <CODE>IsDivisible</CODE>)
+<LI><CODE>r += r1</CODE>      -- equivalent to  <CODE>r = r + r1</CODE> 
+<LI><CODE>r -= r1</CODE>      -- equivalent to  <CODE>r = r - r1</CODE> 
+<LI><CODE>r *= r1</CODE>      -- equivalent to  <CODE>r = r * r1</CODE> 
+<LI><CODE>r /= r1</CODE>      -- equivalent to  <CODE>r = r / r1</CODE> division must be exact (see <CODE>IsDivisible</CODE>)
+<LI><CODE>power(r1, n)</CODE> -- <CODE>n</CODE>-th power of <CODE>r1</CODE>; <CODE>n</CODE> any integer, <B>NB</B> <CODE>power(0,0)</CODE> gives 1
+<LI><CODE>r^n</CODE>          -- <B>THIS DOES NOT WORK!!!</B> it does not even compile, you must use <CODE>power</CODE>
+</UL>
+
+<P></P>
+<P>
+Attempting to compute a <CODE>gcd</CODE> or <CODE>lcm</CODE> in a ring which not an
+effective GCD domain will produce an exception with code <CODE>ERR::NotTrueGCDDomain</CODE>.
+If <CODE>r1</CODE> or <CODE>r2</CODE> is a <CODE>BigRat</CODE> then an error is signalled at compile time.
+</P>
+<UL>
+<LI><CODE>gcd(r1, r2)</CODE>  -- an associate of the gcd
+<LI><CODE>lcm(r1, r2)</CODE>  -- an associate of the lcm
+<LI><CODE>GcdQuot(&amp;gcd, &amp;quot1, &amp;quot2, r1, r2)</CODE> -- procedure computes <CODE>gcd</CODE> and
+                                          <CODE>quot1=r1/gcd</CODE> and <CODE>quot2=r2/gcd</CODE>, here <CODE>r1</CODE> and <CODE>r2</CODE> must be <CODE>RingElem</CODE>.
+</UL>
+
+<P></P>
+<A NAME="toc7"></A>
+<H4>Queries</H4>
+<P>
+CoCoALib offers functions for querying various properties of <CODE>RingElem</CODE>s,
+and about relationships between <CODE>RingElems</CODE>.
+</P>
+<P>
+Let <CODE>r1</CODE> and <CODE>r2</CODE> be a (possibly const) <CODE>RingElem</CODE>s, and
+let <CODE>N</CODE> be a variable of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>, and <CODE>q</CODE> a variable of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>
+</P>
+<UL>
+<LI><CODE>owner(r1)</CODE>           -- the ring to which <CODE>r1</CODE> is associated
+<LI><CODE>IsZero(r1)</CODE>          -- true iff <CODE>r1</CODE> is zero               
+<LI><CODE>IsOne(r1)</CODE>           -- true iff <CODE>r1</CODE> is one                
+<LI><CODE>IsMinusOne(r1)</CODE>      -- true iff <CODE>-r1</CODE> is one               
+<LI><CODE>IsInvertible(r1)</CODE>    -- true iff <CODE>r1</CODE> has a multiplicative inverse
+<LI><CODE>IsZeroDivisor(r1)</CODE>   -- true iff <CODE>r1</CODE> is zero-divisor               
+<LI><CODE>IsDivisible(r1, r2)</CODE> -- true iff <CODE>r1</CODE> is divisible by <CODE>r2</CODE> (throws <CODE>ERR::DivByZero</CODE> if <CODE>r2</CODE> is a zero-divisor)
+<LI><CODE>IsDivisible(r, r1, r2)</CODE> -- <CODE>r = r1/r2</CODE>
+                             and returns true iff <CODE>r1</CODE> is divisible by <CODE>r2</CODE>
+<P></P>
+<LI><CODE>IsInteger(N, r1)</CODE>    -- true iff <CODE>r1</CODE> is the image of an integer
+   (if true, a preimage is placed in <CODE>N</CODE>, otherwise it is left unchanged)
+<LI><CODE>IsRational(q, r1)</CODE>   -- true iff <CODE>r1</CODE> is the image of a rational
+   (if true, a preimage is placed in <CODE>q</CODE>, otherwise it is left unchanged)
+<LI><CODE>IsDouble(d, r1)</CODE>     -- true iff <CODE>r1</CODE> is the image of a rational 
+   whose approx is put into d (false if overflow and <CODE>d</CODE> unchanged)
+</UL>
+
+<P></P>
+<P>
+Note that <CODE>IsDivisible</CODE> tests divisibility in the ring containing the
+values: so 1 is not divisible by 2 in <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>, but their images in
+<A HREF="RingQQ.html"><CODE>RingQQ</CODE></A> are divisible.
+</P>
+<A NAME="toc8"></A>
+<H4>Ordering</H4>
+<P>
+If the ring is an ordered domain then these functions may also be
+used.  You can discover whether CoCoALib thinks that the ring <CODE>R</CODE> is
+arithmetically ordered by calling <CODE>IsOrderedDomain(R)</CODE>: the value is
+<CODE>true</CODE> iff <CODE>R</CODE> is arithmetically ordered.
+</P>
+<P>
+Note that comparison operations between <CODE>RingElem</CODE>s will fail if they do not belong
+to the same ring (the exception has code <CODE>ERR::MixedRings</CODE>).  You may
+perform comparisons between a <CODE>RingElem</CODE> and an integer or a rational --  the integer/rational is automatically mapped into the
+same ring as the <CODE>RingElem</CODE>.
+</P>
+<P>
+Let <CODE>r1</CODE> and <CODE>r2</CODE> belong to an ordered ring.  Trying to use any
+of  these functions on elements belonging to a ring which is not ordered
+will produce an exception with code <CODE>ERR::NotOrdDomain</CODE>.
+</P>
+<UL>
+<LI><CODE>sign(r1)</CODE> -- value is -1, 0 or +1 according as <CODE>r1</CODE> is negative, zero or positive 
+<LI><CODE>abs(r1)</CODE>            -- absolute value of <CODE>r1</CODE> 
+<LI><CODE>floor(r1)</CODE>          -- greatest integer <CODE>&lt;= r1</CODE> 
+<LI><CODE>ceil(r1)</CODE>           -- least integer <CODE>&gt;= r1</CODE> 
+<LI><CODE>NearestInteger(r1)</CODE> -- returns nearest integer (<A HREF="BigInt.html"><CODE>BigInt</CODE></A>) to <CODE>r1</CODE> (halves round as in <CODE>round</CODE>, see <A HREF="BigRat.html"><CODE>BigRat</CODE></A>).
+<LI><CODE>cmp(r1, r2)</CODE>        -- returns a value &lt;0, =0, &gt;0 according as <CODE>r1-r2</CODE> is &lt;0, =0, &gt;0
+<LI><CODE>CmpAbs(r1, r2)</CODE>     -- equiv to <CODE>cmp(abs(r1),abs(r2))</CODE>
+<LI><CODE>CmpDouble(r1, z)</CODE>   -- compare a ring elem with a <CODE>double</CODE>, result is &lt;0, =0, &gt;0 according as <CODE>r1-z</CODE> is &lt;0, =0, &gt;0 
+<LI><CODE>r1 &lt; r2</CODE>            -- standard inequalities 
+<LI><CODE>r1 &gt; r2</CODE>            -- ... 
+<LI><CODE>r1 &lt;= r2</CODE>           -- ... 
+<LI><CODE>r1 &gt;= r2</CODE>           -- ... 
+</UL>
+
+<A NAME="FiniteField"></A>
+<H4>More operations on RingElems of a finite field</H4>
+<P>
+If <CODE>owner(r)</CODE> is a finite field, or a polynomial ring whose coeffs are
+ini a finite field then the following functions may be used.  The <CODE>P</CODE>
+in the names of these function refers to the characteristic of the ring.
+</P>
+<UL>
+<LI><CODE>IsPthPower(r1)</CODE>      -- true iff <CODE>r1</CODE> has a p-th root where p is the ring characteristic (see also <CODE>PthRoot</CODE>)
+<LI><CODE>PthRoot(r1)</CODE>         -- returns the p-th root of <CODE>r1</CODE> (error if no p-th root exists)
+</UL>
+
+<P></P>
+<A NAME="FractionField"></A>
+<H4>More operations on RingElems of a FractionField</H4>
+<P>
+ If <CODE>owner(r)</CODE> is a fraction field then the following functions may
+be used.  You can find out whether CoCoALib thinks that the ring <CODE>R</CODE>
+is a fraction field by calling <CODE>IsFractionField(R)</CODE>: the result is
+<CODE>true</CODE> iff <CODE>R</CODE> is a fraction field.
+</P>
+<P>
+Let <CODE>K</CODE> denote a <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
+Let <CODE>r</CODE> denote an element of <CODE>K</CODE>.
+</P>
+<UL>
+<LI><CODE>num(r)</CODE> -- gives a copy of the numerator of <CODE>r</CODE>
+                 as an element of <CODE>BaseRing(K)</CODE>
+<LI><CODE>den(r)</CODE> -- gives a copy of the denominator of <CODE>r</CODE>
+                 as an element of <CODE>BaseRing(K)</CODE>
+</UL>
+
+<P></P>
+<P>
+<B>Note:</B> the numerator and denominator are defined only upto
+multiples by a unit: so it is (theoretically) possible to have two
+elements of <CODE>FrF</CODE> which are equal but which have different
+numerators and denominators, for instance, (x-1)/(x-2) = (1-x)/(2-x)
+</P>
+<A NAME="QuotientRing"></A>
+<H4>More operations on RingElems of a QuotientRing</H4>
+<P>
+If <CODE>owner(r)</CODE> is a quotient ring then the following function may be
+called.  You can find out whether CoCoALib thinks that the ring <CODE>R</CODE>
+is a quotient ring by calling <CODE>IsQuotientRing(R)</CODE>: the result is
+<CODE>true</CODE> iff <CODE>R</CODE> is a quotient ring.
+</P>
+<P>
+In addition to the standard <CODE>RingElem</CODE> operations, elements of a
+<A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A> may be used in other functions.
+</P>
+<P>
+Let <CODE>RmodI</CODE> denote a quotient ring.
+Let <CODE>r</CODE> denote a non-const element of <CODE>RmodI</CODE>.
+</P>
+<UL>
+<LI><CODE>CanonicalRepr(r)</CODE> -- produces a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> belonging to <CODE>BaseRing(RmodI)</CODE>
+ whose image under <CODE>QuotientingHom(RmodI)</CODE> is <CODE>r</CODE>.
+ For instance, if <CODE>r</CODE> = -3 in ZZ/(10) then this function could give 7 as
+ an element of <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>.
+</UL>
+
+<P></P>
+<A NAME="RingTwinFloat"></A>
+<H4>More operations on RingElems of a RingTwinFloat</H4>
+<P>
+You can determine if an element belongs to a <I>twin-float</I> ring by
+calling <CODE>IsRingTwinFloat(owner(r))</CODE>: this yields <CODE>true</CODE> iff <CODE>r</CODE>
+belongs to a twin-float ring.
+</P>
+<P>
+Let <CODE>x</CODE>, <CODE>y</CODE> be <CODE>RingElem</CODE> belonging to a <CODE>RingTwinFloat</CODE>
+</P>
+<UL>
+<LI><CODE>DebugPrint(out, x)</CODE> -- print out both components of <CODE>x</CODE>
+<LI><CODE>IsPracticallyEqual(x, y)</CODE> --
+            returns true if <CODE>IsZero(x-y)</CODE> otherwise false.
+</UL>
+
+<P></P>
+<P>
+In contrast the test <CODE>x==y</CODE> may throw a
+    <CODE>RingTwinFloat::InsufficientPrecision</CODE> while
+    <CODE>IsPracticallyEqual</CODE> will never throw this exception.
+    <CODE>IsPracticallyEqual</CODE> is intended for use in a termination
+    criterion for an iterative approximation algorithm (<I>e.g.</I> see
+    <CODE>test-RingTwinFloat4.C</CODE>).
+</P>
+<A NAME="PolyRing"></A>
+<H4>More operations on RingElems of a PolyRing</H4>
+<P>
+You can determine whether an element belongs to a <I>PolyRing</I> by
+calling <CODE>IsPolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
+belongs to a poly ring.
+</P>
+<P>
+Let <CODE>P</CODE> denote a polynomial ring.
+Let <CODE>f</CODE> denote a non-const element of <CODE>P</CODE>.
+Let <CODE>f1</CODE>, <CODE>f2</CODE> denote const elements of <CODE>P</CODE>.
+Let <CODE>v</CODE> denote a const vector of elements of <CODE>P</CODE>.
+</P>
+<UL>
+<LI><CODE>IsMonomial(f)</CODE>;   -- true iff <CODE>f</CODE> is non zero and of the form coeff*pp
+<LI><CODE>AreMonomials(v)</CODE>; -- true iff <CODE>v</CODE> is non zero and of the form coeff*pp
+                          (if <CODE>v</CODE> is empty it returns true)
+<LI><CODE>IsConstant(f)</CODE>;   -- true iff <CODE>f</CODE> is "constant",
+                        i.e. the image of an element of the coeff ring.
+<LI><CODE>IsIndet(f)</CODE>;      -- equivalent to <CODE>f</CODE> == x[i]  for some index i
+<LI><CODE>IsIndet(index, f)</CODE>;  -- equivalent to <CODE>f</CODE> == x[i]; and sets index = i
+<LI><CODE>IsIrred(f)</CODE>       -- true iff <CODE>f</CODE> is irreducible in P
+<LI><CODE>owner(f1)</CODE>     -- the owner of <CODE>f</CODE> as a <A HREF="ring.html"><CODE>ring</CODE></A>.
+<LI><CODE>NumTerms(f1)</CODE>  -- the number of terms in <CODE>f1</CODE>.
+<LI><CODE>StdDeg(f1)</CODE>    -- the standard degree of <CODE>f1</CODE> (deg(x[i])=1); <B>error</B> if <CODE>f1</CODE> is 0.
+<LI><CODE>deg(f1)</CODE>       -- same as <CODE>StdDeg(f1)</CODE>.
+<LI><CODE>deg(f1, var)</CODE> -- maximum degree of <CODE>var</CODE>-th indet in <CODE>f1</CODE> where <CODE>var</CODE> is the
+                       index of the indet in <CODE>P</CODE> (result is of type long).
+<LI><CODE>LC(f1)</CODE>        -- the leading coeff of <CODE>f1</CODE>; it is an element of CoeffRing(P).
+<LI><CODE>content(f1)</CODE>   -- gcd of the coeffs of <CODE>f1</CODE>; it is an element of CoeffRing(P).
+                       (content of zero poly is zero; if coeffs are in a field the content is 0 or 1)
+<LI><CODE>CommonDenom(f1)</CODE>  -- the simplest common denominator for the coeffs of <CODE>f1</CODE>;
+                        it is an element of BaseRing(CoeffRing(P)); throws if
+                       CoeffRing is not a FractionField of a GCD domain.
+<LI><CODE>ClearDenom(f1)</CODE>  -- <CODE>f1</CODE>*<CODE>CommonDenom(f1)</CODE> (same restrictions as above)
+<LI><CODE>ClearDenom(Rx, f1)</CODE>  -- like <CODE>ClearDenom(f1)</CODE> but puts result in (SparsePoly)ring <CODE>Rx</CODE>
+<LI><CODE>deriv(f1, var)</CODE>   -- formal derivative of <CODE>f1</CODE> wrt. indet having index <CODE>var</CODE>.
+<LI><CODE>deriv(f1, x)</CODE>     -- derivative of <CODE>f1</CODE> w.r.t. <CODE>x</CODE>, <CODE>x</CODE> must be an indeterminate
+                         (also works for f1 in <CODE>FractionField</CODE> of a <CODE>PolyRing</CODE>)
+</UL>
+
+<P></P>
+<P>
+NOTE: to compute the <I>weighted degree</I> of a polynomial use the function
+<CODE>wdeg</CODE> defined for <CODE>RingElem</CODE> of a <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A> (see below).
+</P>
+<A NAME="SparsePolyRing"></A>
+<H4>More operations on RingElems of a SparsePolyRing</H4>
+<P>
+You can determine whether an element belongs to a <I>sparse poly ring</I> by
+calling <CODE>IsSparsePolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
+belongs to a poly ring.
+</P>
+<P>
+Let <CODE>P</CODE> denote a <CODE>SparsePolyRing</CODE>.
+Let <CODE>f</CODE> denote a non-const element of <CODE>P</CODE>.
+Let <CODE>f1</CODE>, <CODE>f2</CODE> denote const elements of <CODE>P</CODE>.
+Let <CODE>expv</CODE> be a <CODE>vector&lt;long&gt;</CODE> of size equal to the number of indeterminates.
+</P>
+<UL>
+<LI><CODE>owner(f1)</CODE>    -- the owner of <CODE>f1</CODE> as a <CODE>ring</CODE>
+<LI><CODE>NumTerms(f1)</CODE> -- the number of terms in <CODE>f1</CODE> with non-zero coefficient.
+<LI><CODE>UnivariateIndetIndex(f)</CODE> -- if <CODE>f</CODE> is univariate in j-th indet returns j, o/w returns -1
+<LI><CODE>LPP(f1)</CODE>      -- the leading PP of <CODE>f1</CODE>; it is an element of PPM(P).
+                      Also known as <I>LT(f)</I> or <I>in(f)</I>
+<LI><CODE>LF(f1)</CODE>       -- the leading form of <CODE>f1</CODE>; sum of all summands of highest weighted <A HREF="degree.html"><CODE>degree</CODE></A>
+<LI><CODE>wdeg(f1)</CODE>     -- the weighted <A HREF="degree.html"><CODE>degree</CODE></A> of the leading PP of <CODE>f1</CODE>
+                        (see [KR] Sec.4.3); <B>error</B> if <CODE>f1</CODE> is 0.
+                  <B>NB</B> result is of type <CODE>CoCoA::degree</CODE> (see <A HREF="degree.html"><CODE>degree</CODE></A>).
+                  (contrast with <CODE>StdDeg(f1)</CODE> and <CODE>deg(f1)</CODE>
+                   defined for general <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
+<LI><CODE>CmpWDeg(f1, f2)</CODE>  -- compare the weighted degrees of the LPPs of <CODE>f1</CODE> and <CODE>f2</CODE>;
+                          result is &lt;0 =0 &gt;0 according as deg(<CODE>f1</CODE>) &lt; = &gt; deg(<CODE>f2</CODE>)
+<LI><CODE>IsHomog(f)</CODE>   -- says whether <CODE>f</CODE> is homogeneous wrt weighted <A HREF="degree.html"><CODE>degree</CODE></A>.
+<LI><CODE>homog(f, h)</CODE>  -- returns <CODE>f</CODE> homogenized with indet <CODE>h</CODE> (requires
+                          <CODE>GrDim</CODE>=1 and <CODE>wdeg(h)</CODE>=1)
+<LI><CODE>NR(f, v)</CODE>     -- returns the (normal) remainder of the Division
+                          Algorithm by <CODE>v</CODE>.  If <CODE>v</CODE> is a GBasis this is
+                          the Normal Form
+<LI><CODE>indet(P,v)</CODE>   -- returns the <CODE>v</CODE>-th indet of <CODE>P</CODE> as a <CODE>RingElem</CODE>
+<LI><CODE>IndetPower(P,v,e)</CODE> -- returns the <CODE>e</CODE>-th power of the <CODE>v</CODE>-th indet of <CODE>P</CODE> as a <CODE>RingElem</CODE>
+<LI><CODE>monomial(P,c,pp)</CODE> -- returns <CODE>c</CODE>*<CODE>pp</CODE> as an element of <CODE>P</CODE> where
+                          <CODE>c</CODE> is in <CODE>CoeffRing(P)</CODE> and <CODE>pp</CODE> is in <CODE>PPM(P)</CODE>.
+<LI><CODE>monomial(P,c,expv)</CODE> -- returns <CODE>c*x[0]^exps[0]*x[1]^exps[1]*...</CODE> where
+                        <CODE>c</CODE> is in <CODE>CoeffRing(P)</CODE>, and x[i] are the indets of <CODE>P</CODE>.
+</UL>
+
+<P></P>
+<P>
+Let <CODE>X</CODE> be an indet (<I>i.e.</I> a <CODE>RingElem</CODE> in <CODE>P</CODE>)
+ or a vector of indices (<CODE>vector&lt;long&gt;</CODE>)
+</P>
+<UL>
+<LI><CODE>ContentWRT(f, X)</CODE> -- the content of <CODE>f</CODE> wrt the indet(s) <CODE>X</CODE>; result is a
+                          <CODE>RingElem</CODE> in <CODE>P</CODE>
+<LI><CODE>CoefficientsWRT(f, X)</CODE> -- returns a <CODE>vector&lt;CoeffPP&gt;</CODE>: each <CODE>CoeffPP</CODE> has fields <CODE>myCoeff</CODE> and <CODE>myPP</CODE>
+where  <CODE>myCoeff</CODE> is an element of <CODE>P</CODE> and <CODE>myPP</CODE> is in <CODE>PPM(P)</CODE> being a power product of the indets in <CODE>X</CODE>; the entries are in <B>decreasing order</B> of <CODE>myPP</CODE>.
+<LI><CODE>CoeffVecWRT(f, x)</CODE> -- <CODE>x</CODE> must be an indet; returns a <CODE>vector&lt;RingElem&gt;</CODE> whose k-th entry contains the coeff of <CODE>x^k</CODE> as an element of <CODE>P</CODE>; NB the coeff may be zero!
+</UL>
+
+<P>
+<B>NB</B> For running through the summands (or terms) of a
+polynomial use <CODE>SparsePolyIter</CODE>s (see <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A>).
+</P>
+<P>
+We have still doubts on the usefulness of these two functions:
+</P>
+<UL>
+<LI><CODE>CmpWDegPartial(f1, f2, i)</CODE> -- compare the first <CODE>i</CODE> weighted
+                          degrees of the LPPs of <CODE>f1</CODE> and <CODE>f2</CODE>;
+                          result is &lt;0 =0 &gt;0 according as <CODE>deg(f1)</CODE> &lt; = &gt; <CODE>deg(f2)</CODE>
+<LI><CODE>IsHomogPartial(f,i)</CODE> -- says whether <CODE>f</CODE> is homogeneous wrt the
+                          first <CODE>i</CODE> components of the weighted degree
+</UL>
+
+<P>
+Use the following two functions with great care: they throw an <B>error</B>
+if the <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A> is not respected: (the coefficient <CODE>c</CODE> may be 0)
+</P>
+<UL>
+<LI><CODE>PushFront(f, c, t)</CODE>-- add to <CODE>f</CODE> the term <CODE>c</CODE>*t
+                        where t is a PP belonging to <CODE>PPM(owner(f))</CODE>
+                        and <B>assuming</B> that t &gt; <CODE>LPP(f)</CODE> or <CODE>f</CODE>==0
+<LI><CODE>PushBack(f, c, t)</CODE> -- add to <CODE>f</CODE> the term <CODE>c</CODE>*t
+                        where t is a PP belonging to <CODE>PPM(owner(f))</CODE>
+                        and <B>assuming</B> that t &lt; t' for all t' appearing in <CODE>f</CODE>.
+<LI><CODE>PushFront(f, c, expv)</CODE>-- add to <CODE>f</CODE> the term <CODE>c</CODE>*t
+                        where t is the PP with exponent vector <CODE>expv</CODE>,
+                        and <B>assuming</B> that t &gt; <CODE>LPP(f)</CODE> or <CODE>f</CODE>==0
+<LI><CODE>PushBack(f, c, expv)</CODE> -- add to <CODE>f</CODE> the term <CODE>c</CODE>*t
+                        where t is the PP with exponent vector <CODE>expv</CODE>,
+                        and <B>assuming</B> that t &lt; t' for all t' appearing in <CODE>f</CODE>.
+</UL>
+
+<P>
+The corresponding member functions <CODE>myPushFront/myPushBack</CODE> will not
+check the validity of these assumpions:  they should have a
+<CODE>CoCoA_ASSERT</CODE> to check in DEBUG mode.
+</P>
+<A NAME="DenseUPolyRing"></A>
+<H4>More operations on RingElems of a DenseUPolyRing</H4>
+<P>
+You can determine whether an element belongs to a <I>DenseUPolyRing</I> by
+calling <CODE>IsDenseUPolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
+belongs to a poly ring.
+</P>
+<P>
+Let <CODE>P</CODE> denote a <CODE>DenseUPolyRing</CODE>.
+Let <CODE>f</CODE> denote an element of <CODE>P</CODE>.
+</P>
+<UL>
+<LI><CODE>monomial(P,c,exp)</CODE>  -- <CODE>c</CODE>*x^<CODE>exp</CODE> as an element of <CODE>P</CODE>
+                    with <CODE>c</CODE> an integer or in <CODE>CoeffRing(P)</CODE>
+                    <CODE>exp</CODE> a <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A>
+<LI><CODE>coeff(f,d)</CODE> -- the <CODE>d</CODE>-th coefficient of <CODE>f</CODE>
+                      (as a <CODE>ConstRingElem</CODE>, read-only)
+</UL>
+
+<P></P>
+<P>
+<B>WARNING</B> Use this functions with great care:  no checks on size and degree
+</P>
+<P>
+Let <CODE>f</CODE> denote a <I>non-const</I> element of <CODE>P</CODE>.
+</P>
+<UL>
+<LI><CODE>myAssignCoeff(f,c,d)</CODE> -- assigns the <CODE>d</CODE>-th coefficient
+                              in <CODE>f</CODE> to <CODE>c</CODE>
+<LI><CODE>myAssignZeroCoeff(f,d)</CODE>
+<LI><CODE>myAssignNonZeroCoeff(f,c,d)</CODE>
+</UL>
+
+<A NAME="toc16"></A>
+<H3>Notes on operations</H3>
+<P>
+Operations combining elements of different rings will cause a run-time
+<B>error</B>.
+</P>
+<P>
+In all functions involving two <CODE>RingElem</CODE>s either <CODE>r1</CODE> or <CODE>r2</CODE>
+may be replaced by a machine integer, or by a big integer (an element
+of the class <A HREF="BigInt.html"><CODE>BigInt</CODE></A>).  The integer value is automatically mapped into
+the ring owning the <CODE>RingElem</CODE> in the same expression.
+</P>
+<P>
+The exponent <CODE>n</CODE> in the power function may be zero or negative, but a
+run-time error will be signalled if one attempts to compute a negative
+power of a non-invertible element.
+<B>NB</B> You cannot use <CODE>^</CODE> to compute powers -- see <I>Bugs</I> section.
+</P>
+<P>
+An attempt to perform an inexact division or to compute a GCD not in a 
+GCD domain will produce a run-time error.
+</P>
+<P>
+The printing of ring elements is always in decimal regardless of the
+<CODE>ostream</CODE> settings (this is supposed to be a feature rather than a bug).
+</P>
+<P>
+At this point, if you are new to CoCoALib, you should probably look
+at some of the example programs in the <CODE>examples/</CODE> directory.
+</P>
+<A NAME="toc17"></A>
+<H3>Writing functions with RingElems as arguments</H3>
+<P>
+One would normally expect to use the type <CODE>const RingElem&amp;</CODE> for
+read-only arguments which are <CODE>RingElem</CODE>s, and <CODE>RingElem&amp;</CODE> for
+read-write arguments.  Unfortunately, doing so would lead to problems
+with the CoCoA library.  <B>INSTEAD</B> you should use the types:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>ConstRefRingElem x</CODE></TD>
+<TD>for read-only arguments:  morally <CODE>const RingElem&amp; x</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem&amp; x</CODE></TD>
+<TD>for read-write arguments</TD>
+</TR>
+<TR>
+<TD><CODE>RingElem x</CODE></TD>
+<TD>for read-only arguments which make a local copy</TD>
+</TR>
+</TABLE>
+
+<P>
+If you are curious to know why this non-standard quirk has to be used,
+read on.
+</P>
+<P>
+When accessing matrix elements or coefficients in a polynomial
+CoCoALib uses <I>proxies</I>: these are objects which should behave much
+like <CODE>const RingElem</CODE> values.  To allow easy use of such proxies in
+functions which want a read-only <CODE>RingElem</CODE> we use the type
+<CODE>ConstRefRingElem</CODE> (which is actually <CODE>const RingElemAlias&amp;</CODE>) for
+the formal parameter.
+</P>
+<P>
+Internally, ring element values are really smart pointers to the true
+value.  Now the <CODE>const</CODE> keyword in C++ when applied to a pointer
+makes the pointer const while the pointed-to value remains alterable
+-- this is not the behaviour we want for <CODE>const RingElem&amp;</CODE>.  To get
+the desired behaviour we have to use another type: the type we have
+called <CODE>ConstRefRingElem</CODE>.
+</P>
+<A NAME="toc18"></A>
+<H3>ADVANCED USE OF RingElem</H3>
+<P>
+The rest of this section is for more advanced use of <A HREF="ring.html"><CODE>ring</CODE></A>s and
+<CODE>RingElem</CODE>s (<I>e.g.</I> by CoCoA library contributors).  If you are new to
+CoCoA, you need not read beyond here.
+</P>
+<A NAME="toc19"></A>
+<H4>Fast and Ugly Code</H4>
+<P>
+<B>WE DO NOT RECOMMEND</B> that you use what is described in this section.
+If you are curious to know a bit more how rings are implemented, you
+might find this section informative.
+</P>
+<P>
+<CODE>RingElem</CODE>s are designed to be easy and pleasant to use, but this
+convenience has a price: a run-time performance penalty (and a memory
+space penalty too).
+Both penalities may be avoided by using <I>raw values</I> but at a
+considerable loss of programming convenience and safety.  You should
+consider using raw values only if you are desperate for speed; even
+so, performance gains may be only marginal except perhaps for
+operations on elements of a simple ring (e.g. a small finite field).
+</P>
+<P>
+A <CODE>RingElem</CODE> object contains within itself an indication of the owning
+ring, and a <I>raw value</I> which is a pointer to where the real
+representation of the ring element value lies.  These raw values may be
+accessed via the <I>raw</I> function.  They may be combined arithmetically by
+calling member functions of the owning ring.  For instance, if x,y,z are
+all RingElem objects all BELONGING TO EXACTLY THE SAME RING then we can
+achieve
+</P>
+<PRE>
+      x = y+z;
+</PRE>
+<P>
+slightly faster by calling
+</P>
+<PRE>
+      owner(x)-&gt;my.Add(raw(x), raw(y), raw(z));
+</PRE>
+<P></P>
+<P>
+It should now be clear that the syntax involved is cumbersome and
+somewhat obscure.  For the future maintainability of the code the
+simpler <CODE>x = y+z;</CODE> has many advantages.  Furthermore, should x,y,z
+somehow happen not all to lie in the same ring then <CODE>x = y+z;</CODE> will act
+in a reasonable way, whereas the supposedly faster call will likely lead
+to many hours of debugging grief.  The member functions for arithmetic
+(e.g. <CODE>myAdd</CODE>) <B>DO NOT PERFORM</B> sanity checks on their arguments:
+e.g. attempting to divide by zero could well crash the program.
+</P>
+<P>
+If you use a <I>debugging version</I> of the CoCoA Library then some
+member functions do use assertions to check their arguments.  This is
+useful during development, but must not be relied upon since the
+checks are absent from the <I>non-debugging version</I> of the CoCoA
+Library.  See the file config.txt for more information.
+</P>
+<P>
+This fast, ugly, unsafe way of programming is made available for those who
+desperately need the speed.  If you're not desperate, don't use it!
+</P>
+<A NAME="toc20"></A>
+<H4>Fast, Ugly and Unsafe operations on raw values</H4>
+<P>
+Read the section <I>Fast and Ugly Code</I> before using any of these!
+</P>
+<P>
+Let <CODE>r</CODE> be a non-const raw value (<I>e.g.</I> <CODE>raw(x)</CODE>, with <CODE>x</CODE> a
+<CODE>RingElem</CODE>), and <CODE>r1</CODE>, <CODE>r2</CODE> potentially const raw values.
+Assume they are all owned by the ring <CODE>R</CODE>.
+Then the functions available are:
+</P>
+<UL>
+<LI><CODE>R-&gt;myNew()</CODE>        -- <I>construct</I> a new element of R, value=0
+<LI><CODE>R-&gt;myNew(n)</CODE>       -- <I>construct</I> a new element of R, value=n
+<LI><CODE>R-&gt;myNew(N)</CODE>       -- <I>construct</I> a new element of R, value=N
+<LI><CODE>R-&gt;myNew(r1)</CODE>      -- <I>construct</I> a new element of R, value=r1
+<LI><CODE>R-&gt;myDelete(r)</CODE>    -- <I>destroy</I> r, element of R (frees resources)
+<P></P>
+<LI><CODE>R-&gt;mySwap(r, s)</CODE>       -- swaps the two values (s is non-const raw value)
+<LI><CODE>R-&gt;myAssignZero(r)</CODE>    -- r = 0
+<LI><CODE>R-&gt;myAssign(r, r1)</CODE>    -- r = r1
+<LI><CODE>R-&gt;myAssign(r, n)</CODE>     -- r = n (n is a long)
+<LI><CODE>R-&gt;myAssign(r, N)</CODE>     -- r = n (N is a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>)
+<LI><CODE>R-&gt;myNegate(r, r1)</CODE>    -- r = -r1
+<LI><CODE>R-&gt;myAdd(r, r1, r2)</CODE>   -- r = r1+r2
+<LI><CODE>R-&gt;mySub(r, r1, r2)</CODE>   -- r = r1-r2
+<LI><CODE>R-&gt;myMul(r, r1, r2)</CODE>   -- r = r1*r2
+<LI><CODE>R-&gt;myDiv(r, r1, r2)</CODE>   -- r = r1/r2 (division must be exact)
+<LI><CODE>R-&gt;myIsDivisible(r, r1, r2)</CODE> -- r = r1/r2, and returns true iff division was exact
+<LI><CODE>R-&gt;myIsUnit(r1)</CODE>       -- IsUnit(r1)
+<LI><CODE>R-&gt;myGcd(r, r1, r2)</CODE>   -- r = gcd(r1, r2)
+<LI><CODE>R-&gt;myLcm(r, r1, r2)</CODE>   -- r = lcm(r1, r2)
+<LI><CODE>R-&gt;myPower(r, r1, n)</CODE>  -- r = power(r1, n)  BUT n MUST be non-negative!!
+<LI><CODE>R-&gt;myIsZero(r1)</CODE>       -- r1 == 0
+<LI><CODE>R-&gt;myIsZeroAddMul(r, r1, r2)</CODE> -- ((r += r1*r2) == 0)
+<LI><CODE>R-&gt;myIsEqual(r1, r2)</CODE>  -- r1 == r2
+<LI><CODE>R-&gt;myIsPrintAtom(r1)</CODE>  -- true iff <CODE>r1</CODE> does not need brackets
+                               when a num or denom of a fraction 
+<LI><CODE>R-&gt;myIsPrintedWithMinus(r1)</CODE> -- true iff the printed form of <CODE>r1</CODE>
+                                     begins with a minus sign
+<LI><CODE>R-&gt;myOutput(out, r1)</CODE>  -- out &lt;&lt; r1
+<LI><CODE>R-&gt;mySequentialPower(r, r1, n)</CODE> -- normally it is better to use R-&gt;myPower(r, r1, n)
+<LI><CODE>R-&gt;myBinaryPower(r, r1, n)</CODE> -- normally it is better to use R-&gt;myPower(r, r1, n)
+</UL>
+
+<A NAME="toc21"></A>
+<H2>Maintainer documentation</H2>
+<P>
+(<B>NB</B> consider consulting also <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
+and <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
+</P>
+<P>
+The design underlying rings and their elements is more complex than I
+would have liked, but it is not as complex as the source code may make
+it appear.  The guiding principles are that the implementation should be
+flexible and easy/pleasant to use while offering a good degree of
+safety; extreme speed of execution was not a goal (as it is usually
+contrary to good flexibility) though an interface offering slightly
+better run-time efficiency remains.
+</P>
+<P>
+Regarding flexibility: in CoCoALib we want to handle polynomials whose
+coefficients reside in (almost) any commutative ring.  Furthermore, the
+actual rings to be used will be decided at run-time, and cannot
+restricted to a given finite set.  We have chosen to use C++ inheritance
+to achieve the implementation: the abstract class <CODE>RingBase</CODE> defines the
+interface that every concrete ring class must offer.
+</P>
+<P>
+Regarding ease of use: since C++ allows the common arithmetic operators
+to be overloaded, it is essential that these work as expected for
+elements of arbitrary rings -- with the caveat that <CODE>/</CODE> means exact
+division, being the only reasonable interpretation.  Due to problems of
+ambiguity arithmetic between elements of different rings is forbidden:
+e.g. let f in Q[x,y] and g in Z[y,x], where should f+g reside?
+</P>
+<P>
+The classes in the file ring.H are closely interrelated, and there is no
+obvious starting point for describing them -- you may find that you need
+to read the following more than once to comprehend it.  Here is a list
+of the classes:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>ring</CODE></TD>
+<TD>value represents a ring; it is a smart pointer</TD>
+</TR>
+<TR>
+<TD><CODE>RingBase</CODE></TD>
+<TD>abstract class <I>defining what a ring is</I></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem</CODE></TD>
+<TD>value represents an element of a ring</TD>
+</TR>
+<TR>
+<TD><CODE>RingElemAlias</CODE></TD>
+<TD>reference to a <CODE>RingElem</CODE> belonging to someone else</TD>
+</TR>
+<TR>
+<TD><CODE>ConstRefRingElem</CODE></TD>
+<TD>C++ const-reference to a <CODE>RingElemAlias</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RingElemConstRawPtr</CODE></TD>
+<TD>raw pointer to a <I>const</I> ring value</TD>
+</TR>
+<TR>
+<TD><CODE>RingElemRawPtr</CODE></TD>
+<TD>raw pointer to a ring value</TD>
+</TR>
+</TABLE>
+
+<P>
+For the first two see <A HREF="ring.html"><CODE>ring</CODE></A>.
+</P>
+<P>
+The classes <CODE>RingElem</CODE> and <CODE>RingElemAlias</CODE> are
+related by inheritance: they are very similar but differ in one important
+way.  The base class <CODE>RingElemAlias</CODE> defines the data members
+which are inherited by <CODE>RingElem</CODE>.  The essential difference is that
+a <CODE>RingElem</CODE> owns the value whereas a <CODE>RingElemAlias</CODE> does not.
+The two data members are <CODE>myR</CODE> and <CODE>myRawValue</CODE>: the first is the
+identity of ring to which the element belongs, and the second is the
+value in that ring (the value is stored in a format that only the
+owning ring can comprehend).  All operations on ring elements are
+effected by member functions of the ring to which the value belongs.
+</P>
+<P>
+The differing ownership inherent in <CODE>RingElemAlias</CODE> and <CODE>RingElem</CODE>
+lead to several consequences.  The destructor of a <CODE>RingElem</CODE> will
+destroy in the internal representation of the value; in contrast, the
+destructor of a <CODE>RingElemAlias</CODE> does nothing.  A <CODE>RingElemAlias</CODE>
+object becomes meaningless (&amp; dangerous) if the owner of the value it
+aliases is destroyed.
+</P>
+<P>
+Why did I create <CODE>RingElemAlias</CODE>?  The main reason was to allow
+matrices and iterators of polynomials to be implemented cleanly and
+efficiently.  Clearly a <A HREF="matrix.html"><CODE>matrix</CODE></A> should be the owner of the values
+appearing as its entries, but we also want a way of reading the matrix
+entries without having to copy them.  Furthermore, the matrix can use
+a compact representation: the ring to which its elements belong is
+stored just once, and not once for each element.  Analogous comments
+apply to the coefficients of a polynomial.
+</P>
+<P>
+As already stated above, the internal data layouts for objects of
+types <CODE>RingElem</CODE> and <CODE>RingElemAlias</CODE> are identical -- this is
+guaranteed by the C++ inheritance mechanism.  The subfield indicating
+the ring to which the value belongs is simply a <CODE>ring</CODE>, which is
+just a reference counting smart pointer.  The subfield indicating the
+value is a raw pointer of type <CODE>void*</CODE>; however, when the raw
+pointer value is to be handled outside a ring element object then it
+is wrapped up as a <CODE>RingElemRawPtr</CODE> or <CODE>RingElemConstRawPtr</CODE> --
+these are simply wrapped copies of the <CODE>void*</CODE>.
+</P>
+<P>
+The classes <CODE>RingElemRawPtr</CODE> and <CODE>RingElemConstRawPtr</CODE> are used
+for two reasons.  One is that if a naked <CODE>void*</CODE> were used outside
+the ring element objects then C++ would find the call
+<CODE>RingElem(R,0)</CODE> ambiguous because the constant <CODE>0</CODE> can be
+interpreted either as an integer constant or as a null pointer: there
+are two constructors which match the call equally well.  The other
+reason is that it discourages accidentally creating a ring element
+object from any old pointer; it makes the programmer think -- plus I
+feel uneasy when there are naked <CODE>void*</CODE> pointers around.  Note that
+the type of the data member <CODE>RingElemConstRawPtr::myPtr</CODE> is simply
+<CODE>void*</CODE> as opposed to <CODE>void const*</CODE> which one might reasonably
+expect.  I implemented it this way as it is simpler to add in the
+missing constness in the member function
+<CODE>RingElemConstRawPtr::myRawPtr</CODE> than it would be to cast it away in
+the <CODE>myRawPtr</CODE> function of <CODE>RingElemRawPtr</CODE>.
+</P>
+<A NAME="toc22"></A>
+<H4>Further comments about implementation aspects of the above classes.</H4>
+<P>
+The class <CODE>RingBase</CODE> declares a number of pure virtual functions for
+computing with ring elements.  Since these functions are pure they
+must all be fully defined in any instantiable ring class
+(e.g. <CODE>RingZZImpl</CODE> or <CODE>RingFpImpl</CODE>).  These member functions follow
+certain conventions:
+</P>
+<DL>
+<DT><B>RETURN VALUES</B>:</DT><DD>
+   most arithmetic functions return no value, instead the
+   result is placed in one of the arguments (normally the first argument
+   is the one in which the result is placed), but functions which return
+   particularly simple values (e.g. booleans or machine integers) do
+   indeed return the values by the usual function return mechanism.
+<P></P>
+<DT><B>ARG TYPES</B>:</DT><DD>
+   ring element values are passed as <I>raw pointers</I>
+   (i.e. a wrapped <CODE>void*</CODE> pointing to the actual value).  A read-only
+   arg is of type <CODE>RingElemConstRawPtr</CODE>, while a writable arg is of type
+   <CODE>RingElemRawPtr</CODE>.  When there are writable args they normally appear
+   first.  For brevity there are typedefs <CODE>ConstRawPtr</CODE> and <CODE>RawPtr</CODE> in
+   the scope of <CODE>RingBase</CODE> or any derived class.
+<P></P>
+<DT><B>ARG CHECKS</B>:</DT><DD>
+   sanity checks on the arguments are NOT CONDUCTED (e.g. the
+   division function assumes the divisor is non-zero).  These member
+   functions are supposed to be fast rather than safe.
+</DL>
+
+<P>
+In a few cases there are non-pure virtual member functions in
+<CODE>RingBase</CODE>.  They exist either because there is a simple universal
+definition or merely to avoid having to define inappropriate member
+functions (<I>e.g.</I> gcd functions when the ring cannot be a gcd domain).
+Here is a list of them:
+</P>
+<UL>
+<LI><CODE>myIsUnit(x)</CODE>               -- default checks that 1 is divisible by <CODE>x</CODE>
+<LI><CODE>myGcd(lhs, x, y)</CODE>          -- gives an error:
+                                   either <CODE>NotGcdDom</CODE> or <CODE>NYI</CODE>
+<LI><CODE>myLcm(lhs, x, y)</CODE>          -- gives an error:
+                                   either <CODE>NotGcdDom</CODE> or <CODE>NYI</CODE>
+<LI><CODE>myGcdQuot(lhs, xquot, yquot, x, y)</CODE> -- gives an error:
+                                            either <CODE>NotGcdDom</CODE> or <CODE>NYI</CODE>
+<LI><CODE>myExgcd(lhs, xcofac, ycofac, x, y)</CODE> -- gives an error:
+                                            either <CODE>NotGcdDom</CODE> or <CODE>NYI</CODE>
+<LI><CODE>myIsPrintAtom(x)</CODE>          -- defaults to false
+<LI><CODE>myIsPrintedWithMinus(x)</CODE>   -- gives <CODE>SERIOUS</CODE> error
+<LI><CODE>myIsMinusOne(x)</CODE>           -- defaults to myIsOne(-x); calculates -x
+<LI><CODE>myIsZeroAddMul(lhs, y, z)</CODE> -- computes lhs += y*z in the obvious way,
+                                    and calls <CODE>myIsZero</CODE>
+<LI><CODE>myCmp(x, y)</CODE>               -- gives <CODE>NotOrdDom</CODE> error
+<LI><CODE>myCmpAbs(x, y)</CODE>            -- tries to compute <CODE>cmp(abs(x),abs(y))</CODE> so may give <CODE>NotOrdDom</CODE> error
+<LI><CODE>mySign(x)</CODE>                 -- simply calls <CODE>myCmp(x, 0)</CODE>,
+                                   then returns -1,0,1 accordingly
+<P></P>
+There are three non-virtual member functions for calculating powers: one
+uses the sequential method, the other two implement the repeated
+squaring method (one is an entry point, the other an implementation
+detail).  These are non-virtual since they do not need to be redefined;
+they are universal for all rings.
+<P></P>
+For the moment I shall assume that the intended meaning of the pure
+virtual functions is obvious (given the comments in the source code).
+</UL>
+
+<P>
+Recall that arithmetic operations on objects of type
+<CODE>ConstRefRingElem</CODE> (which matches <CODE>RingElem</CODE> too) are converted
+into member function calls of the corresponding owning ring.  Here is
+the source code for addition of ring elements -- it typifies the
+implementation of operations on ring elements.
+</P>
+<PRE>
+    RingElem operator+(ConstRefRingElem x, ConstRefRingElem y)
+    {
+      const ring&amp; Rx = owner(x);
+      const ring&amp; Ry = owner(y);
+      if (Rx != Ry)
+        error(CoCoAError(ERR::MixedRings, "RingElem + RingElem"));
+  
+      RingElem ans(Rx);
+      Rx-&gt;myAdd(raw(ans), raw(x), raw(y));
+      return ans;
+    }
+</PRE>
+<P></P>
+<P>
+The arguments are of type <CODE>ConstRefRingElem</CODE> since they are
+read-only, and the return type is <CODE>RingElem</CODE> since it is new
+self-owning value (it does not refer to a value belonging to some
+other structure).  Inside the function we check that the rings of the
+arguments are compatible, and report an error if they are not.
+Otherwise a temporary local variable is created for the answer, and
+the actual computation is effected via a member function call to the
+ring in which the values lie.  Note the use of the <CODE>raw</CODE> function
+for accessing the raw pointer of a ring element.  In summary, an
+operation on ring elements intended for public use should fully check
+its arguments for compatibility and correctness (<I>e.g.</I> to avoid
+division by zero); if all checks pass, the result is computed by
+passing raw pointers to the appropriate member functions of the ring
+involved -- this member function assumes that the values handed to it
+are compatible and valid; if not, <I>undefined behaviour</I> will result
+(<I>i.e.</I> a crash if you are lucky).
+</P>
+<P>
+Most of the member functions of a ring are for manipulating raw values
+from that same ring, a few permit one to query properties of the ring.
+The type of a raw value is <CODE>RingBase::RawValue</CODE>, which helpfully
+abbreviates to RawValue inside the namespace of <CODE>RingBase</CODE>.  Wherever
+possible the concrete implementations should be <B>exception safe</B>, <I>i.e.</I> they
+should offer either the strong exception guarantee or the no-throw
+guarantee (according to the definitions in <I>Exceptional C++</I> by Sutter).
+</P>
+<A NAME="toc23"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+I have chosen not to use <CODE>operator^</CODE> for computing powers because of a
+significant risk of misunderstanding between programmer and compiler.
+The syntax/grammar of C++ cannot be changed, and <CODE>operator^</CODE> binds less
+tightly than (binary) <CODE>operator*</CODE>, so any expression of the form <CODE>a*b^c</CODE>
+will be parsed as <CODE>(a*b)^c</CODE>; this is almost certainly not what the
+programmer intended.  To avoid such problems of misunderstanding I
+have preferred not to define <CODE>operator^</CODE>; it seems too dangerous.
+</P>
+<P>
+Note about comparison operators (&lt;,&lt;=,&gt;,&gt;=, and !=).  The C++ STL
+does have templates which will define all the relational operators
+efficiently assuming the existence of <CODE>operator&lt;</CODE> and <CODE>operator==</CODE>.
+These are defined in the namespace <CODE>std::rel_ops</CODE> in the standard
+header file <CODE>&lt;utility&gt;</CODE>.  I have chosen NOT to use these because they can
+define only <I>homogeneous</I> comparisons; so the comparisons between
+<CODE>ConstRefRingElem</CODE> and <CODE>int</CODE> or <A HREF="BigInt.html"><CODE>BigInt</CODE></A> would still have to be written out
+manually, and I prefer the symmetry of writing them all out.
+See p.69ff of Josuttis for details.
+</P>
+<P>
+The function <CODE>myAssignZero</CODE> was NECESSARY because <CODE>myAssign(x, 0)</CODE> was
+ambiguous (ambiguated by the assignment from an <CODE>mpz_t</CODE>).  It is no longer
+necessary, but I prefer to keep it (for the time being).
+</P>
+<P>
+The requirement to use the type <CODE>ConstRefRingElem</CODE> for function arguments
+(which should normally be <CODE>const RingElem&amp;</CODE> is not ideal, but it seems hard
+to find a better way.  It is not nice to expect users to use a funny type
+for their function arguments.  How else could I implement (noncopying) access to
+coefficients in a polynomial via an iterator, or access to matrix elements?
+</P>
+<P>
+Would we want ++ and -- operators for <CODE>RingElem</CODE>s???
+</P>
+<P>
+Should (some of) the query functions return <CODE>bool3</CODE> values?
+What about properties which are hard to determine?
+</P>
+<P>
+How to generate random elements from a ring?
+</P>
+<P>
+Anna thinks that <CODE>NearestInteger</CODE> could handle specially elements of
+<A HREF="RingZZ.html"><CODE>RingZZ</CODE></A> rather than doing the full wasteful computation.  Not sure
+if the extra code and complication would really make a difference in
+practice.
+</P>
+<P>
+<CODE>gcd</CODE> and <CODE>lcm</CODE>: there is no guarantee on sign/monic because it may
+be costly to compute and generally useless.
+</P>
+<A NAME="toc24"></A>
+<H2>Main changes</H2>
+<P>
+<B>2013</B>
+</P>
+<UL>
+<LI>May (v0.9953):
+ <UL>
+ <LI>added IsZeroDivisor
+-
+ </UL>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingElem.html -i txt/RingElem.txt -->
+</BODY></HTML>

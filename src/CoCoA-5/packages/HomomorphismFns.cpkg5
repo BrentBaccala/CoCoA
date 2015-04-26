@@ -1,0 +1,145 @@
+Package $HomomorphismFns; -- function for homomorphism of affine algebras
+  
+  export ker;
+  export IsInjective;
+  export IsSurjective;
+//  export IsInImage;
+  export preimage;
+  export PreImage;
+
+----------------------------------------------------------------------------
+-- Exported functions (with input checking)
+----------------------------------------------------------------------------
+
+-- ker(phi)
+Define ker(phi)
+  CheckInputAffAlgebraHom(phi,"ker");
+  Return KerRichHom(RichHom(phi));
+EndDefine; -- Ker
+
+-- Is phi injective?
+Define IsInjective(phi)
+  CheckInputAffAlgebraHom(phi,"IsInjective");
+  Return IsZero(KerRichHom(RichHom(phi)));  
+EndDefine; -- IsInjective
+
+-- Is phi surjective?
+Define IsSurjective(phi)
+  CheckInputAffAlgebraHom(phi,"IsSurjective");
+  RichPhi := RichHom(phi);
+  Return IsSubset(RichPhi.SIndetsRS, gens(LT(RichPhi.idealRS)));
+EndDefine; -- IsSurjective
+
+-- -- Is y in Im(phi)?
+-- Define IsInImage(y,phi)
+--   CheckInputAffAlgebraHom(phi,"IsInImage");
+--   If Type(y)<>RINGELEM Or RingOf(y)<>codomain(phi) Then
+--     error("Second entry must be in codomain");
+--   EndIf;
+--   Return PreImageAux(phi,y).IsInImage;
+-- EndDefine; -- IsInImage
+
+-- phi^(-1)(y) if it exists, error otherwise
+Define preimage(phi,y)
+  CheckInputAffAlgebraHom(phi,"PreImage");
+  If Type(y)<>RINGELEM Or RingOf(y)<>codomain(phi) Then
+    error("Second entry must be in codomain");
+  EndIf;
+  Return PreImageRichHom(RichHom(phi), y);
+EndDefine; -- preimage
+
+Define PreImage(phi,y) return preimage(phi,y); EndDefine;
+
+----------------------------------------------------------------------
+-- Internal functions (no input check)
+-----------------------------------------------------------------------------
+Define RichHom(Phi)
+  If IsPolyRing(domain(Phi)) Then
+    R := domain(Phi);
+  Else
+    R := BaseRing(domain(Phi));
+  EndIf;
+  If IsPolyRing(codomain(Phi)) Then
+    S := codomain(Phi);           I2 := Ideal(S,[]);
+  Else
+    S := BaseRing(codomain(Phi)); I2 := DefiningIdeal(codomain(Phi));
+  EndIf;
+  NumS := NumIndets(S); NumR := NumIndets(R);
+  RS := NewPolyRing(CoeffRing(R),
+	 	    concat(SymbolRange("SX",1,NumS),SymbolRange("RX",1,NumR)),
+		    ElimMat(NumR+NumS, 1..NumS),  0);
+  SIndetsRS := indets(RS, "SX");
+  RIndetsRS := indets(RS, "RX");
+  HomS_RS := PolyAlgebraHom(S, RS, SIndetsRS); -- S-->RS
+  HomRS_R := PolyAlgebraHom(RS, R, concat(NewList(NumS), indets(R))); -- RS-->R
+
+  X := indets(R);  --> X in R
+  If IsQuotientRing(domain(Phi)) Then
+    X := apply(CanonicalHom(R, domain(Phi)), X);
+  EndIf;  --> X in domain(Phi)
+  PhiX := apply(Phi,X);  --> PhiX in codomain(Phi)
+  If IsQuotientRing(codomain(Phi)) Then
+    PhiX := [CanonicalRepr(x) | x in PhiX];
+  EndIf;  --> PhiX in S
+  PhiXRS := apply(HomS_RS, PhiX);
+  J := Ideal(RS, apply(HomS_RS, Gens(I2)))   --> I2 in RS
+     + Ideal(RS, [RIndetsRS[i]-PhiXRS[i] | i In 1..NumR]);
+  // storing R and S helps with ref-counting?
+  Return Record[Hom:=Phi, R:=R, S:=S,
+		SIndetsRS := SIndetsRS, idealRS:=J,
+		HomS_RS:=HomS_RS, HomRS_R:=HomRS_R];  
+EndDefine; -- RichHom
+
+-----------------------------------------------------------------------------
+Define KerRichHom(RichPhi)
+//  GensKerRS := elim(RichPhi.SIndetsRS, RichPhi.idealRS);
+  ElimX := product(RichPhi.SIndetsRS);
+  GensKerRS := [ g in GBasis(RichPhi.idealRS) | IsInvertible(gcd(ElimX,LT(g)))];
+  GensKer := MakeSet(apply(RichPhi.HomRS_R, GensKerRS)); --> in R
+  DomainPhi := domain(RichPhi.Hom);
+  If IsQuotientRing(DomainPhi) Then
+    GensKer :=  MakeSet(apply(CanonicalHom(RichPhi.R, DomainPhi), GensKer));
+  EndIf; --> in R/I
+  Return Ideal(DomainPhi, GensKer);
+EndDefine; -- KerRichHom
+
+  
+Define PreImageRichHom(RichPhi, y)
+  Phi := RichPhi.Hom;
+  If IsQuotientRing(codomain(Phi)) Then y := CanonicalRepr(y); EndIf; -- in S
+  candidate := NF(RichPhi.HomS_RS(y), RichPhi.idealRS);
+  If LT(candidate) >= Min(RichPhi.SIndetsRS) Then
+    Return Record[IsInImage := False, ker := KerRichHom(RichPhi)];
+  EndIf;
+  preim := RichPhi.HomRS_R(candidate);
+  If IsQuotientRing(domain(Phi)) Then
+    preim := CanonicalHom(RichPhi.R,domain(Phi))(preim);
+  EndIf;
+  Return Record[IsInImage := True, OnePreImage := preim, ker := KerRichHom(RichPhi)];
+EndDefine; -- PreImageRichHom
+
+------------------------------------------------------------------------------
+-- Input check
+-------------------------------------------------------------------------------
+Define IsPolyRingOrQuotient(R)
+  Return IsPolyRing(R) Or (IsQuotientRing(R) And IsPolyRing(BaseRing(R)));
+EndDefine; -- IsPolyRingOrQuotient
+
+
+Define CheckInputAffAlgebraHom(Phi, FnName)
+  If Type(Phi)<>RINGHOM Then
+    error("Expecting type RINGHOM in "+FnName+", but found "+sprint(type(Phi)));
+  EndIf;
+  R := domain(Phi);
+  S := codomain(Phi);
+  If not(IsPolyRingOrQuotient(R)) Or not(IsPolyRingOrQuotient(S)) Then
+    error("RINGHOM must be between poly rings or their quotients: " + FnName);
+  EndIf;
+  If not(IsPolyRing(R)) Then R := BaseRing(R); EndIf;
+  If not(IsPolyRing(S)) Then S := BaseRing(S); EndIf;
+  If not(IsField(CoeffRing(R))) Or (CoeffRing(R) <> CoeffRing(S)) Then
+    error("RINGHOM must be between K-algebras: " +FnName);
+  EndIf;
+EndDefine; -- CheckInputAffAlgebraHom
+
+EndPackage;

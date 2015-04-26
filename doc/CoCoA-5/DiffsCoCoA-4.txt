@@ -1,0 +1,174 @@
+Differences between CoCoA-4 and CoCoA-5
+Copyright (c) 2009 John Abbott, Anna Bigatti and Giovanni Lagorio
+GNU Free Documentation License, Version 1.2
+%!preproc: 'C4' 'CoCoA-4'
+%!preproc: 'C5' 'CoCoA-5'
+%!includeconf: ../aux-txt2tags/config.t2t
+TeXTitle{DifferencesCoCoAFour}{John Abbott, Anna Bigatti and Giovanni Lagorio}
+
+==Introduction==
+
+This document describes the major differences between C4 and C5 languages.
+Please note that this is //work in progress// and it is meant to be a gentle
+conversion guide.  All the gory details of C5 language will be described
+in the //C5 language specification// (which has yet to be written).
+
+As a guiding principle, every correct C4 program that is silently accepted
+in C5 will behave in the exact same manner.  The only exception are
+programs that use variables and functions with the same name (yep, that's
+//evil// ;-) but allowed in C4, see also [identifiers #identifiers]).  In
+those, hopefully rare, cases programs //might// be silently accepted and
+behave differently; anyway, odds are they will be rejected by C5.
+Counterexamples have to be carefully crafted and are only interesting from
+a technical point of view.
+
+
+== Identifiers ==[identifiers]
+
+In C4 identifiers are partitioned into //indeterminate identifiers//,
+consisting of a single lower case letter, and (for lack of a better name)
+//normal identifiers//, consisting of a sequences of letters, underscores
+or numbers, starting with an upper case letter or an underscore.  As the
+names suggest, the former are used to name indeterminates, while the latter
+are used for all the other objects (variables, record fields and so on).
+In C5 every identifier can be used to name anything; this is a
+generalization and should pose no compatibility problems, except for the
+[implicit multiplication issue #implicitMultiplication].
+
+In C4 //normal identifiers// live in two different namespaces: one for
+functions and the other for variables/rings.  This feature allows one to
+use the same identifier, say ``Foo``, to name both a function //and// a
+variable at the same time.  Doing so is confusing at best because, when you
+see the name ``Foo`` in an expression, determining which ``Foo`` is referred to
+can be rather tricky.  Moreover, inserting or removing //a space// in such
+an expression could change its meaning!  For these reasons, in C5 there is
+just a single unified namespace and each identifier refers to a single
+value at any one time (for instance, the definition of a function named
+[Foo] would supplant any previous function/variable/ring with the same
+name, and //vice versa//).
+
+
+== Keywords ==
+
+Keywords are //reserved// identifiers that cannot be used to name
+user-defined objects (such as variables and functions).  C4 doesn't allow
+one to use keyword as a variable but, strangely enough, it does allow one
+to define a user-defined function whose name is a keyword (!).  C5 forbids
+the use of a keyword for user variables of functions.
+
+C5 keywords are:
+	``Alias``, ``And``, ``Block``, **``Break``**, ``Catch``, ``Ciao``, ``Clear``,
+	**``Continue``**, ``Define``, ``DegLex``, ``DegRevLex``, ``Delete``,
+	``Describe``, ``Destroy``, ``Do``, ``Elif``, ``Elim``, ``Else``,
+	``EndAlias``, ``EndBlock``, ``EndCatch``, ``EndDefine``, ``EndForeach``,
+	``EndFor``, ``EndIf``, ``EndPackage``, ``End``, ``EndUsing``, ``EndWhile``,
+	``False``, ``Foreach``, ``For``, ``If``, ``In``, **``IsDefined``**, ``IsIn``,
+	``Lex``, ``Not``, ``On``, **``Ord``**, ``Or``, ``Package``, ``PosTo``, ``PrintLn``,
+	``Print``, **``Protect``**, ``Quit``, ``Record``, ``Repeat``, ``Return``,
+	``Set``, ``Skip``, ``Source``, ``Step``, ``Then``, ``Time``, ``To``, ``ToPos``,
+	``True``, ``Try``, ``Unset``, ``Until``, **``Unprotect``**, ``Use``, ``Using``,
+	``Var``, ``Weights``, ``While``, ``Xel``
+Important notes about this list of keywords:
+- Newly introduced keywords are in bold (for some reason, C4 manual does not list ``Break`` as a keyword, even though it probably should);
+- ``Set`` and ``Unset`` statements may be removed (so ``Set`` and ``Unset`` may cease to be keywords);
+- Although the expression ``Var(...)`` will probably be removed in C5, ``Var`` will remain keyword since it is used to mark "by reference" parameters too;
+- ``Cond``, ``EndCond``, ``EndRepeat``, ``Eof``, ``Global``, ``Help``, ``NewLine`` are no longer keywords (see also [removed features #removedFeatures]);
+- Ring modifiers (``DegLex``, ``DegRevLex``, and so on) are keywords in C5, while they are "case sensitive reserved names" in C4; this is a technicality that most users can safely ignore altogether.
+
+
+In both C4 and C5 keywords are case insensitive, that is, ``alias``,
+``aLiAs`` and ``ALIAS`` are equivalent ways to refer to the keyword
+``Alias``.  However, C5 parser will trigger a warning if the casing is
+somehow unusual (that is, ``alias`` and ``Alias`` are accepted silently,
+while all other casings are accepted but will trigger a warning).  Also,
+note that lower case keywords are allowed only in full C5 code, expressions
+contained in //backward-compatibility parentheses// (see [implicit
+multiplication #implicitMultiplication]) cannot use lower case keywords
+because they would be interpreted as an indeterminate product (for
+instance, ``${alias}$`` would be interpreted as ``a*l*i*a*s``).
+
+Currently, there is a notable exception (to be pronounced: "a
+compatibility-hack"): ``RECORD`` (all uppercase) is //an identifier// and
+not a casing of the keyword ``Record``.  This issue will be fixed.
+
+== Removed features ==[removedFeatures]
+
+=== Expressions ===
+The following kind of expressions have been removed:
+- The conditional expression ``Cond``; ``If`` statements can be used instead.
+- The expression ``Time`` has been replaced by the statement ``Time``.  In practice,
+  most users may ignore this change, unless they are using the value of the ``Time``
+  expression, which is usually discarded.
+- The statements ``Print``/``PrintLn`` used as if they were a function.  For instance, C4 
+  allows one to write ``Print(1,2,3);``.  Simply removing the outer parentheses would make that (wrong) expression a (correct) statement.
+- The "untagged" `@` operator; ``Untagged`` should be used instead.
+
+
+=== Printing Newlines ===
+
+``NewLine`` in C4 is a special word which can be used only in
+``Print/PrintLn`` statements where it behaves as something similar to an
+expression; it causes a new line to be printed.  It's peculiar and not
+needed, so it has been removed from C5.  Users can use the literal string
+``"\n"`` instead (or, they can define their own variable ``NewLine`` with
+``NewLine := "\n";`` and pretend the special word ``NewLine`` has never
+vanished ;-)
+
+
+=== Newlines in string contants ===
+
+Newlines inside string literals are not allowed in C5 and they should be
+replaced by the escape sequence ``\n`` (//i.e.// the two characters
+backslash + n) For instance, ``"one\ntwo\nthree\n"`` is a string containing
+three newline characters (each one expressed using the escape sequence
+``\n``).  The particular choice of escape sequence is taken from the
+computer languages C/C++.
+
+In C5, as in C/C++, string literals separated only by blanks (or comments)
+are automatically joined together and considered as one big string literal.
+For instance:
+	``"one\n"``
+
+	``"two\n"``
+
+	``"three\n"``
+is another, equivalent, way to write the literal ``"one\ntwo\nthree\n"``.
+
+
+=== Statements ===
+
+The following statements have been removed:
+-  the trailing ``If`` clause; the ``If...Then`` statement can be used instead;
+-  ``Repeat``/``EndRepeat`` loops, which can be replaced by ``While (True)``/``EndWhile``.  Please note that ``Repeat``/``Until`` loops have not been removed from C5;
+-  The ``Alias...In...EndAlias`` structure; global aliases should be used instead
+-  ``Eof`` instead you can make the rest of the file into one big comment
+-  ``Help`` (single line help strings inside fn defns)
+-  ``Using`` (Anna is checking whether this can serve any useful purpose)
+-  ``Destroy`` (will no longer be needed)
+-  ``Describe``  will it continue to be useful?? (in some cases an alternative more detailed printout could be handy?)
+-  ``Weights``  could we use the new syntax instead for such a complicated ring?
+
+
+=== Implicit multiplication ===[implicitMultiplication]
+
+Implicit multiplication, the source of nasty inconsistencies in the C4
+language, has been banned once and for all in C5.
+
+To permit users to write polynomials using a friendly syntax, special
+//backward-compatibility parentheses// have been provided.  An
+expression enclosed between **``${``** and **``$}``** is allowed to
+take //some// shortcuts.  Suspicious expressions will be rejected
+anyway.  For instance, ``2xy`` will be accepted as ``2*x*y`` //but// ``x2y``, which
+is an equivalent expression for C4, will be rejected.  Indeed, it's
+not clear whether the intended meaning is ``(x^2)*y`` or ``2*x*y``.
+
+== Other changes ==
+
+Possibly ambiguous expressions are flagged as suspicious by the new C5
+parser; anyway, these are warnings and not errors.  For instance, entering
+``1/2/3;`` we get: ``Warning: Using two or more operators "/" or ":" at the
+same level is potentially ambiguous; please parenthesize``.  Indeed, it's
+unclear whether the intended meaning is ``(1/2)/3;`` or ``1/(2/3);``.  To
+make the warning message vanish, just parenthesize your expressions as the
+message suggests.
+

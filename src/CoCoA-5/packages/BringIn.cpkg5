@@ -1,0 +1,92 @@
+Package $BringIn
+
+export BringIn;
+
+
+----------------------------------------------------------------------
+Define About()
+  PrintLn  "    Version  : CoCoA 4.1";
+  PrintLn  "    Date     : 11 March 2007";
+  PrintLn  "    Author   : Anna Bigatti";
+EndDefine;
+----------------------------------------------------------------------
+
+Define BringIn(...)
+  TopLevel CurrentRing;
+  If   len(ARGV) = 1 Then R := CurrentRing; F := ARGV[1];
+  Elif len(ARGV) = 2 Then R := ARGV[1];     F := ARGV[2];
+  Else
+    BringInErr := "Wrong number of arguments; found: "+Sprint(len(ARGV))+
+    ", expecting: 1 or 2";
+    error(BringInErr);
+  EndIf;
+  If type(F) = INT Then Return RingElem(R, F); EndIf;
+  If type(F) = RAT Then Return RingElem(R, F); EndIf;
+  If type(F) = LIST Then Return [$.BringIn(R, X) | X In F]; EndIf;
+  If type(F) = MAT Then
+    Return mat([[$.BringIn(R, X) | X In ROW] | ROW in GetRows(F)]);
+  EndIf;
+  If type(F) = IDEAL Then
+    error("To map an ideal type: ideal(BringIn(gens(I)))");
+  EndIf;
+  If type(F) = RINGELEM Then
+    if IsZero(F) then return zero(R); endif;
+    Ch_F := characteristic(RingOf(F));
+    Ch_R := characteristic(R);
+    If Ch_F = Ch_R Then
+      If IsPolyRing(RingOf(F)) Then
+	Return apply(PolyAlgebraHom(RingOf(F), R, MapList(R,F)), F);
+      Else
+	Return apply(CanonicalHom(RingOf(F), R), F);
+      EndIf;
+    elif Ch_F = 0 Then
+      If IsPolyRing(RingOf(F)) Then
+	Return apply(PolyRingHom(RingOf(F), R, CanonicalHom(CoeffRing(RingOf(F)), R), MapList(R,F)), F);
+      Else
+	Return apply(CanonicalHom(RingOf(F), R), F);
+      EndIf;
+    else
+      error("BringIn: cannot convert into different finite characteristic");
+    EndIf;
+  EndIf;
+    error("BringIn: cannot apply to "+Sprint(type(F)));
+EndDefine;
+
+Define MapList(R, F)
+  ML := NewList(NumIndets(RingOf(F)));
+  T := product([ LPP(X) | X In support(F)]);
+  IndetsInF := [ X In indets(RingOf(F)) | deg(T, X) <> 0 ];
+  Foreach X In IndetsInF Do
+    ML[IndetIndex(X)] := RingElem(R, concat([IndetName(X)], IndetSubscripts(X)));
+  EndForeach;
+  Return ML;
+EndDefine; -- MapList
+
+
+
+Define Man()
+  PrintLn " A package exporting the function BringIn which intelligently";
+  PrintLn "maps a polynomial into the current ring preserving variable names.";
+  PrintLn "";
+  PrintLn "-- >EXAMPLES< --";
+  PrintLn "";
+  PrintLn "RR ::= QQ[x[1..4],z,y];";
+  PrintLn "SS ::= ZZ/(101)[z,y,x[1..2]];";
+  PrintLn "Use RR;";
+  PrintLn "F := (x[1]-y-z)^5;";
+  PrintLn "len(F);";
+  PrintLn "F;";
+  PrintLn "Use SS;";
+  PrintLn "Time B := BringIn(F);";
+  PrintLn "B;";
+  PrintLn "";
+  PrintLn "-- >EXAMPLES< --";
+  PrintLn "";
+  PrintLn "Use R ::= QQ[x,y,z];";
+  PrintLn "F := 1/2*x^3+34/567*x*y*z-890;   -- a poly with rational coefficients";
+  PrintLn "Use S ::= ZZ/(101)[x,y,z];";
+  PrintLn "QZP(F);";
+  PrintLn "BringIn(F);";
+EndDefine;
+
+EndPackage;

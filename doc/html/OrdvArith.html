@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      OrdvArith</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      OrdvArith</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2014 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for OrdvArith</A>
+      <UL>
+      <LI><A HREF="#toc2">Initializers and Converters for OrdvElem</A>
+      <LI><A HREF="#toc3">Arithmetic operations on OrdvElem</A>
+      <LI><A HREF="#toc4">Other operations on OrdvElem</A>
+        <UL>
+        <LI><A HREF="#toc5">Background about matrices and PP orderings</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc6">Maintainer documentation for OrdvArith</A>
+        <UL>
+        <LI><A HREF="#toc7">Threadsafety and CoCoA_THREADSAFE_HACK</A>
+        </UL>
+    <LI><A HREF="#toc8">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for OrdvArith</H2>
+<P>
+<CODE>OrdvArith</CODE> objects are "low level" values, and thus probably of
+little interest to most users of CoCoALib.  They perform arithmetic
+operations on <CODE>OrdvElem</CODE> values, <I>i.e.</I> compressed vectors of
+non-negative small integers (which represent "order vectors" of power
+products).  The main aim is fast multiplication and comparison of two
+power products (using a specified PP ordering -- see <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A>).
+</P>
+<P>
+All operations on <CODE>OrdvElem</CODE> values must be effected through an
+explicit <CODE>OrdvArith</CODE> member function call; this design is similar to
+that of <CODE>ring</CODE>s and <CODE>RingElem</CODE>s.  The main design aim was speed
+rather than convenience; as a consequence the member fns listed below
+expect the caller to have allocated the memory used to contain the
+results of computations (<I>e.g.</I> in the parameter <CODE>ordv</CODE>).
+</P>
+<A NAME="toc2"></A>
+<H3>Initializers and Converters for OrdvElem</H3>
+<P>
+These fns are all member fns of <CODE>OrdvArith</CODE>.
+</P>
+<UL>
+<LI><CODE>myAssignZero(ordv)</CODE>  set <CODE>ordv</CODE> to all zeros
+<LI><CODE>myAssignFromExpv(ordv, expv)</CODE>  set <CODE>ordv</CODE> from given exponent vector <CODE>expv</CODE>
+<LI><CODE>myComputeExpv(expv, ordv)</CODE>  extract exponent vector from <CODE>ordv</CODE>
+</UL>
+
+<P></P>
+<P>
+Note: the two functions which convert between <CODE>expv</CODE> and <CODE>ordv</CODE>
+    representations might be quite slow, especially if a general
+    ordering is used.  Even with the simplest ordering (<I>i.e.</I> lex)
+    the conversion is not instant because order vectors are held in a
+    packed representation.
+</P>
+<A NAME="toc3"></A>
+<H3>Arithmetic operations on OrdvElem</H3>
+<P>
+These fns are all member fns of <CODE>OrdvArith</CODE>.
+</P>
+<UL>
+<LI><CODE>myMul(ordv, ordv1, ordv2)</CODE>  put into <CODE>ordv</CODE> product of <CODE>ordv1</CODE> and <CODE>ordv2</CODE>
+<LI><CODE>myMulIndetPower(ordv, x, n)</CODE>  multiply <CODE>ordv</CODE> by <CODE>x^n</CODE>
+<LI><CODE>myDiv(ordv, ordv1, ordv2)</CODE>  put into <CODE>ordv</CODE> quotient of <CODE>ordv1</CODE> by <CODE>ordv2</CODE>
+<LI><CODE>myPower(ordv, ordv1, n)</CODE>  put into <CODE>ordv</CODE> the <CODE>n</CODE>-th power of <CODE>ordv1</CODE>
+</UL>
+
+<P></P>
+<P>
+Note: since order vectors are linearly related to exponent vectors, the
+    functions <CODE>myMul</CODE> and <CODE>myDiv</CODE> actually compute the sum and difference of the
+    order vectors.  No check is made for over-/under-flow!
+</P>
+<A NAME="toc4"></A>
+<H3>Other operations on OrdvElem</H3>
+<P>
+These fns are all member fns of <CODE>OrdvArith</CODE>.
+</P>
+<UL>
+<LI><CODE>myCmp(ordv1, ordv2)</CODE>  compare <CODE>ordv1</CODE> with <CODE>ordv2</CODE>; result is -1,0,+1 according as <CODE>ordv1 &lt; = &gt; ordv2</CODE>
+<LI><CODE>myStdDeg(ordv1)</CODE>  compute std degree of <CODE>ordv1</CODE>
+<LI><CODE>myWDeg(D, ordv1)</CODE> put into <CODE>D</CODE> weighted degree of <CODE>ordv1</CODE>
+<LI><CODE>myCmpWDeg(ordv1, ordv2)</CODE>  compare weighted degrees of <CODE>ordv1</CODE> and <CODE>ordv2</CODE>
+<LI><CODE>myCmpWDegPartial(ordv1, ordv2, GrDim)</CODE>  compare weighted degrees of <CODE>ordv1</CODE> and <CODE>ordv2</CODE>
+<LI><CODE>myIsZero(ordv1)</CODE>  test whether <CODE>ordv1</CODE> is zero
+<LI><CODE>myIsIndet(x, ordv1)</CODE>  test whether <CODE>ordv1</CODE> is an indet; if so, put index into <CODE>x</CODE>
+</UL>
+
+<P></P>
+<A NAME="toc5"></A>
+<H4>Background about matrices and PP orderings</H4>
+<P>
+This section is for the curious.
+</P>
+<P>
+To better understand the what an <CODE>OrdvArith</CODE> object does, let us begin by
+setting the scene.  We recall that for all practical purposes an arithmetic
+ordering on power products can be specified by a matrix of integers <CODE>M</CODE> as
+follows:
+  Let <CODE>t1 = x_1^e_1 * x_2^e_2 * ... * x_n^e_n</CODE> be a power product,
+  and <CODE>t2 = x_1^f_1 * x_2^f_2 * ... * x_n^f_n</CODE> be another.
+  Then we call <CODE>(e_1, e_2,..., e_n)</CODE> the <B>exponent vector</B> for <CODE>t1</CODE>,
+  and similarly for <CODE>t2</CODE>.  For brevity we shall write <CODE>expv(t1)</CODE>, etc.
+</P>
+<P>
+  The matrix <CODE>M</CODE> determines the ordering thus:  we say that
+  <CODE>t1 &lt; t2</CODE>  iff  <CODE>M*expv(t1)</CODE> comes before <CODE>M*expv(t2)</CODE> in lex ordering.
+  We call the product <CODE>M*expv(t1)</CODE> the <B>order vector</B> for <CODE>t1</CODE>, and for
+  brevity we shall write <CODE>ordv(t1)</CODE> to denote it; similarly for <CODE>t2</CODE>.
+</P>
+<P>
+Typically the matrix <CODE>M</CODE> is subject to some suitability criteria, <I>e.g.</I> <CODE>M</CODE>
+should be square and invertible.  We shall assume henceforth that <CODE>M</CODE> has
+been chosen so that all order vectors contain only non-negative entries.
+While reading the rest of these notes it may be convenient to think of <CODE>M</CODE> as
+being non-singular, so that there is a 1-1 correspondence between power
+products and their order vectors.
+</P>
+<P>
+Now the scene has been set, we can explain what an <CODE>OrdvArith</CODE> object does.
+It can effect the conversion from <I>exponent vector</I> to <I>order vector</I>,
+and <I>vice versa</I>.  It can also operate directly on order vectors.
+Certain special orderings are recognized, so that special relationships
+between the exponent vector and order vector can be exploited to enable
+faster computation.
+</P>
+<A NAME="toc6"></A>
+<H2>Maintainer documentation for OrdvArith</H2>
+<P>
+See subsection below about thread-safety!
+</P>
+<P>
+The base class <CODE>OrdvArith::base</CODE> just contains several handy values
+related to the number of indets and the packing mechanism.  The ctor
+does some sanity checking on the supplied parameters, and computes
+some handy values for packing/unpacking vectors.
+</P>
+<P>
+Mem fns <CODE>myMul</CODE>, <CODE>myDiv</CODE> and <CODE>myCmp</CODE> are inline for speed.  Recall
+that <CODE>myMul</CODE> and <CODE>myDiv</CODE> do not check for over-/under-flow (for speed).
+</P>
+<P>
+The mem fns <CODE>myCompress</CODE> and <CODE>myDecompress</CODE> have to check whether
+<CODE>myPackingDensity</CODE> is 1 because C++ shift operators work "strangely"
+if the shift size equals the wordsize.
+</P>
+<P>
+There are several derived classes which supply efficient "short-cut"
+impls for some operations when specific knowledge of the ordering
+permits this.
+</P>
+<P>
+Data member <CODE>myNumIndets</CODE> is required when dealing with exponent vectors
+(since C vectors do not record their own length).  It is the number of
+valid entries in a C vector representing an exponent vector.
+</P>
+<P>
+Data member <CODE>myGradingDim</CODE> specifies how many initial components of an order
+vector comprise the grading.  It is needed in <CODE>myWDeg</CODE>.
+</P>
+<P>
+Data member <CODE>myOrdvWords</CODE> is used only to supply the return value to the
+friend function <CODE>OrdvWords</CODE>.  This value is needed so that a caller can
+allocate the correct amount of space in which to build a new order vector
+value.  By default this is initialized to a huge value, so that it will
+quickly become evident at run-time if it hasn't been initialized to a sane
+value.
+</P>
+<P>
+Data member <CODE>myOrdvWordsForCmp</CODE> is used in <CODE>myMul</CODE>, <CODE>myDiv</CODE> and <CODE>myCmp</CODE> to choose
+between an inline function and a virtual call.  Its value may be non-zero
+and different from <CODE>myOrdvWords</CODE> if a redundant representation is being used
+(<I>e.g.</I> for a <CODE>StdDegRevLex</CODE> ordering).  By default this is initialized to a huge
+value, so that it will quickly become evident at run-time if it hasn't been
+initialized to a sane value.
+</P>
+<P>
+The member functions <CODE>myMul</CODE>, <CODE>myDiv</CODE>, and <CODE>myCmp</CODE> are non-virtual so that the
+compiler can implement them inline: at run-tme they check the data member
+<CODE>myOrdvWordsForCmp</CODE> to decide whether to the use the inline function or
+delegate to a "shadow" virtual function.  This rather ugly arrangement was
+necessary to achieve acceptable run-time performance.
+</P>
+<P>
+The member function <CODE>myMulIndetPower</CODE> is not pure because a reasonable
+generic implementation exists.  Similarly, myOutput(OMOut, ordv) is not pure.
+</P>
+<A NAME="toc7"></A>
+<H4>Threadsafety and CoCoA_THREADSAFE_HACK</H4>
+<P>
+The code contains some <CODE>#if</CODE> blocks to distinguish between
+single-threaded and multi-threaded run-time environments.  In a
+single-threaded environment the base class contains two "global"
+buffers used when converting between exponent vectors and compressed
+order vectors; in a multi-threaded environment these buffers are not
+used, but each function needing to do such conversions creates
+appropriate buffers in local variables (so there are lots of #if
+directives).
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+In some ways, <CODE>myCmp</CODE> could simply be operator(); thus calls would look
+like <CODE>ord(ordv1, ordv2)</CODE> where ord is an object of type PPOrdering.
+</P>
+<P>
+We need a way to handle order vectors which have large integer entries!
+(also ordering matrices with large integer entries).
+Recall that some ordvs may involve <CODE>mpz_t</CODE> integers!
+Note that the polynomial type needs to know how big an ordv can be: that's what
+the <CODE>OrdvWords</CODE> member function is for.
+</P>
+<P>
+Should <CODE>StdDegRevLex</CODE> actually store an extra component so that <CODE>deg(...,x[0])</CODE>
+can be calculated easily?  Do we really need this to be quick?  It would be
+needed for computing GCDs, testing divisibility etc, but these operations
+would normally be done only on "rich PP" objects -- talk to Anna!
+</P>
+<P>
+The restriction to order compatible gradings may not be wholly necessary.
+The PPs in a polynomial homogeneous with respect to a k-dimensional grading
+are completely specified by n-k of the entries in the order vector, though
+precisely which entries must be retained depends on the grading and the
+ordering.  Thus a later generalization to non order compatible gradings
+may not be too painful.
+</P>
+<P>
+ANNA: must add a section about modular order matrix
+JOHN: yes, you must!  Where does 46336 come from???
+</P>
+<P>
+The default implementation of <CODE>myIsIndet</CODE> is not very efficient, but is it
+really worth writing many different (efficient) implementations?
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/OrdvArith.html -i txt/OrdvArith.txt -->
+</BODY></HTML>

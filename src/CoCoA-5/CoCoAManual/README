@@ -1,0 +1,107 @@
+%------------------------------------------------------------
+== HOW TO WRITE AN ENTRY IN CoCoAHelp.Xml ==
+%------------------------------------------------------------
+
+=== Command ===
+
+place the command in alphabetical order with this structure
+```
+<command>
+  <title>xxx</title>
+  <short_description>xxx</short_description>
+
+<syntax>
+xxx(L:LIST): LIST
+xxx(L:LIST, N:INT): LIST
+</syntax>
+<description>
+xxx yyy zzz...
+
+<example>
+/**/ INPUT
+OUTPUT
+
+/**/ INPUT
+OUTPUT
+</example>
+</description>
+
+<types>
+  <type>xxx</type>
+</types>
+
+<keys>
+  <key>xxx</key>
+</keys>
+
+<seealso>
+  <see>xxx</see>
+</seealso>
+</command>
+```
+
+When called the first time CoCoA-5 reads the whole file and stores the fields
+in title, keys, syntax.
+The search for the required entry is done using this table (in C++).
+
+Then rereads the file to get and print the entry:
+so, if you make a change in CoCoAHelp.xml in the description or example
+it will work without reloading the manual,
+and if you make a change in CoCoAHelp.xml in the title (new entry) or in
+syntax, or search keys, you will need to call ``ReloadMan();`` for it to
+work.
+
+- order is not important (well, not much) but consistency help maintanance
+- the title is automatically a search "key" (so, no need to list it)
+- put no extra spaces in syntax and example because they are verbatim
+-
+
+== Tags ==
+
+//What font should one use when referring to params in the description?//
+Morally ``<tt>...</tt>``, but that's rarely done
+
+//How to make links to another entry?//
+``<ttref>entry</ttref>`` for commands and
+``<ref>title</ref>`` for other sections
+ (case sensitive)
+
+
+==== FULL EXAMPLE ====
+```
+<command>
+  <title>IsElem</title>
+  <short_description>checks if A is an element of B</short_description>
+  
+<syntax>
+IsElem(A:RINGELEM, B:IDEAL): BOOL
+IsElem(A:MODULEELEM, B:MODULE): BOOL
+</syntax>
+
+<description>
+This function tests whether A is an element of B.
+Same as the command <ttref>IsIn</ttref>, but works on fewer types: it
+is in CoCoA-5 for compatibility with the C++ function in CoCoALib.
+
+<example>
+/**/  Use QQ[x,y,z];
+/**/  IsElem(x, Ideal(x+y, x-y));
+true
+
+/**/  x IsIn Ideal(x+y, x-y);
+true
+</example>
+</description>
+
+<types>
+  <type>ideal</type>
+  <type>module</type>
+  <type>boolean</type>
+</types>
+
+<seealso>
+  <see>IsIn</see>
+</seealso>
+
+</command>
+```

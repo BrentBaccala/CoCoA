@@ -1,0 +1,63 @@
+H1 { text-align: center; }
+CAPTION { font-weight: bold }
+A.qindex {}
+A.qindexRef {}
+A.el { text-decoration: none; font-weight: bold }
+A.elRef { font-weight: bold }
+A.code { text-decoration: none; font-weight: normal; color: #4444ee }
+A.codeRef { font-weight: normal; color: #4444ee }
+A:hover { text-decoration: none; background-color: #f2f2ff }
+
+DL.el { margin-left: -1cm }
+
+DIV.fragment { width: 100%; border: outset #f4f4f4 2px; background-color: #eee }
+DIV.ah { background-color: black; font-weight: bold; color: #fff; margin-bottom: 3px; margin-top: 3px }
+
+TABLE.mdTable { border: outset #0bb 2px;  background-color: #bef;}
+TD.md { font-weight: bold; }
+TD.mdname1 { font-weight: bold; color: #0c2; }
+TD.mdname { font-weight: bold; color: #0c2;}
+
+DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }
+DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }
+
+BODY { background: white }
+
+TD.indexkey { 
+   background-color: #aaaaff; 
+   font-weight: bold; 
+   padding-right  : 10px; 
+   padding-top    : 2px; 
+   padding-left   : 10px; 
+   padding-bottom : 2px; 
+   margin-left    : 0px; 
+   margin-right   : 0px; 
+   margin-top     : 2px; 
+   margin-bottom  : 2px  
+}
+TD.indexvalue { 
+   background-color: #eeeeff; 
+   font-style: italic; 
+   padding-right  : 10px; 
+   padding-top    : 2px; 
+   padding-left   : 10px; 
+   padding-bottom : 2px; 
+   margin-left    : 0px; 
+   margin-right   : 0px; 
+   margin-top     : 2px; 
+   margin-bottom  : 2px  
+}
+
+TD.memItemLeft, TD.memItemRight { background-color: #eee; border: outset 1px #fff;}
+TD.mdescRight, TD.mdescLeft   { background-color: #fff;  color: #a00;}
+
+a.qindex { background-color: #bef; }
+
+span.keyword       { color: #008000 }
+span.keywordtype   { color: #604020 }
+span.keywordflow   { color: #e08000 }
+span.comment       { color: #800000 }
+span.preprocessor  { color: #ff0000 }
+span.stringliteral { color: #002080 }
+span.charliteral   { color: #008080 }
+

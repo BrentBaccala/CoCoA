@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingTwinFloat</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingTwinFloat</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2009,2012 John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for the classes RingTwinFloat and RingTwinFloatImpl</A>
+      <UL>
+      <LI><A HREF="#toc2">Examples</A>
+      <LI><A HREF="#constructors">Pseudo-constructors</A>
+      <LI><A HREF="#query">Query and cast</A>
+      <LI><A HREF="#operations">Operations</A>
+      <LI><A HREF="#homomorphisms">Homomorphisms</A>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer documentation for the classes RingTwinFloat and RingTwinFloatImpl</A>
+      <UL>
+      <LI><A HREF="#toc8">Philosophy</A>
+      <LI><A HREF="#toc9">RingTwinFloatImpl::myFloor</A>
+      </UL>
+    <LI><A HREF="#toc10">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc11">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for the classes RingTwinFloat and RingTwinFloatImpl</H2>
+<P>
+IMPORTANT NOTICE: please make sure you are using GMP 4.1.4 or later
+(wrong results may be obtained with earlier versions).
+</P>
+<P>
+Elements of a <CODE>RingTwinFloat</CODE> try to act as though they were unlimited
+precision floating point values (while using only a finite precision).
+RingTwinFloat uses a heuristic to monitor loss of precision during
+computation, and will throw a <CODE>RingTwinFloat::InsufficientPrecision</CODE> object if
+it detects an unacceptable loss of precision.  Beware that this is only
+a probabilistic heuristic which can underestimate precision loss.  A
+<CODE>RingTwinFloat::InsufficientPrecision</CODE> object may also be caught as an
+<CODE>ErrorInfo</CODE> object having error code <CODE>ERR::InsuffPrec</CODE> (see <A HREF="error.html"><CODE>error</CODE></A>).
+</P>
+<P>
+EXAMPLE:
+  If epsilon is a non-zero <CODE>RingTwinFloat</CODE> value then (1+epsilon == 1)
+  will either be false or throw <CODE>RingTwinFloat::InsufficientPrecision</CODE>.
+</P>
+<P>
+<CODE>RingTwinFloat</CODE> uses a heuristic for guessing when the difference of two
+almost equal values should be regarded as zero.  While the heuristic is
+usually very reliable, it is possible to construct examples where the
+heuristic fails: see EXAMPLES/ex-RingTwinFloat1.C.
+</P>
+<P>
+The function <CODE>IsInteger</CODE> will return false for any value of magnitude
+greater than or equal to 2^PrecisionBits(RR).  Recognition of integers
+is heuristic; failures in ether sense are possible but are also
+unlikely.
+</P>
+<P>
+See <A HREF="RingElem.html#RingTwinFloat"><CODE>RingElem</CODE> RingTwinFloat</A> for operations on its elements.
+</P>
+<A NAME="toc2"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingTwinFloat1.C">ex-RingTwinFloat1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingTwinFloat2.C">ex-RingTwinFloat2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingTwinFloat3.C">ex-RingTwinFloat3.C</A>
+</UL>
+
+<P></P>
+<A NAME="constructors"></A>
+<H3>Pseudo-constructors</H3>
+<P>
+The constructor for RingTwinFloat takes a single argument being a lower
+bound on the number of bits' precision desired (in the mantissa).  The
+value specified is probably rounded up a bit; exactly what happens
+depends on the mpf implementation in the GMP library.  A minimum
+precision of 32 bits is imposed; smaller precisions are automatically
+increased to 32.
+</P>
+<P>
+All arguments are <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A>
+</P>
+<UL>
+<LI><CODE>NewRingTwinFloat(AccuracyBits)</CODE>
+<LI><CODE>NewRingTwinFloat(AccuracyBits, BufferBits, NoiseBits)</CODE>
+<LI><CODE>RingTwinFloat(R)</CODE> -- sort of downcast the ring <CODE>R</CODE> to a twin-float ring;
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotRingTwinFloat</CODE> if needed.
+</UL>
+
+<P></P>
+<A NAME="query"></A>
+<H3>Query and cast</H3>
+<P>
+Let <CODE>S</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>IsRingTwinFloat(S)</CODE> -- <CODE>true</CODE> iff <CODE>S</CODE> is actually a <CODE>RingTwinFloat</CODE>
+<LI><CODE>RingTwinFloatPtr(S)</CODE> -- pointer to the twin-float impl (for calling mem fns);
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotRingTwinFloat</CODE> if needed.
+</UL>
+
+<P></P>
+<A NAME="operations"></A>
+<H3>Operations</H3>
+<P>
+In addition to the standard <A HREF="ring.html#operations"><CODE>ring</CODE> operations</A>, a <CODE>FractionField</CODE>
+may be used in:
+</P>
+<UL>
+<LI><CODE>PrecisionBits(RR)</CODE> -- gives the mantissa precision specified in the ctor
+</UL>
+
+<P></P>
+<A NAME="homomorphisms"></A>
+<H3>Homomorphisms</H3>
+<P>
+Let <CODE>RR</CODE> be a <CODE>RingTwinFloat</CODE> and <CODE>R</CODE> any <A HREF="Ring.html"><CODE>Ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>NewApproxHom(RR, R)</CODE> -- creates the homomorphism <CODE>RR</CODE> --&gt; <CODE>S</CODE>
+                             (but see also <A HREF="CanonicalHom.html"><CODE>CanonicalHom</CODE></A>)
+</UL>
+
+<P></P>
+<A NAME="toc7"></A>
+<H2>Maintainer documentation for the classes RingTwinFloat and RingTwinFloatImpl</H2>
+<P>
+As usual the class <CODE>RingTwinFloat</CODE> is just a reference counting smart pointer
+to an object of type <CODE>RingTwinFloatImpl</CODE> (which is the one which really does
+the work).  The implementation of the smart pointer class <CODE>RingTwinFloat</CODE> is
+altogether straightfoward (just the same as any of the other smart
+pointer ring classes).
+</P>
+<A NAME="toc8"></A>
+<H3>Philosophy</H3>
+<P>
+The implementation is based on Traverso's idea of "paired floats":
+each value is represented as two almost equal floating point numbers.
+The difference between the two numbers is intended to give a good
+indication of how much "noise" there is in the values.  Here we shall
+allow larger tuples of floating point numbers.  Arithmetic is 
+performed independently on each component: e.g.
+</P>
+<PRE>
+    (a[0],a[1]) + (b[0],b[1])  ==&gt;  (a[0]+b[0] , a[1]+b[1])
+</PRE>
+<P>
+The consistency of the components is checked after every operation.
+</P>
+<P>
+The main "trick" in the implementation of <CODE>RingTwinFloatImpl</CODE> is that its
+elements are <CODE>MultipleFloat</CODE>s (just a C array of <CODE>mpf_t</CODE> values).  The
+number of components in a <CODE>MultipleFloat</CODE> value is determined by
+<CODE>RingTwinFloatImpl::myNumCompts</CODE> -- currently fixed equal to 2 at compile
+time.  Furthermore the values of these components must all be very close
+to each other.  Indeed the function <CODE>RingTwinFloatImpl::myCheckConsistency</CODE>
+checks this condition: two outcomes are possible:
+-  (1)  all the components are very close to each other;
+-  (2)  at least one component is quite far from another.
+-
+In case (1) nothing more happens.  In case (2) it is evident that an
+accumulated loss of precision has become unacceptable, and this triggers
+an exception of type <CODE>RingTwinFloat::InsufficientPrecision</CODE>.  The addition and
+subtraction functions check explicitly for near cancellation, and force
+the result to be zero in such cases.
+</P>
+<P>
+The bit precision parameter specified when creating a RingTwinFloat is used
+in the following way (with the underlying principle being that elements
+of <CODE>RingTwinFloat(N)</CODE> should have at least roughly N bits of reliable value).
+</P>
+<P>
+The digits in the mantissa (of each component in a <CODE>MultipleFloat</CODE>) are
+conceptually divided into three regions:
+</P>
+<PRE>
+     A A A A...A A A  B B B B....B B B B  C C C....C C C
+     &lt;-  N bits   -&gt;  &lt;- sqrt(N) bits -&gt;  &lt;- N/2 bits -&gt;
+</PRE>
+<P>
+The region A comprises as many bits as the precision requested, and may
+be regarded as being correct with high probability.
+The region B comprises "guard digits": these digits are NOT regarded
+as being correct, but regions A and B of all components must be equal.
+Finally, region C is for "noise", and may be different in different
+components.
+</P>
+<P>
+When an integer is converted to a <CODE>MultipleFloat</CODE>, the component with
+index 0 takes on the closest possible value to the integer while the
+other component(s) have about sqrt(N) bits of uniform random "noise"
+added to them (the random value may be positive or negative).
+</P>
+<P>
+Special action is taken if there is large drop in magnitude during an addition
+(or subtraction): if the magnitude drops by more than N+sqrt(N) bits
+then the answer is forced to be equal to zero.  There is a remote chance
+of erroneously computing zero when two almost equal values are
+subtracted.  It does not seem to be possible to avoid this using limited
+precision arithmetic.
+</P>
+<P>
+Special action is taken if a "noisy" component happens to be too close
+to the value at index 0: in this case more random noise is added.  This
+can happen, for instance, if a value is divided by itself.
+</P>
+<A NAME="toc9"></A>
+<H3>RingTwinFloatImpl::myFloor</H3>
+<P>
+It took me a while to find a satisfactory definition for the member
+function <CODE>myFloor</CODE> (even though the final code is fairly simple).
+</P>
+<P>
+I eventually settled on the following definition.  If the argument satisfies
+the <CODE>IsInteger</CODE> predicate then the floor function must surely give
+precisely that integer.  Otherwise the argument (call it <I>X</I>) is not an
+integer, and the floor of <I>X</I>, if it exists, will be that integer <I>N</I>
+which satisfies the two-part condition <I>N</I> &lt; <I>X</I> and <I>N</I>+1 &gt; <I>X</I>.  If
+there is no such integer <I>N</I> then the floor cannot be computed, and an
+<CODE>InsufficientPrecision</CODE> exception must be thrown.  In fact, there is an
+obvious candidate for <I>N</I>, namely the floor of the first component of the
+internal representation of <I>X</I> (it would be trickier to use the floor of the second
+component).  Clearly <I>N</I> can be no larger than this candidate, since otherwise
+the first part of the condition would fail; and if <I>N</I> were any smaller
+then the second part would fail.
+</P>
+<A NAME="toc10"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+The code is ugly.
+</P>
+<P>
+The functions <CODE>perturb</CODE>, <CODE>ApproximatelyEqual</CODE> and <CODE>myCmp</CODE> do "wasteful"
+alloc/free of temporary <CODE>mpf_t</CODE> values.  <CODE>myCmp</CODE> can be done better.
+</P>
+<P>
+What about a function which finds a continued fraction approximant to a
+<CODE>RingTwinFloat</CODE> value?  It seems hard to implement such a function "outside"
+<CODE>RingTwinFloatImpl</CODE> as <CODE>InsufficientPrecision</CODE> will be triggered long before
+ambiguity is encountered in the continued fraction.
+</P>
+<P>
+<CODE>myIsInteger</CODE> needs to be rewritten more sensibly (using <CODE>mpf_ceil</CODE> or
+<CODE>mpf_floor</CODE> perhaps?)
+</P>
+<P>
+How to print out floats when they appear as coeffs in a polynomial???
+What are the "best" criteria for printing out a float so that it looks
+like an integer?  Should the integer-like printout contain a decimal
+point to emphasise that the value may not be exact?
+</P>
+<P>
+Is it really necessary to call <CODE>myCheckConsistency</CODE> after multiplication
+and division?  The accumulated loss of precision must grow quite slowly.
+Yes, it is necessary: consider computing  1^1000000 (or any other high power).
+</P>
+<P>
+What about COMPLEX floats???
+</P>
+<P>
+When a <CODE>MultipleFloat</CODE> is duplicated should its components be perturbed?
+</P>
+<P>
+AsMPF is an UGLY function: signature reveals too much about the impl!
+</P>
+<P>
+<CODE>myNumCompts</CODE> could be chosen by the user at run-time; in which case it
+must become a per-instance data member (instead of static).  I'd guess
+that 2, 3 or 4 would be the best compromise.
+</P>
+<P>
+Could it be useful to allow precisions below 32 bits?  The limit does
+seem to be somewhat arbitrary.  Perhaps the number of noise bits should
+also be allowed to vary?
+</P>
+<P>
+<CODE>RingTwinFloatImpl::myOutput</CODE>:
+</P>
+<UL>
+<LI>the the number of digits printed could be determined by how closely
+   the different components match -- would this be useful or wise?
+<LI>the number of digits printed is related to the definition of
+   <CODE>myCheckConsistency</CODE> (I'm a little uneasy about this invisible link)
+</UL>
+
+<P>
+Should there be a means of mapping an element of a high precision <CODE>RingTwinFloat</CODE>
+to a lower precision <CODE>RingTwinFloat</CODE> (without having to pass through an external
+representation, such as a rational number)?
+</P>
+<P>
+It seems wasteful to use two <CODE>mpf_t</CODE> values to represent a single <CODE>RingTwinFloat</CODE>
+value.  Would it not be better to keep the main value and an "epsilon" (held as
+a <CODE>double</CODE> and an <CODE>int</CODE> exponent?  Would it matter that "epsilon" has only
+limited precision?
+</P>
+<A NAME="toc11"></A>
+<H2>Main changes</H2>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingTwinFloat.html -i txt/RingTwinFloat.txt -->
+</BODY></HTML>

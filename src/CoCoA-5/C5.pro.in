@@ -1,0 +1,51 @@
+
+#QMAKE_CXXFLAGS += -ansi -Wall -Wextra -pedantic -O0 -g3
+#QMAKE_CXXFLAGS += -ansi -Wall -Wextra -pedantic # for bug in gcc-4.5.2
+QMAKE_CXXFLAGS += -ansi -Wall -Wextra -pedantic -O2
+QMAKE_MAKEFILE = C5Makefile
+DESTDIR = .
+CONFIG += debug qt thread
+TEMPLATE = app
+TARGET = C5
+DEPENDPATH += .
+INCLUDEPATH += . \
+	QCodeEdit \
+	QCodeEdit/document 
+LIBS += -LQCodeEdit  -lpthread  -lqcodeedit # AMB
+DEFINES += C5IDE
+MOC_DIR = 
+UI_DIR =
+OBJECTS_DIR = Debug
+QT += xml
+HEADERS += AST.H \
+           C5.H \
+	   CoCoALibSupplement.H \
+           BuiltInFunctions.H \
+           BuiltInOneLiners.H \
+           CompilationDate.H \
+           Interpreter.H \
+           Lexer.H \
+           LineProviders.H \
+           VersionInfo.H \
+           Banner.H \
+	   OnlineHelp.H \
+           Parser.H 
+FORMS += Console.ui MainWindow.ui SourceEditor.ui Debugger.ui
+SOURCES += AST.C \
+           BuiltInFunctions.C \
+           BuiltInOneLiners.C \
+           BuiltInFunctions-GSL.C \
+           BuiltInFunctions-Normaliz.C \
+           C5.C \
+           CoCoALibSupplement.C \
+           CompilationDate.C \
+           Interpreter.C \
+           Lexer.C \
+           LineProviders.C \
+           Main.C \
+           Banner.C \
+	   OnlineHelp.C \
+           VersionInfo.C \
+           Parser.C 
+RESOURCES += C5.qrc
+

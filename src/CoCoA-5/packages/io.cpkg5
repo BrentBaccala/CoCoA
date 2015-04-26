@@ -1,0 +1,160 @@
+-- io.cpkg : 0.1 : Input/Output package
+--------------------------------------------------------------
+
+Package $io
+
+Export format;
+
+--------------------------------------------------------------
+
+Define Print_Aliases(L)
+  -- L := Untagged(L);
+  If L=[] Then Return; EndIf;
+  S := max([len(X[1])|X In L]);
+  Foreach X In L Do
+    PrintLn;
+    Sp := Spaces(S-len(X[1]));
+    Print X[1],Sp," = ",X[2];
+  EndForeach;
+EndDefine;
+
+-- Define Cterm(O)
+--   D := $.OpenOStringCterm("");
+--   Print O On D;
+--   S := Cast(D,STRING);
+--   Close(D);
+--   Return S;
+-- EndDefine;
+
+
+Define format(O,L) Return $.FormatString(Sprint(O),L); EndDefine;
+
+Define FormatString(S,L)
+  If L-len(S) >= 0 Then Return Spaces(L-len(S)) + S; Else Return S; EndIf;
+EndDefine; -- FormatString
+
+
+-- Define GetLine(D)
+--   S := NULL;
+--   Chars := Get(D,1);
+--   While Chars<>[] Do
+--     If Chars[1] = 10 Then
+--       If S = NULL Then S := "" EndIf;
+--       Return S
+--     Else
+--       If S = NULL Then S := "" EndIf;
+--       S := S+Ascii(Chars);
+--       Chars := Get(D,1)
+--     EndIf
+--   EndWhile;
+--   Return S;
+-- EndDefine;
+
+Define Print_Table(Headings, Spaces, Rows) -- TODO: Check
+-- Rows is a list of Rows
+-- Each row is a list of integers
+  If len(Spaces) < len(Headings) Then
+    Spaces := Spaces + NewList(len(Headings)-len(Spaces),0);
+  EndIf;
+  Spaces := [ max(Spaces[I], len(Headings[I])) | I In 1..len(Headings) ];
+  Dashes := sum(NewList(sum(Spaces)+len(Spaces)-1,"-"));
+  PrintLn Dashes;
+  For C := 1 To len(Headings) Do
+    Print Spaces(max(Spaces[C]-len(Headings[C]),0));
+    Print Headings[C]," ";
+  EndFor;
+  PrintLn;
+  PrintLn Dashes;
+  For R := 1 To len(Rows) Do
+    For C := 1 To len(Spaces) Do
+      Print $.Format($.Sprint(Rows[R,C]),Spaces[C])," ";
+    EndFor;
+    PrintLn;
+  EndFor;
+  PrintLn Dashes;
+EndDefine;
+
+Define Tagged(O,T) Return Tagged(O,$.PkgName()+"."+T); EndDefine;
+
+Define Print_Matrix(M)
+  N := len(M[1]);
+  $.Print_Table(NewList(N,""), NewList(N,4), M);
+EndDefine;
+
+-----[ StarPrint ]------------------------------------------------
+
+Define StarSprint_Indet(I)
+  X := Indet(I);
+  Ans := Sprint(IndetName(X));
+  L := IndetSubscripts(X);
+  If L <> [] Then Ans := Ans + Sprint(L); EndIf;
+  Return Ans;
+EndDefine; -- StarSprint_Indet
+
+Define StarSprint_PP(PP)
+  Ans := "";
+  For I := 1 To Len(PP) Do
+    If PP[I] <> 0 Then
+      Ans := Ans + "*" + $.StarSprint_Indet(I);
+      If PP[I] <> 1 Then
+        Ans := Ans + "^" + Sprint(PP[I]);
+      EndIf;
+    EndIf;
+  EndFor;
+  Return Ans;
+EndDefine; -- StarSprint_PP
+
+Define StarSprint_Coeff(C)
+  If type(C) = INT Or den(C) = 1 Then Return Sprint(C); EndIf;
+  If C > 0 Then Return "(" + Sprint(C) + ")"; EndIf;
+  Return "-(" + Sprint(-C) + ")";
+EndDefine; -- StarSprint_Coeff
+
+
+-- Define StarSprint(P)
+--   If not(type(P) IsIn [POLY, RATFUN]) Then error("StarSprint: argument not a polynomial or rational function"); EndIf;
+--   Return $.StarSprintFold(P, 70);
+-- EndDefine; -- StarSprint
+
+Define StarSprintFold(P, LineWidth)
+  If not(type(P) IsIn [RINGELEM, RATFUN]) Then error("StarSprintFold: 1st argument not a polynomial or rational function"); EndIf;
+  If type(LineWidth) <> INT Then error("StarSprintFold: LineWidth must be integer"); EndIf;
+  If LineWidth < 1 Then LineWidth := 2^64; EndIf;
+  If type(P) = RATFUN Then
+    Return "(" + $.StarSprintFold(Num(P), LineWidth) + ")/("
+               + $.StarSprintFold(Den(P), LineWidth) + ")";
+  EndIf;
+  coeff := coefficients(P);
+  PP := support(P);
+  If coeff = [] Then Return "0"; EndIf;
+  LastNewLine := 0;
+  Line := $.StarSprint_Coeff(coeff[1]) + $.StarSprint_PP(log(PP[1]));
+  For I := 2 To len(coeff) Do
+    CoeffPart := $.StarSprint_Coeff(coeff[I]);
+    If CoeffPart[1] <> "-" Then CoeffPart := "+" + CoeffPart; EndIf;
+    NextTerm := " " + CoeffPart + $.StarSprint_PP(log(PP[I]));
+    If Line <> "" And
+      (len(Line) + len(NextTerm) > LineWidth + LastNewLine) Then
+      Line := Line + "\n";
+      LastNewLine := len(Line);
+    EndIf;
+    Line := Line + NextTerm;
+  EndFor;
+  Return Line;
+EndDefine; -- StarSprintFold
+
+
+-- Define StarPrint(P)
+--   If not(type(P) IsIn [POLY, RATFUN]) Then error("StarPrint: argument not a polynomial or rational function"); EndIf;
+--   Print $.StarSprintFold(P, 70);
+-- EndDefine; -- StarPrint
+
+Define StarPrintFold(P, LineWidth)
+  If not(type(P) IsIn [RINGELEM, RATFUN]) Then error("StarPrintFold: 1st argument not a polynomial or rational function"); EndIf;
+  If type(LineWidth) <> INT Then error("StarPrintFold: LineWidth must be integer"); EndIf;
+  Print $.StarSprintFold(P, LineWidth);
+EndDefine; -- StarPrintFold
+
+
+EndPackage; -- Package
+

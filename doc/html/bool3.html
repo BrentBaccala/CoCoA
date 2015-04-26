@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      bool3</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      bool3</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for bool3</A>
+      <UL>
+      <LI><A HREF="#examples">Examples</A>
+      <LI><A HREF="#Constructors">Constructors</A>
+      <LI><A HREF="#queries">Queries</A>
+      <LI><A HREF="#operations">Operations on bool3</A>
+      <LI><A HREF="#toc6">Comparison with BOOST library</A>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer documentation for bool3</A>
+    <LI><A HREF="#toc8">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for bool3</H2>
+<P>
+The class called <CODE>bool3</CODE> implements a three-valued boolean: the
+possible values represent the notions <I>false</I>, <I>uncertain</I> and
+<I>true</I>.  A variable of type <CODE>bool3</CODE> has a default initial value of
+<I>uncertain</I>.  To avoid problems with reserved words the three truth
+values are actually called:
+</P>
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><CODE>true3</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>false3</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>uncertain3</CODE></TD>
+</TR>
+</TABLE>
+
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-bool3.C">ex-bool3.C</A>
+</UL>
+
+<P></P>
+<A NAME="Constructors"></A>
+<H3>Constructors</H3>
+<UL>
+<LI><CODE>bool3(true)</CODE>   -- is the same as <CODE>true3</CODE>
+<LI><CODE>bool3(false)</CODE>  -- is the same as <CODE>false3</CODE>
+<LI><CODE>bool3()</CODE>       -- is the same as <CODE>uncertain3</CODE>
+</UL>
+
+<P></P>
+<P>
+To convert a normal <CODE>bool</CODE> to a <CODE>bool3</CODE> value, you must call
+the ctor explicitly.
+</P>
+<P>
+Nevertheless, a variable of type <CODE>bool3</CODE> may be assigned a C++
+<CODE>bool</CODE> value (<I>e.g.</I> <CODE>bool3  b3 = true;</CODE>) in which case <CODE>true</CODE>
+maps to <CODE>true3</CODE> and <CODE>false</CODE> to <CODE>false3</CODE>.
+</P>
+<A NAME="queries"></A>
+<H3>Queries</H3>
+<P>
+There are three functions for testing the value of a <CODE>bool3</CODE> expression:
+(note that these functions return a C++ <CODE>bool</CODE> value)
+</P>
+<UL>
+<LI><CODE>IsTrue3(bool3expr)</CODE>       -- true iff expr is true3
+<LI><CODE>IsFalse3(bool3expr)</CODE>      -- true iff expr is false3
+<LI><CODE>IsUncertain3(bool3expr)</CODE>  -- true iff expr is uncertain3
+</UL>
+
+<P></P>
+<P>
+These functions are the only way of <I>converting</I> a <CODE>bool3</CODE> to a
+standard C++ <CODE>bool</CODE> value -- there is no automatic conversion from a
+<CODE>bool3</CODE> value to a standard C++ <CODE>bool</CODE>.
+</P>
+<A NAME="operations"></A>
+<H3>Operations on bool3</H3>
+<P>
+There are <B>no arithmetic operations</B> on <CODE>bool3</CODE> values.
+</P>
+<P>
+<CODE>bool3</CODE> values may be printed in the usual way.  The printed forms are:
+<CODE>true3</CODE>  <CODE>false3</CODE>  <CODE>uncertain3</CODE>.
+</P>
+<A NAME="toc6"></A>
+<H3>Comparison with BOOST library</H3>
+<P>
+Note that <CODE>bool3</CODE> is not the same as BOOST's <CODE>tribool</CODE>, though the
+two are fairly similar.  The principal differences are that <CODE>bool3</CODE>
+does not have automatic conversion to <CODE>bool</CODE>, and there are no
+logical operations on <CODE>bool3</CODE> whereas <CODE>tribool</CODE> does have some.
+</P>
+<A NAME="toc7"></A>
+<H2>Maintainer documentation for bool3</H2>
+<P>
+The implementation is very simple.  The only point to watch is that the
+order of the constants in the enum <CODE>Bool3TruthValues</CODE> was chosen to allow a
+simple implementation of the function <CODE>cmp</CODE> (which is currently removed
+from <CODE>bool3.H</CODE>, see <I>Bugs and Shortcomings</I> below).  If you change the
+order, you will have to change the definition of <CODE>cmp</CODE>.
+</P>
+<P>
+All functions/operations are implemented inline except for I/O.
+I have avoided const-ref arguments since it is surely cheaper simply to
+copy the enum value.
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+I made the <CODE>bool3</CODE> ctor from <CODE>bool</CODE> explicit; if conversion from
+<CODE>bool</CODE> to <CODE>bool3</CODE> is automatic then machine integer value match
+<CODE>bool3</CODE> as well as they match <CODE>MachineInt</CODE> --  be careful.
+</P>
+<P>
+I do feel quite uneasy about disagreeing with BOOST's <CODE>tribool</CODE> design, but
+their example of a three-way <I>if</I> statement looks to me to be a recipe for
+programmer grief -- one has to suppress the <I>law of the excluded middle</I> to
+read their code without finding it odd and surprising.
+</P>
+<P>
+Boolean arithmetic operations are not defined since we have not needed
+them so far.  It would be a simple matter, but I prefer to wait until
+there is a real need for such operations.
+</P>
+<P>
+Is the <CODE>cmp</CODE> function ever going to be useful???
+There was also a function <CODE>cmp</CODE> for comparing two <CODE>bool3</CODE> values:
+</P>
+<PRE>
+   cmp(b1, b2)  returns an int &lt;0, =0 or &gt;0 according as b1 &lt;,=,&gt; b2
+</PRE>
+<P>
+(assuming this ordering: false3 &lt; uncertain3 &lt; true3)
+</P>
+<PRE>
+  &gt;     friend int cmp(bool3 lhs, bool3 rhs); // must be friend function
+  &gt;   inline int cmp(bool3 lhs, bool3 rhs)
+  &gt;   {
+  &gt;     return lhs.myTruthValue - rhs.myTruthValue;
+  &gt;   }
+</PRE>
+<P></P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/bool3.html -i txt/bool3.txt -->
+</BODY></HTML>

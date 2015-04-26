@@ -1,0 +1,19 @@
+include sources
+OFILES=$(SRC_FILES:.c=.o)
+
+CC=gcc -Wall -pedantic
+CFLAGS= -O2 $(INCLUDES)
+LIBS= -L/usr/local/lib -lm -lgmp
+# NB jintf.o is compiled with an additional "-I../cocoa"
+INCLUDES=-I../gmp.dos
+
+all:	$(OFILES)
+
+factor.a:	$(OFILES) jintf.o
+	ar -cq factor.a $(OFILES) jintf.o
+
+# We must compile jintf.c with the correct CoCoA flags
+COC_VERSION     = -DSIS_UNIX -DCA_TEXT
+
+jintf.o: jintf.c jintf.h
+	$(CC) -c $(CFLAGS) $(COC_VERSION) jintf.c -I../cocoa -I.

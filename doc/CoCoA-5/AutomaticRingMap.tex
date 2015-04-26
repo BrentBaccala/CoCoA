@@ -1,0 +1,170 @@
+\documentclass{article}[12,a4paper]
+\title{Automatic Ring Maps}
+\author{John Abbott, Anna M. Bigatti}
+\date{27th September 2011\\Updated --}
+
+%\textwidth 140mm
+%\textheight 196mm
+%\evensidemargin 15mm
+%\oddsidemargin 15mm
+%\topmargin 10mm
+%--------------------------------------------------
+\setlength{\textwidth}{15.5cm}
+\setlength{\oddsidemargin}{0cm}
+\setlength{\evensidemargin}{0cm}
+
+\setlength{\textheight}{22.5cm}
+\setlength{\topmargin}{0cm}
+
+\setlength{\parskip}{4pt}
+
+\tolerance=150 % for overfull
+\mathsurround 1.5pt
+
+%\usepackage[colorlinks,hyperindex,urlcolor=blue]{hyperref}
+\usepackage[urlcolor=blue]{hyperref}
+\usepackage{xspace}
+%%\usepackage{boxedminipage} % for boxedminipage in syntax environment
+\usepackage{multicol} % for two-column table of contents
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{enumitem}
+\setlist{nolistsep}  % no extra separation before and between items
+\renewcommand{\labelenumi}{(\alph{enumi})} % enumerate -> (a), (b), ...
+
+
+%-- COLOURS ------------------------------------------------------------
+
+\usepackage{colortbl}
+\definecolor{red-}{rgb}{1.0,0.2,0.0}
+\definecolor{blue-}{rgb}{0.0,0.1,0.8}
+\definecolor{green-}{rgb}{0.0, 0.6, 0.0}
+\definecolor{gold}{rgb}{0.8,0.7,0.0}
+\definecolor{DarkGreen}{rgb}{0.0,0.5,0.0}
+\definecolor{LightGreen}{rgb}{0.8,1.0, 0.8}
+
+\long\def\red#1{{\textcolor{red-}{#1}}}
+\long\def\green#1{{\textcolor{green-}{#1}}}
+\long\def\blue#1{{\textcolor{blue-}{#1}}}
+\long\def\gold#1{{\textcolor{gold}{\bf #1}}}
+
+\usepackage{makeidx}
+\makeindex
+%--------------------------------------------------
+
+% FAMILY BBB OF DOUBLE STROKED LETTERS
+\font\tenmsb=msbm10
+\font\sevenmsb=msbm7
+\newfam\msbfam
+       \textfont\msbfam=\tenmsb
+       \scriptfont\msbfam=\sevenmsb
+\def\bbb#1{{\fam\msbfam #1}}
+
+\def\FF{{\bbb F}}
+\def\QQ{{\bbb Q}}
+\def\ZZ{{\bbb Z}}
+\def\CC{{\bbb C}}
+\def\AA{{\bbb A}}
+\def\KK{\overline{\bbb Q}}
+\def\ie{{\it i.e.}}
+\def\eg{{\it e.g.}}
+
+\def\cocoalib{{CoCoALib}\xspace}
+\def\mydots{$...$}
+
+\def\refandpage#1{{\ref{#1}, pg.\pageref{#1}}}
+
+\newenvironment{syntax}
+{\goodbreak\noindent\textbf{Syntax}\\
+ \begin{tabular}{|p{0.9\textwidth}|}\hline}
+{\\\hline\end{tabular}}
+%%{\noindent\textbf{Syntax}\\\begin{boxedminipage}{\textwidth}}
+%%{\end{boxedminipage}}
+
+%----------------------------------------------------------------------
+\definecolor{listinggray}{gray}{0.95}
+\lstset{language=pascal}
+\lstset{commentstyle=\textit}
+\lstset{% general command to set parameter(s) 
+backgroundcolor=\color{listinggray},
+rulecolor=\color{blue},
+frame=single,
+basicstyle=\ttfamily\small, % typewriter type 
+keywordstyle=\color{black}\bfseries, % bold black keywords 
+identifierstyle=, % nothing happens 
+%commentstyle=\color{white}, % white comments 
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{CoCoALib}
+
+No automatic conversions in CoCoALib, but there are and will be ways
+to create ``the natural map'' between two rings to easily operate with
+elements (or matrices) with different rings.
+
+\subsection{\texttt{CanonicalHom}}
+
+In CoCoALib there is already a way to create ``the right
+homomorphism'' between two rings which are strictly related: 
+the codomain being built as fraction field, or quotient ring of the
+domain, or the domain is $\ZZ$, $\QQ$, or the coefficient ring of the
+codomain.
+
+In file \texttt{CanonicalHom.C} the code is:
+\begin{verbatim}
+  RingHom CanonicalHom(const ring& domain, const ring& codomain)
+  {
+    if (domain == codomain) return IdentityHom(domain);
+
+    // Check codomain first, as this makes it possible to exploit certain "shortcuts"
+    if (IsFractionField(codomain)) {...}
+    if (IsPolyRing(codomain)) {...}
+    if (IsQuotientRing(codomain)) {...}
+  CheckDomain:
+    // Two easy cases:
+    if (IsZ(domain)) return ZEmbeddingHom(codomain);
+    if (IsQ(domain)) return QEmbeddingHom(codomain); // NB result is only a partial hom!!
+
+    CoCoA_ERROR(ERR::CanonicalHomFail, "CanonicalHom(R1,R2)");
+  }
+\end{verbatim}
+
+\subsection{\texttt{TmpChainCanonicalHom}}
+
+In file \texttt{CanonicalHom.C} there is a function looking for a
+chain of \texttt{CanonicalHom} between the domain and the codomain and
+returns the composition.
+
+\subsection{\texttt{NaturalMap}}
+
+The ultimate approach.
+
+\section{CoCoA-5}
+
+In CoCoA-5 it would be nicer to map objects automatically, but when?
+always? which cases are ``safe''?  Which ``rules''?
+
+\begin{verbatim}
+Use R ::= QQ[x,y,z];
+----------------------
+A := Mat([[x,2],[3,4]]); -- automatically in R
+B := Identity(QQ, 2);
+A*B;
+----------------------
+F := 2*x-y;
+G := LC(F);
+F/G;
+GCD(F,G);
+----------------------
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

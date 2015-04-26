@@ -1,0 +1,752 @@
+<html>
+<head>
+<title>CoCoALib Error Codes</title>
+<link rel="CoCoA Home Page" href="http://cocoa.dima.unige.it"/>
+<style TYPE="text/css">
+     body { background: #eff; }
+     table, a:hover, a.button:hover { background: #188; }
+     tr { background: #fff; }
+     a:hover { color: #fff; }
+     h2 { color: #f00;}
+     th { text-align:left; background: #efe;}
+     div {
+       background: white;
+       border: ridge #3cc  2pt;
+       padding: 4pt;
+       margin-top: 4pt;
+     }
+
+  .class { color: #090; font-weight: bold }
+  .red, .file { color: red; }
+  .func { color: blue; }
+  .version { color: red; font-weight: bold }
+</style>
+</head>
+
+<body>
+
+<H1>CoCoALib Error Codes</H1>
+
+<table cellpadding="5">
+<thead>
+<tr>
+<th>ID</th>
+<th>Default Message</th>
+<th>Hints and likely causes</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<th>nonstandard</th>
+<td>Error code corresponding to an error different from the standard
+  CoCoA errors
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>UNKNOWN</th>
+<td>UNKNOWN ERROR CODE PRODUCED -- please inform the CoCoA Team of this
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>ArgTooBig</th>
+<td>Argument to a numerical function too large (value would be too
+  big)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>AssertFail</th>
+<td>Assertion failed
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadArg</th>
+<td>The arg(s) given are unsuitable
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadArraySize</th>
+<td>Unsuitable array size (incompatible with other arguments)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadCheckedCast</th>
+<td>Checked cast failed
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadCodomain</th>
+<td>Supplied RingHom has wrong codomain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadColIndex</th>
+<td>Column index too large
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadCompose</th>
+<td>Attempt to compose maps with differing domain and codomain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadComptIndex</th>
+<td>Index too large accessing component of ModuleElem
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadDegIndex</th>
+<td>Index too large accessing degree component
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadDomain</th>
+<td>Supplied RingHom has wrong domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadIndetIndex</th>
+<td>Indeterminate index too large
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadIndex</th>
+<td>Index too large
+</td>
+<td>The index is bigger than the size of the vector (for the moment
+  only used for DynamicBitset).
+  It may also be that index is negative and is passed through a C
+  function which silently converts it into a (large) unsigned integer.
+</td>
+</tr>
+    
+<tr>
+<th>BadIndetNames</th>
+<td>Duplicate indet names or varied number of indices for a single
+  name
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadInducingHom</th>
+<td>Inducing hom has wrong domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadInducingHom2</th>
+<td>Inducing hom has wrong codomain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadInducingHomKer</th>
+<td>Inducing hom has unsuitable kernel
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadMatrixSetEntry</th>
+<td>Attempt to set a matrix entry where this is forbidden
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadMatrixSize</th>
+<td>Matrix size is wrong for this operation
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadNumBase</th>
+<td>Base for number conversion must be between 2 and 36 (incl)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadNumIndets</th>
+<td>Wrong number of indet names when creating a PPMonoid
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadPPMonoid</th>
+<td>PPMonoid supplied is not of the right type
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadPolyRingHomImages</th>
+<td>Unsuitable indet images for creating PolyRing hom (wrong number or
+  wrong ring)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadProbability</th>
+<td>Probability P must satisfy  0 <= P <= 1
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadPwrZero</th>
+<td>Non-positive power of zero
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadQuot</th>
+<td>Cannot compute quotient in ring or monoid
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadQuotRing</th>
+<td>Attempt to quotient by ideal(1)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadRing</th>
+<td>Used ring does not have desired properties
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadRingHomArg</th>
+<td>Argument to RingHom does not belong to domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadRingHomArg2</th>
+<td>Argument given to a partial RingHom is outside the domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadRowIndex</th>
+<td>Row index too large
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadSmallFpChar</th>
+<td>Characteristic (for small finite field) too large or not prime
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadSymbolHead</th>
+<td>Invalid symbolic name head (with illegal characters)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadSymbolIndex</th>
+<td>Symbolic name does not have that many indices
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BadSymbolRange</th>
+<td>Incompatible symbols given to range
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>BLASFailed</th>
+<td>A BLAS function failed
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>CanonicalHomFail</th>
+<td>Unable to construct canonical homomorphism
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>ConstMatEntry</th>
+<td>Cannot assign to constant matrix entry
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>DeadMemPool</th>
+<td>Attempt to use a MemPool after it has been destroyed
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>DivByZero</th>
+<td>Division by zero or by a zero-divisor
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>ExpTooBig</th>
+<td>Exponent is too large
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>GlobalManager1</th>
+<td>No GlobalManager object has been created
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>GlobalManager2</th>
+<td>Attempt to create more than one GlobalManager object
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>IdealNotInRing</th>
+<td>Incompatible ring and ideal: ideal is not in the given ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>InsuffPrec</th>
+<td>RingTwinFloat: insufficient precision (e.g. error growth impedes
+  further computation)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>IntDivByNeg</th>
+<td>Integer division by negative divisor with non-zero remainder
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>InvertibleRingElem</th>
+<td>Non-invertible RingElem required
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>LapackFailed</th>
+<td>A Lapack driver failed
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>LogZero</th>
+<td>Cannot compute log of zero
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MemPoolZero</th>
+<td>Cannot use MemPool to manage blocks of zero size
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MissNumLibs</th>
+<td>Numerical libraries not configured in
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedCoeffRings</th>
+<td>Arithmetic operation between polys with different coeff rings
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedDegrees</th>
+<td>Arithmetic operation between incompatible degrees
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedModules</th>
+<td>Elements must be in the same module; mixed module operations are
+  forbidden
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedPolyIters</th>
+<td>Comparison between iterators over different polys
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedPPMs</th>
+<td>Elements must be in the same PPMonoid; mixed PPMonoid operations
+  are forbidden
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>MixedRings</th>
+<td>Elements must be in the same ring; mixed ring operations are
+  forbidden
+</td>
+<td>You might have computed c*f where c is in R and f is in R[x], see
+  <span class=file>ex-RingHom2.C</span></td>
+</tr>
+    
+<tr>
+<th>MixedSizes</th>
+<td>Operation between objects with different size
+</td>
+<td>Operations between DynamicBitsets with different sizes are not
+  allowed</td>
+</tr>
+    
+<tr>
+<th>NegExp</th>
+<td>Negative exponent
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NoGlobalMgr</th>
+<td>GlobalManager must be created before using CoCoALib
+</td>
+<td>see
+  <span class=file>ex-empty.C</span></td>
+</tr>
+    
+<tr>
+<th>NotCommutative</th>
+<td>Ring is not commutative
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotDenseUPolyRing</th>
+<td>Ring must be a dense univariate polynomial ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotElemFrF</th>
+<td>RingElem is not in a fraction field
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotElemGCDDomain</th>
+<td>RingElem is not in a GCD domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotElemPolyRing</th>
+<td>RingElem is not in a polynomial ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotElemQuotientRing</th>
+<td>RingElem is not in quotient ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotElemSparsePolyRing</th>
+<td>RingElem is not in a sparse polynomial ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotFGModule</th>
+<td>Module must be FGModule, but is not
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotField</th>
+<td>Ring must be a field
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotFracField</th>
+<td>Ring must be a FractionField
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotFreeModule</th>
+<td>Module must be a free module
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotFullRank</th>
+<td>Matrix must be full rank
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotGCDDomain</th>
+<td>Ring is not a GCD domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotGradedModule</th>
+<td>Module must be a graded module
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotIndet</th>
+<td>Poly should be an indeterminate
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotIntegralDomain</th>
+<td>Ring is not an integral domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotInvMatrix</th>
+<td>Matrix must be invertible
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotMonomialGens</th>
+<td>Ideal must be generated by monomials
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotNonNegative</th>
+<td>Value must be non-negative
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotNonNegativeGrading</th>
+<td>Grading must be non-negative
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotOrdDom</th>
+<td>Ring is not an ordered domain
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotPolyRing</th>
+<td>Ring must be a polynomial ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotPositiveGrading</th>
+<td>Grading must be positive
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotQuotientRing</th>
+<td>Ring must be a quotient ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotRingTwinFloat</th>
+<td>Operation valid only over RingTwinFloat
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotRingZ</th>
+<td>Ring must be Z, the ring of integers
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotSparsePolyRing</th>
+<td>Ring must be a sparse polynomial ring
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotSquareMatrix</th>
+<td>Matrix must be square
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotTrueGCDDomain</th>
+<td>Ring is not a GCD domain or is a field
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotTermOrdering</th>
+<td>Ordering must be a term-ordering (all PPs>1)
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NotUnit</th>
+<td>Cannot invert non-unit
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>NYI</th>
+<td>NOT YET IMPLEMENTED -- please be patient, we're working on it
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>PPOrder</th>
+<td>PP is not in the right order
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>PolyIterEnded</th>
+<td>Attempt to use an off-the-end iterator
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>ZeroModulus</th>
+<td>A zero modulus was specified for a numerical operation
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>ZeroRingElem</th>
+<td>Non-zero RingElem required
+</td>
+<td></td>
+</tr>
+    
+<tr>
+<th>SERIOUS</th>
+<td>A serious library error has occurred -- please inform the CoCoA Team
+</td>
+<td></td>
+</tr>
+
+</tbody>
+</table>
+
+</body>
+</html>

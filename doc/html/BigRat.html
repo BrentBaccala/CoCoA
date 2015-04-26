@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      BigRat</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      BigRat</H1>
+<FONT SIZE="4">
+<I>      &copy;  2009,2011,2014  John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc3">Generalities</A>
+      <LI><A HREF="#toc4">The Functions Available For Use</A>
+        <UL>
+        <LI><A HREF="#toc5">Constructors</A>
+        <LI><A HREF="#toc6">Infix operators</A>
+        <LI><A HREF="#toc7">More functions</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc8">Maintainer Documentation</A>
+    <LI><A HREF="#toc9">Bugs, Shortcomings and other ideas</A>
+    <LI><A HREF="#toc10">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-BigRat1.C">ex-BigRat1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<A NAME="toc3"></A>
+<H3>Generalities</H3>
+<P>
+The class <CODE>BigRat</CODE> is intended to represent (exact) rational numbers
+of practically unlimited range; it is currently based on the
+implementation in the GMP <I>multiple precision</I> library.  This code forms
+the interface between CoCoALib and the big integer/rational library
+upon which it relies.  It seems most unlikely that GMP will be
+displaced from its position as the foremost library of this type; as a
+consequence the class <CODE>BigRat</CODE> may eventually be replaced by GMP's
+own C++ interface.
+</P>
+<P>
+The usual arithmetic operations are available with standard C++ syntax
+but generally these incur run-time overhead since results are returned
+through temporaries which are created and destroyed silently by the
+compiler.  Thus if the variables <CODE>a</CODE>, <CODE>b</CODE> and <CODE>c</CODE> are each of
+type <CODE>BigRat</CODE> then <CODE>a = b+c;</CODE> is a valid C++ statement for placing
+the sum of <CODE>b</CODE> and <CODE>c</CODE> in <CODE>a</CODE>, <B>but</B> the sum is first computed
+into a hidden temporary which is then copied to <CODE>a</CODE>, and then
+finally the temporary is destroyed.  As a general principle, the type
+<CODE>BigRat</CODE> is provided for convenience of representing rational
+values rather than for rapid computation.
+</P>
+<P>
+There is an important exception to the natural syntax: <CODE>^</CODE> does <B>not</B>
+denote exponentiation; you must use the function <CODE>power</CODE> instead.
+We have chosen not to define <CODE>operator^</CODE> to perform exponentiation
+because it is too easy to write misleading code: for instance,
+<CODE>a*b^2</CODE> is interpreted by the compiler as <CODE>(a*b)^2</CODE>.  There is no
+way to make the C++ compiler use the expected interpretation.
+</P>
+<P>
+Arithmetic may also be performed between a <CODE>BigRat</CODE> and a machine
+integer or a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  The result is always of type <CODE>BigRat</CODE>
+(even if the value turns out to be an integer).  Do remember, though,
+that operations between two machine integers are handled directly by
+C++, and problems of overflow can occur.
+</P>
+<P>
+It is important not to confuse values of type <CODE>BigRat</CODE> with values of type
+<A HREF="RingElem.html"><CODE>RingElem</CODE></A> which happen to belong to the ring <A HREF="RingQQ.html"><CODE>RingQQ</CODE></A>.  The distinction
+is analogous to that between values of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A> and value of type
+<A HREF="RingElem.html"><CODE>RingElem</CODE></A> which happen to belong to the ring <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>.  In summary, the
+operations available for <A HREF="RingElem.html"><CODE>RingElem</CODE></A> are those applicable to elements of
+any ordered commutative ring, whereas the range of operations on <CODE>BigRat</CODE>
+values is wider (since we have explicit knowledge of the type).
+</P>
+<A NAME="toc4"></A>
+<H3>The Functions Available For Use</H3>
+<A NAME="toc5"></A>
+<H4>Constructors</H4>
+<P>
+ A value of type <CODE>BigRat</CODE> may be created from:
+</P>
+<UL>
+<LI>nothing, in which case the value is zero
+<LI>another value of type <CODE>BigRat</CODE>  (its value is copied)
+<LI><CODE>BigRat(n,d)</CODE> a pair of integers (machine integers or
+  <A HREF="BigInt.html"><CODE>BigInt</CODE></A>s) specifying numerator and denominator in that order
+<LI><CODE>BigRat(str)</CODE> where <CODE>str</CODE> is a string of the form <CODE>N</CODE> or <CODE>N/D</CODE>
+   where <CODE>N</CODE> is the decimal representation of the numerator and
+   <CODE>D</CODE> that of the denominator
+<LI><CODE>BigRat(mpq_value)</CODE> copy a GMP rational (of type <CODE>mpq_t</CODE>) into
+  a <CODE>BigRat</CODE>; helps interfacing between CoCoALib and code using GMP directly.
+</UL>
+
+<P>
+The ctors <CODE>BigRat(n,d)</CODE> and <CODE>BigRat(str)</CODE> accept an optional arg
+<CODE>BigRat::AlreadyReduced</CODE> which asserts that the value is already reduced
+(<I>i.e.</I> positive denominator, and numerator and denominator are coprime).
+Use this feature only if you are <B>absolutely certain</B> that there is no
+common factor between the given numerator and denominator.
+</P>
+<P>
+See <B>Bugs</B> section for why there is no ctor from a single integer, and
+also for why <CODE>BigRat(0)</CODE> is accepted by the compiler (but crashes at run-time).
+</P>
+<A NAME="toc6"></A>
+<H4>Infix operators</H4>
+<P>
+<B>NOTE:</B> similar to operations on <CODE>BigInt</CODE> -- see <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A>
+</P>
+<OL>
+<LI>normal arithmetic (potentially inefficient because of temporaries)
+ <UL>
+ <LI><CODE>+</CODE>    the sum
+ <LI><CODE>-</CODE>    the difference
+ <LI><CODE>*</CODE>    the product
+ <LI><CODE>/</CODE>    quotient
+ <LI><CODE>=</CODE>    assignment
+ <P></P>
+ </UL>
+<LI>arithmetic and assignment
+ <UL>
+ <LI><CODE>+=</CODE>, <CODE>-=</CODE>, <CODE>*=</CODE>, <CODE>/=</CODE> --  definitions as expected; LHS must be of type <CODE>BigRat</CODE>
+ <P></P>
+ </UL>
+<LI>arithmetic ordering
+ <UL>
+ <LI><CODE>==</CODE>, <CODE>!=</CODE>
+ <LI><CODE>&lt;</CODE>, <CODE>&lt;=</CODE>, <CODE>&gt;</CODE>, <CODE>&gt;=</CODE> -- comparison (using the normal arithmetic ordering)
+    -- see also the <CODE>cmp</CODE> function below.
+ <P></P>
+ </UL>
+<LI>increment/decrement
+ <UL>
+ <LI><CODE>++</CODE>, <CODE>--</CODE> (prefix, e.g. <CODE>++a</CODE>)   use these if you can
+ <LI><CODE>++</CODE>, <CODE>--</CODE> (postfix, e.g. <CODE>a++</CODE>)  avoid these if you can, as they create temporaries
+ </UL>
+</OL>
+
+<A NAME="toc7"></A>
+<H4>More functions</H4>
+<OL>
+<LI>query functions (all take 1 argument)
+ <UL>
+ <LI><CODE>IsZero(q)</CODE>     -- true iff <CODE>q</CODE> is zero
+ <LI><CODE>IsOne(q)</CODE>      -- true iff <CODE>q</CODE> is 1
+ <LI><CODE>IsMinusOne(q)</CODE> -- true iff <CODE>q</CODE> is -1
+ <LI><CODE>IsOneNum(q)</CODE>   -- true iff <CODE>num(q)</CODE> is 1
+ <LI><CODE>IsOneDen(q)</CODE>   -- true iff <CODE>den(q)</CODE> is 1
+ <LI><CODE>sign(q)</CODE>       -- gives -1 (machine integer) to mean <CODE>q</CODE> is negative,
+                         0 (machine integer) to mean <CODE>q</CODE> is zero,
+                        +1 (machine integer) to mean <CODE>q</CODE> is positive.
+ <P></P>
+ </UL>
+<LI>Exponentiation
+  <UL>
+  <LI><CODE>power(a, b)</CODE> -- returns <CODE>a</CODE> to the power <CODE>b</CODE> (result is always a <CODE>BigRat</CODE>)
+  <P></P>
+  </UL>
+<LI>The cmp function (three way comparison)
+ <UL>
+ <LI><CODE>cmp(a,b)</CODE> -- returns an <CODE>int</CODE> which is <CODE>&lt; 0</CODE> if <CODE>a &lt; b</CODE>, or <CODE>== 0</CODE> if <CODE>a == b</CODE>, or <CODE>&gt; 0</CODE> if <CODE>a &gt; b</CODE>.
+ <LI><CODE>CmpAbs(a,b)</CODE> -- equivalent to <CODE>cmp(abs(a),abs(b))</CODE>
+ <P></P>
+ </UL>
+<LI>Other functions
+ <UL>
+ <LI><CODE>abs(q)</CODE>   -- gives the absolute value of <CODE>q</CODE>
+ <LI><CODE>floor(q)</CODE> -- returns a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> for the greatest integer <CODE>&lt;= q</CODE>
+ <LI><CODE>ceil(q)</CODE>  -- returns a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> for the least integer <CODE>&gt;= q</CODE>
+ <LI><CODE>round(q)</CODE> -- returns a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> which is the nearest to <CODE>q</CODE>
+                   (halves round the same way as in <CODE>RoundDiv</CODE>, see <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A>)
+ <LI><CODE>num(q)</CODE>   -- returns a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> which is the numerator of <CODE>q</CODE>
+ <LI><CODE>den(q)</CODE>   -- returns a positive <A HREF="BigInt.html"><CODE>BigInt</CODE></A> which is the denominator of <CODE>q</CODE>
+ <LI><CODE>log(q)</CODE>   -- returns a double whose value is (approx) the natural logarithm of <CODE>q</CODE>
+ <LI><CODE>ILogBase(q,base)</CODE> -- returns largest integer <CODE>k</CODE> such that <CODE>power(base,k) &lt;= abs(q)</CODE>
+ <LI><CODE>mantissa(q)</CODE> -- returns a <CODE>double</CODE> between 0.5 and 1 (excluded)
+ <LI><CODE>exponent(q)</CODE> -- 
+ <P></P>
+ </UL>
+<LI>Functions violating encapsulation
+  <UL>
+  <LI><CODE>mpqref(n)</CODE>-- this gives a (const) reference to the <CODE>mpq_t</CODE> value inside
+               a <CODE>BigRat</CODE> object.  You should use this accessor very sparingly!
+  </UL>
+</OL>
+
+<A NAME="toc8"></A>
+<H2>Maintainer Documentation</H2>
+<P>
+Nothing very clever.  Conversion from a string was a bit tedious.
+</P>
+<P>
+Note that the ctor call <CODE>BigRat(0)</CODE> actually calls the ctor from a string.
+Unfortunately, this a C++ "feature".  It will result in a run-time error.
+</P>
+<P>
+I have replaced the bodies of the <CODE>BigRat</CODE> ctors which take two integers
+as arguments by a call to the common body <CODE>BigRat::myAssign</CODE>.  This does
+mean that some wasteful temporaries are created when either of the
+arguments is a machine integer.  Time will tell whether this waste is
+intolerable.
+</P>
+<A NAME="toc9"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+This code is probably not <I>exception safe</I>; I do not know what the <CODE>mpq_*</CODE>
+functions do when there is insufficient memory to proceed.  Making the
+code <I>exception safe</I> could well be non-trivial: I suspect a sort of
+<CODE>auto_ptr</CODE> to an <CODE>mpq_t</CODE> value might be needed.
+</P>
+<P>
+Removed <CODE>BigRat</CODE> ctors from a single (machine) integer because too often
+I made the mistake of writing something like <CODE>BigRat(1/2)</CODE> instead of
+<CODE>BigRat(1,2)</CODE>.
+</P>
+<P>
+Should the <CODE>BigRat</CODE> ctor from string also accept numbers with decimal points?
+<I>e.g.</I> <CODE>BigRat("3.14159")</CODE>?  We'll wait and see whether there is demand for this
+before implementing; note that GMP does <B>not</B> offer this capability.
+</P>
+<A NAME="toc10"></A>
+<H2>Main changes</H2>
+<P>
+<B>2011</B>
+</P>
+<UL>
+<LI>August (v0.9950):
+   class <CODE>QQ</CODE> renamed into <CODE>BigRat</CODE>:
+   to avoid confusion with <A HREF="RingQQ.html"><CODE>RingQQ</CODE></A> and its name in CoCoA system
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/BigRat.html -i txt/BigRat.txt -->
+</BODY></HTML>

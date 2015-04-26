@@ -1,0 +1,53 @@
+      utils
+      Copyright (c)  2006,2014 John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{utils}{John Abbott}
+
+
+
+== User documentation for file utils.H ==
+%======================================================================
+
+This file defines a few very basic functions which I feel should
+really be part of the standard C++.  Nevertheless I have placed all
+definitions inside the namespace ``CoCoA``.  Here is a summary:
+
+- ``DeleteObject`` -- struct useful when using the C++ standard
+  library containers to hold plain pointers to data they own.  I took
+  it from Scott Meyers's book "More Effective STL".
+
+- ``cmp(a,b)`` -- template function which conducts a three-way comparison of
+  its two arguments: returns
+        ``-1`` if ``a<b``,  ``0`` if ``a==b``,  ``1`` if ``a>b``
+    (you can think of cmp(a,b) = sgn(a-b)).
+
+- ``ULongDiff(hi,lo)`` -- computes ``hi-lo`` as **unsigned long** (assumes ``hi>=lo``)
+
+- ``LongRange(lo,hi)`` -- returns a ``vector<long>`` filled with ``lo,lo+1,...,hi`` (useful for ``submat``)
+
+- ``MaxSquarableInteger<T>()`` -- returns largest integer whose square fits in type ``T``
+
+- ``len(v)`` -- same as ``v.size()`` except that result is ``long``
+             rather than ``size_t``
+-
+
+== Maintainer documentation for files utils.H ==
+%======================================================================
+
+Everything is in ``utils.H``;
+the functions are all so simple that they can be implemented inline.
+
+Impl of template fn ``MaxSquarableInteger`` uses GMP to compute the
+memorized values.  A table of constants would be faster but potentially
+less portable (given that CoCoALib requires GMP anyway).  I haven't yet
+found a neat way of ensuring that the type ``T`` is integral & bounded.
+
+
+
+== Bugs, Shortcomings and other ideas ==
+%======================================================================
+
+A possibly better idea for ``MaxSquarableInteger``: precompute 2^63*sqrt(2) as
+``unsigned long``, then simply right shift this value for integral types with
+less than 127 bits.  This suggestion presupposes a binary computer.

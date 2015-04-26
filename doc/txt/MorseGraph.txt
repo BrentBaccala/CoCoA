@@ -1,0 +1,74 @@
+      MorseGraph
+      Copyright (c)  2013 Mario Albert
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{MorseGraph}{Mario Albert}
+
+
+== Examples ==
+%----------------------------------------------------------------------
+- [ex-MorseGraph.C ../../examples/index.html#ex-MorseGraph.C]
+
+
+== User documentation for Morse Graph ==
+%======================================================================
+
+Via the Morse Graph we are able to compute a free resolution of a
+polynomial ideal via the ``JBMill`` if the polynomial ideal has some
+special properties.  The ideal must be in delta-regular coordinates
+(//i.e.// it has a Pommaret basis) and the ordering must be
+``degrevlex``.  If these conditions hold we can compute a free
+resolution and, if the ideal is homogeneous, the minimal free resolution
+and the graded Betti numbers of the ideal.
+
+
+=== Using the Morse Graph ===
+%----------------------------------------------------------------------
+
+In the following let ``mill`` a [[JBMill]] with ``degrevlex`` order.  Furthermore we assume that ``JBIsPommaretBasis(mill) == true``.
+The following command computes a free resolution as ``vector<matrix>``
+- ``JBResolution(mill)``
+
+Now we assume that ``mill`` contains a homogeneous ideal
+
+- ``JBMinimalResolution(mill)`` -- Returns the minimal free resolution of ``mill`` as ``vector<matrix>``
+- ``JBBettiDiagramm(mill)``     -- Returns a matrix of ``ZZ``, which represents the graded Betti numbers in Macaulay-Style
+
+
+
+== Maintainer documentation for TmpMorseGraph.C, TmpMorseElement.C, TmpMorsePaths.C, TmpResolutionMinimization.C ==
+%======================================================================
+
+We only explain the basic structure because there is very much code.
+The implementation is divided in four parts:
+
+=== TmpMorseElement.C ===
+%----------------------------------------------------------------------
+
+Here we define the MorseElements and the
+StandardRepresentationContainer.  The MorseGraph consists of
+MorseElements.  The StandardRepresentationContainer stores standard
+representations, to avoid redundant computations.
+
+=== TmpMorsePaths.C ===
+%----------------------------------------------------------------------
+
+MorsePaths are maps between MorseElements.
+
+=== TmpMorseGraph.C ===
+Stores and computes the MorseGraph.  Also there are some easy interfaces to access the resolution.  It still waits for a general free resolution object in CoCoALib.
+
+=== ResolutionMinimization.C ===
+Takes a free resolution of an homogeneous ideal an computes the minimal free resolutions.  But only works for free resolution which have already the correct length.
+
+
+== Bugs, Shortcomings and other ideas ==
+%======================================================================
+
+=== ResolutionMinimization.C ===
+Implementing a own specialized myAddRowMul function (skipping zeros...).
+=== TmpMorseGraph.C ===
+Waiting for general free resolution object.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

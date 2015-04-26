@@ -1,0 +1,60 @@
+package $subalgebra;
+
+export implicit;
+export SubalgebraRepr;
+
+----------------------------------------------------------------------------
+-- Exported functions (with input checking)
+----------------------------------------------------------------------------
+
+define implicit(...)
+  if len(ARGV) = 2 then
+    return ker(SubalgebraHom(ARGV[1], ARGV[2]).phi);
+  elif len(ARGV) = 1 then
+    return ker(SubalgebraHom(ImplicitRing(ARGV[1]), ARGV[1]).phi);
+  endif;
+  error("2 or 3 arguments");
+enddefine; -- implicitize
+
+define IsInSubalgebra(f, SubAlgGens)
+  H := SubalgebraHom(ImplicitRing(SubAlgGens), SubAlgGens);
+  return IsInImage(H.phi, f);
+enddefine; -- IsInSubalgebra
+
+define SubalgebraRepr(...)
+  if len(ARGV) = 3 then
+    return SubalgebraRepr3(ARGV[1], ARGV[2], ARGV[3]);
+  elif len(ARGV) = 2 then
+    return SubalgebraRepr3(ImplicitRing(ARGV[2]), ARGV[1], ARGV[2]);
+  endif;
+  error("2 or 3 arguments");
+enddefine; -- SubalgebraRepr
+  
+define SubalgebraRepr3(ImplicitR, f, SubalgGens)
+  H := SubalgebraHom(ImplicitR, SubalgGens);
+  return PreImage(H.phi, f);
+enddefine; -- SubalgebraRepr
+
+----------------------------------------------------------------------------
+-- auxiliary
+----------------------------------------------------------------------------
+
+define ImplicitRing(SubalgGens)
+  S := RingOf(SubalgGens[1]);
+  return NewPolyRing(CoeffRing(S), SymbolRange("x",1,len(SubalgGens)));
+enddefine; -- SubalgHom
+
+  
+define SubalgebraHom(ImplicitR, SubalgGens)
+  if NumIndets(ImplicitR)<>len(SubalgGens) then
+    error("ring has wrong number of indeterminates");
+  endif;
+  S := RingOf(SubalgGens[1]);
+  if CoeffRing(ImplicitR)<>CoeffRing(S) then
+    error("different CoeffRing");
+  endif;
+  return record[R:=ImplicitR, phi:=PolyAlgebraHom(ImplicitR, S, SubalgGens)];
+enddefine; -- SubalgHom
+
+----------------------------------------------------------------------
+endpackage;

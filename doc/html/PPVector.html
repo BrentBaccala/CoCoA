@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      PPVector</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      PPVector</H1>
+<FONT SIZE="4">
+<I>      &copy;  2008 Anna Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">class PPVector</A>
+      <UL>
+      <LI><A HREF="#toc2">Examples</A>
+      </UL>
+    <LI><A HREF="#toc3">Fields and main functions</A>
+      <UL>
+      <LI><A HREF="#toc4">Utility functions</A>
+      <LI><A HREF="#toc5">Mathemetical functions</A>
+      </UL>
+    <LI><A HREF="#toc6">Bugs, Shortcomings and other ideas</A>
+      <UL>
+      <LI><A HREF="#toc7">Abstract Class</A>
+      </UL>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<P>
+modernise
+</P>
+<A NAME="toc1"></A>
+<H2>class PPVector</H2>
+<P>
+<B>WARNING THIS IS STILL A PRELIMINARY IMPLEMENTATION</B> as indicated by
+the names of the implementation files: <CODE>TmpPPVector.H</CODE> and <CODE>TmpPPVector.C</CODE>.
+</P>
+<P>
+This class is for dealing with lists of power-products.
+</P>
+<P>
+This class has been designed to be used by monomial ideal operations,
+Hilbert, and Mayer-Vietoris trees.
+</P>
+<P>
+The key functions interpret the list as generators of a monomial
+ideal: interreduction, divisibility test (ideal membership), lcms
+(ideal intersection).
+</P>
+<P>
+The elements are <A HREF="PPWithMask.html"><CODE>PPWithMask</CODE></A>, to make fast divisibility tests.
+Constructor requires a <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A> and a <CODE>DivMaskRule</CODE> (see
+<A HREF="DivMask.html"><CODE>DivMask</CODE></A>), so that the user can choose the best suited
+implementations (mostly depending on the number of indeterminates and
+on the size of the exponents).
+</P>
+<A NAME="toc2"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-PPVector1.C">ex-PPVector1.C</A>
+</UL>
+
+<A NAME="toc3"></A>
+<H2>Fields and main functions</H2>
+<P>
+Member fields are
+</P>
+<PRE>
+      PPMonoid myPPM;
+      DivMaskRule myDMR;
+      std::vector&lt;PPWithMask&gt; myVec;
+</PRE>
+<A NAME="toc4"></A>
+<H3>Utility functions</H3>
+<UL>
+<LI><CODE>PPMonoid PPM(const PPVector&amp; PPs)</CODE>
+<LI><CODE>DivMaskRule DMR(const PPVector&amp; PPs)</CODE>
+<LI><CODE>std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, PPVector)</CODE>
+<LI><CODE>bool IsEmpty(const PPVector&amp; PPs)</CODE>
+<LI><CODE>long len(const PPVector&amp; PPs)</CODE>
+<LI><CODE>void convert(std::vector&lt;RingElem&gt;&amp; v, ring P, const PPVector&amp; PPs)</CODE>
+  converts PP's into RingElem's
+<LI><CODE>void convert(PPVector PPs, const std::vector&lt;RingElem&gt;&amp; v)</CODE>
+  converts vector&lt;RingElem&gt; (if monomial!) into PPVector
+<LI><CODE>void PushBack(PPVector&amp; PPs, ConstRefPPMonoidElem pp)</CODE>
+  if owner(pp) != PPM(PPs) it maps it
+<LI><CODE>void PushBackPopBack(PPVector&amp; ToPPs, PPVector&amp; FromPPs)</CODE>
+  move last PP from <CODE>FromPPs</CODE> into <CODE>ToPPs</CODE>
+<LI><CODE>void swap(PPVector&amp; PPs1, PPVector&amp; PPs2)</CODE>
+   swap PPs1 and PPs1
+</UL>
+
+<A NAME="toc5"></A>
+<H3>Mathemetical functions</H3>
+<UL>
+<LI><CODE>bool IsDivisible(const PPWithMask&amp; pp, const PPVector&amp; ByL);</CODE>
+  true is pp is divisible by an element of L
+<LI><CODE>bool IsDivisible(ConstRefPPMonoidElem pp, const PPVector&amp; ByL);</CODE>
+  true is pp is divisible by an element of L
+<LI><CODE>void interreduce(PPVector&amp; PPs);</CODE>
+  interreduce PPs (NOT exception clean)
+<LI><CODE>void InterreduceSort(PPVector&amp; PPs);</CODE>
+  interreduce and sort PPs (NOT exception clean)
+<LI><CODE>void lcms(PPVector&amp; PPs, const PPVector&amp; PPs1, const PPVector&amp; PPs2);</CODE>
+   all the lcm between elements of PPs1 and PPs2, effectively the
+   generators of the intersection ideal
+</UL>
+
+<A NAME="toc6"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<A NAME="toc7"></A>
+<H3>Abstract Class</H3>
+<P>
+There was an attempt to make it an abstract class, <CODE>PPVectorBase</CODE>, made
+of abstract <CODE>PPVectorElem</CODE>, with the plan to have concrete classes a
+vector of <A HREF="PPWithMask.html"><CODE>PPWithMask</CODE></A>, of <CODE>PPMonoidElem</CODE>, and of square-free pps
+(which cannot make a <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A> because x*x is not square-free).
+</P>
+<P>
+But this failed because most operations would need to know the type of
+the elements in the vector making it more suitable for templates.  But
+</P>
+<UL>
+<LI>(1) I much prefer inheritance (mathematically cleaner) and 
+<LI>(2) probably all this generality is useless.
+</UL>
+
+<P>
+So it was sadly abandoned.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/PPVector.html -i txt/PPVector.txt -->
+</BODY></HTML>

@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingQQ</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingQQ</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2007,2012  John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for RingQQ</A>
+      <UL>
+      <LI><A HREF="#examples">Examples</A>
+      <LI><A HREF="#constructors">Constructors and pseudo-constructors</A>
+      <LI><A HREF="#query">Query</A>
+      <LI><A HREF="#operations">Operations on RingQQ</A>
+      <LI><A HREF="#homomorphisms">Homomorphisms</A>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer documentation for the class RingQQImpl</A>
+    <LI><A HREF="#toc8">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for RingQQ</H2>
+<P>
+The call <CODE>RingQQ()</CODE> produces the CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> which represents QQ, the
+field of rational numbers.  Calling <CODE>RingQQ()</CODE> several times will
+always produce the same unique CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> representing QQ.
+</P>
+<P>
+Strictly, there is a limit on the size of elements you can create, but
+the limit is typically high enough not to be bothersome.
+</P>
+<P>
+<CODE>RingQQ</CODE> is the <A HREF="FractionField.html"><CODE>FractionField</CODE></A> of <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>;
+</P>
+<P>
+See <A HREF="RingElem.html"><CODE>RingElem</CODE></A> for operations on its elements.
+</P>
+<P>
+If you wish to compute purely with rationals (without exploiting
+CoCoALib's <A HREF="ring.html"><CODE>ring</CODE></A>s) then see the documentation in <A HREF="BigRat.html"><CODE>BigRat</CODE></A>. 
+</P>
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingQQ1.C">ex-RingQQ1.C</A>
+</UL>
+
+<P></P>
+<A NAME="constructors"></A>
+<H3>Constructors and pseudo-constructors</H3>
+<UL>
+<LI><CODE>RingQQ()</CODE> -- produces the CoCoA <A HREF="ring.html"><CODE>ring</CODE></A> which represents QQ.
+   Calling <CODE>RingQQ()</CODE> several times will always produce the same unique
+   ring in CoCoALib.
+</UL>
+
+<P></P>
+<A NAME="query"></A>
+<H3>Query</H3>
+<P>
+Let <CODE>R</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>IsQQ(R)</CODE> -- says whether <CODE>R</CODE> is actually <CODE>RingQQ()</CODE>
+</UL>
+
+<P></P>
+<A NAME="operations"></A>
+<H3>Operations on RingQQ</H3>
+<P>
+See <A HREF="FractionField.html#operations"><CODE>FractionField</CODE> operations</A>.
+</P>
+<A NAME="homomorphisms"></A>
+<H3>Homomorphisms</H3>
+<P>
+Let <CODE>S</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
+</P>
+<UL>
+<LI><CODE>NewQQEmbeddingHom(S)</CODE> -- creates the (partial) homomorphism QQ --&gt; <CODE>S</CODE>
+                           (but see also <A HREF="CanonicalHom.html"><CODE>CanonicalHom</CODE></A>).
+                           QQ argument is implicit because there is a
+                           unique copy
+</UL>
+
+<P></P>
+<A NAME="toc7"></A>
+<H2>Maintainer documentation for the class RingQQImpl</H2>
+<P>
+The function <CODE>RingQQ()</CODE> simply returns the unique instance of the
+CoCoALib <A HREF="ring.html"><CODE>ring</CODE></A> representing QQ.  This instance is managed by
+<A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>, see its documentation.
+</P>
+<P>
+The function <CODE>MakeUniqueInstanceOfRingQQ</CODE> is the only function which can
+call the ctor of <CODE>RingQQImpl</CODE>.  The only function which is supposed to
+call <CODE>MakeUniqueInstanceOfRingQQ</CODE> is the ctor of <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>.  I have
+discouraged others from calling <CODE>MakeUniqueInstanceOfRingQQ</CODE> by not putting
+it in the header file <CODE>RingQQ.H</CODE> -- see bugs section in <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>.
+</P>
+<P>
+<CODE>RingQQImpl</CODE> is the implementation of the field of rational numbers
+following the scheme laid by <CODE>RingBase</CODE> and <CODE>FractionFieldBase</CODE>.  Almost
+all member functions are trivial: indeed, virtually all the work is done by
+the GMP library.  Once you have understood how <CODE>RingZZImpl</CODE> works, the
+implementation here should be easy to follow.
+</P>
+<P>
+The implementation of <CODE>RingQQImpl::InducedHomImpl::myApply</CODE> turns out to
+be a bit lengthy, but I do not see how to improve it.  Since partial
+homomorphisms can be built, <CODE>myApply</CODE> maps numerator and denominator then
+must check that their images can be divided.  I cannot reuse the
+implementation of <CODE>FractionFieldImpl::InducedHomImpl::myApply</CODE> because
+there is no equivalent of <CODE>RefNum</CODE> and <CODE>RefDen</CODE> in <CODE>RingQQImpl</CODE>.
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+This code is probably not <I>exception safe</I>; I do not know what the
+<CODE>mpq_*</CODE> functions do when there is insufficient memory to proceed.
+Making the code "exception safe" could well be non-trivial: I suspect
+a sort of <CODE>auto_ptr</CODE> to an <CODE>mpq_t</CODE> value might be needed.
+</P>
+<P>
+How to check that induced homomorphisms are vaguely sensible??
+e.g. given ZZ-&gt;ZZ[x] ker=0, but cannot induce QQ-&gt;ZZ[x]; so it is not
+sufficient simply to check that the kernel is zero.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingQQ.html -i txt/RingQQ.txt -->
+</BODY></HTML>

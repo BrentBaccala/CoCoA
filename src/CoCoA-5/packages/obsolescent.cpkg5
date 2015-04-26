@@ -1,0 +1,167 @@
+Package $obsolescent
+
+export AffHilbert;
+export AffPoincare;
+export Hilbert;
+export List;
+// export insert; // builtin function
+export Mod2Rat;
+export FloatApprox10;
+export MantissaAndExponent;
+export Functions;
+export Comp;
+export Poincare;
+export WeightsMatrix;
+
+----------------------------------------------------------------------
+
+--  CallCount := Record[];  -- to reduce number of warnings
+  
+// ADDED: April 2014
+// SUGGESTED EXPIRATION DATE: April 2015
+Define List(M)
+  If type(M) <> MAT Then
+    error("\"List\" not implemented for type "+Sprint(type(M)));
+  EndIf;
+--  if not("List" IsIn Fields($.CallCount)) then
+--    $.CallCount.List := 0;
+  PrintLn "--> WARNING: List(MATRIX) works but is obsolescent (from CoCoA-5.1.0).";
+  PrintLn "--> WARNING: Please use \"GetRows(MATRIX)\" to get rid of this message.";
+--  endif;
+--  incr(ref $.CallCount.List);
+  Return GetRows(M);
+EndDefine; -- List
+
+ 
+// ADDED April 2014
+  // Suggested EXPIRATION DATE: April 2015
+Define Mod2Rat(res, mod, DenomBound)
+  PrintLn "--> WARNING: Mod2Rat is obsolescent (from CoCoA-5.1.0).";
+  PrintLn "--> WARNING: Please use RatReconstructWithBounds instead.";
+  NumerBound := div(mod,2*DenomBound);
+  ans := RatReconstructWithBounds(0,NumerBound, DenomBound, [res], [mod]);
+  If ans.failed Then Return 0; EndIf;
+  Return ans.ReconstructedRat;
+EndDefine; -- Mod2Rat
+
+  
+// Was in approx.cpkg5
+// ADDED April 2014
+// Suggested EXPIRATION date: April 2015
+// Update entry for "FloatApprox" when you delete this fn!!
+Define FloatApprox10(N, RelativeError)
+  PrintLn "--> WARNING: FloatApprox10 is obsolescent (from CoCoA-5.1.0); use FloatApprox (binary) instead";
+  If type(N) <> INT And type(N) <> RAT Then error("FloatApprox10: first argument must be rational"); EndIf;
+  If type(RelativeError) <> INT And type(RelativeError) <> RAT Then
+    error("FloatApprox10: second argument must be rational");
+  EndIf;
+  If RelativeError <= 0 Or RelativeError > 0.1 Then RelativeError := 0.1; EndIf;
+  If N = 0 Then Return 0; EndIf;
+  Ndigits := 1;
+  Power := 1/5;
+  While Power > RelativeError Do
+    Power := Power/10;
+    incr(ref Ndigits);
+  EndWhile;
+  Tmp := MantissaAndExponent(N, Ndigits);
+  Return Tmp.Mantissa*10^(Tmp.Exponent - Ndigits + 1);
+EndDefine; -- FloatApprox10
+
+
+// Was in float.cpkg5
+// ADDED April 2014
+// Suggested EXPIRATION date: April 2015  
+Define MantissaAndExponent(X, SigFig)
+  PrintLn "--> WARNING: MantissaAndExponent is obsolescent (from CoCoA-5.1.0).";
+  PrintLn "--> WARNING: Please use MantissaAndExponent10 instead.";
+  Return MantissaAndExponent10(X, SigFig);
+EndDefine; -- MantissaAndExponent
+
+
+// Was built-in
+// ADDED May 2014
+// Suggest EXPIRATION date: May 2015
+Define Functions(str)
+  PrintLn "--> WARNING: `Functions' is obsolete; instead please use the `describe' command.";
+EndDefine; -- Functions
+
+
+// Was in coclib.cpkg5
+// ADDED May 2014
+// Suggest EXPIRATION date: May 2016
+Define Comp(...)
+  TopLevel ERR;
+  PrintLn "--> WARNING: `Comp' is obsolete (from CoCoA-5.1.0); instead please";
+  PrintLn "--> WARNING: use [..] for indexing, or the field selector operator.";
+  If len(ARGV) = 0 Then error(ERR.BAD_PARAMS_NUM); EndIf;
+  X := ARGV[1];
+  L := tail(ARGV);
+  Foreach I In L Do
+    If (type(X) IsIn [LIST, MODULEELEM, STRING] And type(I)=INT) Or
+       (type(X)=RECORD And type(I)=STRING)  Then
+      X := X[I];
+    Else
+      If not(type(X) IsIn [LIST, MODULEELEM, STRING, RECORD]) Then
+	error("Comp: first argument must be in [LIST, MODULEELEM, STRING, RECORD]");
+      Else
+	error("Comp: arguments must be (LIST/MODULEELEM/STRING,INT) or (RECORD,STRING)");
+      EndIf;
+    EndIf;
+  EndForeach;
+  Return X;
+EndDefine;
+
+
+// Was in BackwardCompatible.cpkg5
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016
+Define Poincare(X)
+  PrintLn "--> WARNING: `Poincare' is obsolescent (from CoCoA-5.1.1)";
+  PrintLn "--> WARNING: use `HilbertSeries' instead.";
+  Return HilbertSeries(X);
+EndDefine;
+
+// Was in BackwardCompatible.cpkg5
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016
+Define Hilbert(X)
+  PrintLn "--> WARNING: `Hilbert' is obsolescent (from CoCoA-5.1.1)";
+  PrintLn "--> WARNING: use `HilbertFn' instead.";
+  Return HilbertFn(X);
+EndDefine;
+
+// Was in BackwardCompatible.cpkg5
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016
+Define AffPoincare(M)
+  PrintLn "--> WARNING: `AffPoincare' is obsolescent (from CoCoA-5.1.1)";
+  PrintLn "--> WARNING: use `AffHilbertSeries' instead.";
+  Return AffHilbertSeries(M);
+EndDefine;
+
+// Was in BackwardCompatible.cpkg5
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016
+Define AffHilbert(...)
+  PrintLn "--> WARNING: `AffHilbert' is obsolescent (from CoCoA-5.1.1)";
+  PrintLn "--> WARNING: use `AffHilbertFn' instead.";
+  Return AffHilbertFn(...);
+EndDefine;
+
+// builtin function: insert
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016  
+
+  
+// Was builtin
+// ADDED July 2014
+// Suggest EXPIRATION date: July 2016
+Define WeightsMatrix(R)
+  PrintLn "--> WARNING: `WeightsMatrix' is obsolescent (from CoCoA-5.1.1)";
+  PrintLn "--> WARNING: use `GradingMat' instead.";
+  Return GradingMat(R);
+EndDefine;
+
+
+EndPackage;
+

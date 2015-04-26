@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      JBMill</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      JBMill</H1>
+<FONT SIZE="4">
+<I>      &copy;  2011-2013 Mario Albert</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for Janet Basis</A>
+      <UL>
+      <LI><A HREF="#toc2">Computing a Janet Basis</A>
+      <LI><A HREF="#toc3">Using the JBMill</A>
+        <UL>
+        <LI><A HREF="#toc4">Always Works</A>
+        <LI><A HREF="#toc5">The Basis must be monomial</A>
+        <LI><A HREF="#toc6">The Basis must be Pommaret</A>
+        <LI><A HREF="#toc7">The Basis must be a Pommaret and Homogenous</A>
+        <LI><A HREF="#toc8">The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex</A>
+        <LI><A HREF="#toc9">The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex and the ideal must be CohenMacaulay</A>
+        </UL>
+      <LI><A HREF="#toc10">Examples</A>
+      </UL>
+    <LI><A HREF="#toc11">Maintainer documentation for JBDatastructure.C, JBSets.C, JBEnv.C</A>
+      <UL>
+      <LI><A HREF="#toc12">JBDatastructure.C</A>
+        <UL>
+        <LI><A HREF="#toc13">JanetTriple</A>
+        <LI><A HREF="#toc14">JanetTree</A>
+        </UL>
+      <LI><A HREF="#toc15">JBSets.C</A>
+      <LI><A HREF="#toc16">JBEnv.C</A>
+        <UL>
+        <LI><A HREF="#toc17">JBEnv</A>
+        <LI><A HREF="#toc18">JBFlag</A>
+        <LI><A HREF="#toc19">JBMill</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc20">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for Janet Basis</H2>
+<P>
+The files <CODE>JBDatastructure.H</CODE>, <CODE>JBSets.H</CODE> and <CODE>JBEnv</CODE> intodruces several classes for computing and working with <B>Janet Basis</B>. A normal user of the CoCoa library will use only the class <A HREF="JBMill.html"><CODE>JBMill</CODE></A>. With this class the user can do anything, which is related to Janet Bases. Starting with the computation of the Janet Basis for degree compatible orderings up to computing e.g. extremal betti numbers. 
+</P>
+<A NAME="toc2"></A>
+<H3>Computing a Janet Basis</H3>
+<P>
+There are several ways to compute a Jane Basis:
+In the following let <CODE>gens</CODE> a C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s (all elements in gens must be in the same ring), <CODE>I</CODE> an ideal, <CODE>crits</CODE> a C++ bitset&lt;3&gt;, <CODE>output</CODE> a flag, which specifies the Output (allowed flags are <CODE>GB</CODE> or <CODE>JB</CODE> (default is <CODE>JB</CODE>)) and <CODE>flag</CODE> a flag, which specifies the used algorithm (allowed flags are <CODE>TQDegree</CODE>, <CODE>TQBlockHigh</CODE>, <CODE>TQBlockLow</CODE> (default is <CODE>TQBlockLow</CODE>)). <CODE>crits</CODE> specifies the used involutive criteria (by default there are all three activated). <CODE>gens</CODE> or <CODE>I</CODE> contains the input set.  
+</P>
+<P>
+The following algorithms only compute a Groeber Basis (resp. Janet Basis). The output is always a C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s.
+</P>
+<UL>
+<LI><CODE>JanetBasis(gens, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
+<LI><CODE>JanetBasis(I, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
+<P></P>
+The following algorithms returns a <CODE>JBMill</CODE>
+<P></P>
+<LI><CODE>ExtendedJanetBasis(gens, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
+<LI><CODE>ExtendedJanetBasis(I, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
+</UL>
+
+<A NAME="toc3"></A>
+<H3>Using the JBMill</H3>
+<A NAME="toc4"></A>
+<H4>Always Works</H4>
+<P>
+In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis contained in <CODE>mill</CODE> generate the Ideal I which is a subset of the PolyRing P.
+</P>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBReturnJB(mill)</CODE></TD>
+<TD>returns the Janet Basis of <CODE>mill</CODE> as C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s</TD>
+</TR>
+<TR>
+<TD><CODE>JBReturnGB(mill)</CODE></TD>
+<TD>returns the Groebner Basis of <CODE>mill</CODE> as C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s</TD>
+</TR>
+<TR>
+<TD><CODE>JBIsPommaret(mill)</CODE></TD>
+<TD>Returns <CODE>true</CODE> if the Janet Basis of I is also a Pommaret Basis, otherwise <CODE>false</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBIsHomogenous(mill)</CODE></TD>
+<TD>Returns <CODE>true</CODE> if the Janet Basis of I is homogenous, otherwise <CODE>false</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBIsMonomialIdeal(mill)</CODE></TD>
+<TD>Returns <CODE>true</CODE> if the Janet Basis of I is a monomial ideal, otherwise <CODE>false</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBOutputMultVar(mill)</CODE></TD>
+<TD>Prints the Janet-multiplicative variables of the Janet Basis of I</TD>
+</TR>
+<TR>
+<TD><CODE>JBOutputNonMultVar(mill)</CODE></TD>
+<TD>Prints the Janet-nonmultiplicative variables of the Janet Basis of I</TD>
+</TR>
+<TR>
+<TD><CODE>JBMultVar(mill)</CODE></TD>
+<TD>Returns the Janet-multiplicative variables of the elements in the Janet-Basis as C++ <CODE>map&lt;PPMonoidElem, vector&lt;bool&gt;&gt;</CODE>. If an entry in <CODE>vector&lt;bool&gt;</CODE> is <CODE>true</CODE> the corresponding variable is multiplicative</TD>
+</TR>
+<TR>
+<TD><CODE>JBNonMultVar(mill)</CODE></TD>
+<TD>Returns the Janet-nonmultiplicative variables of the elements in the Janet-Basis as C++ <CODE>map&lt;PPMonoidElem, vector&lt;bool&gt;&gt;</CODE>. If an entry in <CODE>vector&lt;bool&gt;</CODE> is <CODE>true</CODE> the corresponding variable is nonmultiplicative</TD>
+</TR>
+<TR>
+<TD><CODE>JBStandardRepresentation(mill, f)</CODE></TD>
+<TD><CODE>f</CODE> must be in the same ring as <CODE>mill</CODE>. This function computes the involutive standard representation of <CODE>f</CODE> modulo I. it returns a combination of a C++ pair and map: <CODE>pair&lt;map&lt;PPMonoidElem, RingElem&gt;, RingElem&gt;</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBOutputStandardRepresentation(mill, f)</CODE></TD>
+<TD>Same as above. But only prints the result.</TD>
+</TR>
+<TR>
+<TD><CODE>JBNormalForm(mill, f)</CODE></TD>
+<TD><CODE>f</CODE> must be in the same ring as <CODE>mill</CODE>. This function computes the involutive normal form of <CODE>f</CODE> modulo I. it returns a <CODE>RingElem</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBHilbertPol(mill, s)</CODE></TD>
+<TD>returns the Hilbert Polynomial of P/I with variable <CODE>s</CODE>, which must be a <CODE>RingElem</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBHilbertFunc(mill, number)</CODE></TD>
+<TD>return the value of the Hilbert Function of P/I at the position <CODE>number</CODE>. <CODE>number</CODE> must be of type <CODE>BigInt</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBHilbertFunc(mill)</CODE></TD>
+<TD>print the Hilbert Function of P/I</TD>
+</TR>
+<TR>
+<TD><CODE>JBHilbertSeries(mill, s)</CODE></TD>
+<TD>returns the Hilbert Series of P/I in terms of <CODE>s</CODE>. <CODE>s</CODE> must be a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> of a FractionField</TD>
+</TR>
+<TR>
+<TD><CODE>JBSyzygy(mill)</CODE></TD>
+<TD>Computes the first Syzygy of I. It returns a <CODE>FGModule</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBDim(mill)</CODE></TD>
+<TD>Computes the dimension of P/I. It returns a number of type <CODE>long</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBCls(mill, f)</CODE></TD>
+<TD>It computes the class of <CODE>LPP(f)</CODE> if <CODE>f</CODE> is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>. If <CODE>f</CODE> is a <A HREF="PPMonoidElem.html"><CODE>PPMonoidElem</CODE></A> it computes the class of <CODE>f</CODE>. It returns a number of type <CODE>long</CODE>. <I>I don't need a JBMill for that...</I></TD>
+</TR>
+<TR>
+<TD><CODE>JBMinCls(mill, f)</CODE></TD>
+<TD>It computes the minimal class of the Janet Basis of I. It returns a number of type <CODE>long</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBElementsWithClass(mill, n)</CODE></TD>
+<TD>It retuns all elements of the Janet Basis of class <CODE>n</CODE> as a C++ vector</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc5"></A>
+<H4>The Basis must be monomial</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBComplementaryDecomposition(mill)</CODE></TD>
+<TD>Returns the complementary decomposition of I as C++ <CODE>vector&lt;pair&lt;PPMonoidElem, vector&lt;bool&gt;&gt;&gt;</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBStandardPairs(mill)</CODE></TD>
+<TD>Returns the standard Pairs of I as C++ <CODE>vector&lt;pair&lt;PPMonoidElem, vector&lt;bool&gt;&gt;&gt;</CODE></TD>
+</TR>
+</TABLE>
+
+<A NAME="toc6"></A>
+<H4>The Basis must be Pommaret</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBMaxStronglyIndependentSet(mill)</CODE></TD>
+<TD>Returns a maximal strongly independent set modulo I as a C++ vector</TD>
+</TR>
+<TR>
+<TD><CODE>JBDegPommaretClass(mill, n)</CODE></TD>
+<TD>Returns the maximal degree of elements with class <CODE>n</CODE> in the Janet Basis as number of type <CODE>long</CODE>. If there isn't a element in this class it returns <CODE>-1</CODE></TD>
+</TR>
+</TABLE>
+
+<A NAME="toc7"></A>
+<H4>The Basis must be a Pommaret and Homogenous</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBDepth(mill)</CODE></TD>
+<TD>Computes the depth of I. It returns a number of type <CODE>long</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBProjDim(mill)</CODE></TD>
+<TD>Computes the projective dimension of I. It returns a number of type <CODE>long</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBIsCohenMacaulay(mill)</CODE></TD>
+<TD>Returns <CODE>true</CODE> if I is a Cohen-Macauay ring, otherwise <CODE>false</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBRegularSequence(mill)</CODE></TD>
+<TD>Returns a maximal reqular sequence of I as a C++ vector</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc8"></A>
+<H4>The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBRegularity(mill)</CODE></TD>
+<TD>Returns the regularity of I as number of type <CODE>long</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBCastelnuovoMumfordRegularityI](mill)</CODE></TD>
+<TD>Same as above|</TD>
+</TR>
+<TR>
+<TD><CODE>JBSaturation(mill)</CODE></TD>
+<TD>Returns the generating set of the Saturation of I as C++ vector|</TD>
+</TR>
+<TR>
+<TD><CODE>JBSatiety(mill)</CODE></TD>
+<TD>Returns the satiety of I as natural number of type <CODE>long</CODE>. If the ideal is saturated it returns <CODE>-1</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>JBExtremalBettiNumbers(mill)</CODE></TD>
+<TD>Returns the extremal betti numbers of the ideal I as C++ <CODE>map&lt;pair&lt;long, long&gt;, long&gt;</CODE></TD>
+</TR>
+</TABLE>
+
+<A NAME="toc9"></A>
+<H4>The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex and the ideal must be CohenMacaulay</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>JBSocle(mill)</CODE></TD>
+<TD>Returns the generating set of the socle of I as C++ vector</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc10"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-Janet1.C">ex-Janet.C</A>
+<LI><A HREF="../../examples/index.html#ex-Janet2.C">ex-Janet2.C</A>
+<LI><A HREF="../../examples/index.html#ex-Janet3.C">ex-Janet3.C</A>
+</UL>
+
+<A NAME="toc11"></A>
+<H2>Maintainer documentation for JBDatastructure.C, JBSets.C, JBEnv.C</H2>
+<P>
+We only explain the basic structure because there is very much code (~5500 loc). The implementation is divided in three parts:
+</P>
+<A NAME="toc12"></A>
+<H3>JBDatastructure.C</H3>
+<P>
+Here we define the basic datastructures, which are necessary to compute Janet-Bases fast. 
+</P>
+<A NAME="toc13"></A>
+<H4>JanetTriple</H4>
+<P>
+These class contains three informations. 
+First of all it contains the polynomial of our generating set. 
+The second part is the <I>ancestor</I>. 
+Normally the ancestor is the leading monomial of the polynomial contained in the Triple. 
+But if the polynomial is the result of an involutive prolongation the ancestor is the leading monomial of the origin polynomial. 
+The last part contains a C++ <CODE>vector&lt;bool&gt;</CODE> which shows with which variables we already prolonged.
+</P>
+<A NAME="toc14"></A>
+<H4>JanetTree</H4>
+<P>
+The most important datastructure, but maybe also the worst one...
+The <CODE>JanetTree</CODE> is a binary tree where we order the generating set in variable and degree direction. 
+For further information you have to look at the literatur. 
+The <CODE>JanetTree</CODE> is implemented as a nested set of C++ vectors (I am not sure if this was a right decision, but I guess to change this could be even worse, than living with it...)
+The <CODE>JanetTree</CODE> contains only in the leafs a reference to the JaneTriples. 
+The nodes contain a Handle class, which are either an internal handle class (no <CODE>``JanetTriple``</CODE>) or a leaf class (contain only a triple)
+Apart from that the nodes only contains datas about their position.
+</P>
+<A NAME="toc15"></A>
+<H3>JBSets.C</H3>
+<P>
+The algorithms for computing Janet-Bases dealing mainly with to sets <CODE>T</CODE> and <CODE>Q</CODE> (and <CODE>P</CODE>), which contain <CODE>JanetTriple</CODE>. 
+In every iteration some elements goes from <CODE>T</CODE> to <CODE>Q</CODE> and vica versa. 
+In the first implementation we discoverd that it is really expensive to delete and element in <CODE>T</CODE> and copy it to <CODE>Q</CODE>.
+Therefore we decide to intodruce a new Set <CODE>BasicSet</CODE>. 
+In this set every <CODE>JanetTriple</CODE> is included. 
+The Sets <CODE>T</CODE>, <CODE>Q</CODE> and <CODE>P</CODE> contain only Pointers to this <CODE>BasicSet</CODE>.
+<CODE>BasicSet</CODE> is only a C++ list (because inserting and deleting of elements don't change other iterators).
+<CODE>T</CODE>, <CODE>Q</CODE>, <CODE>P</CODE> are C++ multisets. For this multiset we defined in class <CODE>JBSets</CODE> a inner class <CODE>CompareIterator</CODE>, that we need for odering elements in <CODE>T</CODE>, <CODE>Q</CODE> and <CODE>P</CODE>.
+</P>
+<P>
+In addition this class contains some useful functions to deal and manipulating elements in <CODE>T</CODE>, <CODE>Q</CODE> and <CODE>P</CODE>.
+</P>
+<A NAME="toc16"></A>
+<H3>JBEnv.C</H3>
+<P>
+This is the <I>main file</I>.
+</P>
+<A NAME="toc17"></A>
+<H4>JBEnv</H4>
+<P>
+The class <CODE>JBEnv</CODE> contains the basic informations about the ring.
+</P>
+<A NAME="toc18"></A>
+<H4>JBFlag</H4>
+<P>
+This class stores informations about the options which we use in the computation
+</P>
+<A NAME="toc19"></A>
+<H4>JBMill</H4>
+<P>
+In short: Everything else!
+The class contains the main algorithms for computing Janet Basis (<CODE>DegreeTQ</CODE> and <CODE>BlockTQ</CODE>). 
+And every function which deals with the JanetBase. 
+Maybe this is not a wise decision because this class gets very big.
+For the implemented algorithms I refer to the literature...
+</P>
+<A NAME="toc20"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+<B>TODO Index.html in examples</B>
+<U><B>The code requires tests! Immediately!</B></U>
+we always assume that <CODE>x1&gt;x2&gt;x3&gt; ... &gt; xn</CODE>
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/JBMill.html -i txt/JBMill.txt -->
+</BODY></HTML>

@@ -1,0 +1,58 @@
+    BuchbergerMoeller
+      Copyright (c)  2013 John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{empty}{John Abbott}
+
+
+== Examples ==[examples]
+%----------------------------------------------------------------------
+- [ex-empty.C ../../examples/index.html#ex-empty.C]
+-
+
+== User documentation ==
+%======================================================================
+
+The functions here are for computing generators of the vanishing ideal
+of a set of points (//i.e.// all polynomials which vanish at all of
+the points).
+
+The functions expect two parameters: a polynomial ring ``P``, and a set of points ``pts``.
+The coordinates of the points must reside in the coefficient ring of ``P``.
+The points are represented as a matrix: each point corresponds to a row.
+
+
+
+=== Operations ===[operations]
+%----------------------------------------------------------------------
+
+The main functions available are:
+- ``IdealOfPoints(P,pts)`` computes the vanishing ideal in ``P`` of the points ``pts``.
+- ``BM(P,pts)`` computes the reduced Groebner basis of the vanishing ideal in ``P`` of the points ``pts``;
+
+
+
+== Maintainer documentation ==
+%======================================================================
+
+Impl is simple/clean rather than fast.
+
+There was a minor complication to handle the case where the dim of the
+space in which the points live is less than the number of indets in
+the polyring.
+
+== Bugs, shortcomings and other ideas ==
+%======================================================================
+
+2013-01-21 there is only a generic impl (which is simple but inefficient).
+
+The name ``BM`` is too short?
+
+
+== Main changes ==
+%======================================================================
+
+**2013**
+- January (v0.9953): first release
+
+

@@ -1,0 +1,15 @@
+Use R ::= QQ[x];
+A := x;
+Use P ::= R[y];
+B := y;
+//A*B; // error
+Phi := // ?!?!? commentando questa linea, valgrind non si lagna...
+CanonicalHom(R, P);
+type(Phi);
+Phi(A)*B; // ok
+
+-- Define F(...)
+-- 	Return Phi(...);
+-- EndDefine
+
+

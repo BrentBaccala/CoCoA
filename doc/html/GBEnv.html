@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      GBEnv</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      GBEnv</H1>
+<FONT SIZE="4">
+<I>      &copy;  2010 Anna Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation</A>
+    <LI><A HREF="#toc2">Maintainer documentation</A>
+      <UL>
+      <LI><A HREF="#toc3">GBEnv will know</A>
+        <UL>
+        <LI><A HREF="#toc4">Notes</A>
+        </UL>
+      <LI><A HREF="#toc5">GBInfo will know</A>
+      <LI><A HREF="#toc6">GBMill/BuchbergerMill (?) will know -- was GReductor</A>
+        <UL>
+        <LI><A HREF="#toc7">Some general notes</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc8">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc9">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation</H2>
+<P>
+This class contains some information needed for the computation of
+a GBasis (with Buchberger's algorithm)
+</P>
+<P>
+At the moment the file contains instead the class <CODE>GRingInfo</CODE> which
+was defined in <CODE>TmpGPoly.H</CODE>
+</P>
+<P>
+One idea to unify the class of ideals in <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A> is to make
+an abstract <CODE>GBMill</CODE> as a base for the the operation on ideals
+(toric, squarefree, ideals of points,..)  For <I>standard</I> ideals the
+key for the (GB)operations is computing with Buchberger algorithm,
+therefore the <CODE>BuchbergerMill</CODE> should inherit from <CODE>GBMill</CODE>.
+</P>
+<A NAME="toc2"></A>
+<H2>Maintainer documentation</H2>
+<P>
+As <I>one class should do one thing</I> <CODE>GRingInfo</CODE> and <CODE>GReductor</CODE>
+should reorganized and split into <CODE>GBEnv</CODE>, <CODE>GBInfo</CODE>, and
+<CODE>GBMill</CODE>.
+</P>
+<P>
+<B>Mill</B>: <I>A building equipped with machinery for processing raw materials into finished products</I>
+</P>
+<A NAME="toc3"></A>
+<H3>GBEnv will know</H3>
+<P>
+the environment for the arithmetics, that is:
+</P>
+<UL>
+<LI>the <CODE>SparsePolyRing</CODE> involved
+<LI>the <CODE>DivMaskRule</CODE>
+<LI>the <CODE>PPMonoid</CODE> for <CODE>LPPForDiv</CODE>
+<LI>the <CODE>ring</CODE> of coefficients (field or FrFldOfGCDDomain)
+<LI>if it represents a module computation
+<LI>the "module/ring" embeddings (or GBHom ???)
+<LI>---&gt; inheritance for the module case?
+</UL>
+
+<A NAME="toc4"></A>
+<H4>Notes</H4>
+<P>
+Embeddings/deembeddings are now in TmpGReductor: they embed
+polynomials and ModuleElems into <A HREF="GPoly.html"><CODE>GPoly</CODE></A>s therefore cannot directly
+be GBEnv member functions (i.e. GBEnv would need GPoly forward
+declaration or .H inclusion)
+</P>
+<P>
+Should embeddings/deembeddings be a class on their own?
+or just functions in a file on their own?
+or where?
+</P>
+<P>
+The main difference between ring and module computations is in
+considering the component in <CODE>IsDivisibleFast</CODE>.  How to balance
+efficiency and inheritance?  (The other difference is in making pairs
+of polynomials with the same component)
+</P>
+<A NAME="toc5"></A>
+<H3>GBInfo will know</H3>
+<P>
+<B>constant</B> <CODE>GBEnv</CODE> and the flags related with the algorithm:
+</P>
+<UL>
+<LI>if the input was homogeneous (for interreduction?)
+<LI>alg homog/aff/sat/hdriven...
+<LI>the kind of sugar function to use
+<LI>active criteria (Weyl/module).  Now <CODE>GBCriteria</CODE> is in <CODE>GReductor</CODE>
+<LI>...
+</UL>
+
+<A NAME="toc6"></A>
+<H3>GBMill/BuchbergerMill (?) will know -- was GReductor</H3>
+<P>
+<B>constant</B> <CODE>GBInfo</CODE> and the "frozen computation":
+</P>
+<UL>
+<LI>the input polynomials
+<LI>list of pairs
+<LI>list of reducers
+<LI>list for output
+<LI>reducing SPolynomial (or atomic ???)
+<LI>stats
+<LI>...
+</UL>
+
+<A NAME="toc7"></A>
+<H4>Some general notes</H4>
+<P>
+Partial steps for the conversion of the current code:
+</P>
+<OL>
+<LI>use member function in ctor for common assignments (done)
+<LI>transform functions with <CODE>GRingInfo</CODE> as argument into GRingInfo
+    member functions (wip)
+</OL>
+
+<P>
+Good to know:
+</P>
+<OL>
+<LI>reduce.C uses only "env" info from <CODE>GRI.</CODE>
+<LI>GRingInfo has many fields, completely unused in the basic case (ie
+    GB for polys).  Some are set with a default value which is
+    different for some "concrete classes" (eg modules, operation specific)
+<LI>SPoly creates a GPoly with "env" info, only sugar needs "mill";
+  in fact the constructor for GPoly needs "mill" only for sugar:
+  we can make an "undefined" sugar to be set later on.
+</OL>
+
+<A NAME="toc8"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+Everything so far is just work in progress.
+</P>
+<A NAME="toc9"></A>
+<H2>Main changes</H2>
+<P>
+<B>2010</B>
+</P>
+<UL>
+<LI>moved definition of class <CODE>GRingInfo</CODE> into <CODE>GBEnv.H,C</CODE>
+<P></P>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/GBEnv.html -i txt/GBEnv.txt -->
+</BODY></HTML>

@@ -1,0 +1,741 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      MemPool</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      MemPool</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2006,2010 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User Documentation for MemPool</A>
+      <UL>
+      <LI><A HREF="#toc2">General description</A>
+      <LI><A HREF="#toc3">Basic Use</A>
+      <LI><A HREF="#toc4">Debugging with MemPools</A>
+      <LI><A HREF="#toc5">The Verbosity Levels</A>
+      <LI><A HREF="#toc6">Using Verbosity Level 3</A>
+      <LI><A HREF="#toc7">Debug Levels in MemPools</A>
+      <LI><A HREF="#toc8">Example: Using a MemPool as the memory manager for a class</A>
+      </UL>
+    <LI><A HREF="#toc9">Maintenance notes for the MemPool source code</A>
+      <UL>
+      <LI><A HREF="#toc10">MemPoolFast and loaf</A>
+      <LI><A HREF="#toc11">MemPoolDebug</A>
+      </UL>
+    <LI><A HREF="#toc12">Bugs, Shortcomings, etc</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User Documentation for MemPool</H2>
+<A NAME="toc2"></A>
+<H3>General description</H3>
+<P>
+A MemPool provides a simple and fast memory management scheme for memory
+blocks of <B>fixed size</B>.  It is particularly well-suited to cases where there
+are many interleaved allocations and deallocations.  You probably do not
+need to know about MemPool unless you plan to write some <I>low-level</I> code.
+</P>
+<P>
+<CODE>MemPool</CODE>s work by acquiring large <I>loaves</I> of memory from the system, and
+dividing these loaves into <I>slices</I> of the chosen size.  A simple
+free-list of available slices is maintained.  New loaves are acquired
+whenever there are no slices available to meet a request.  Note that
+the space occupied by the loaves is returned to the system only when
+the <CODE>MemPool</CODE> object is destroyed.  Also note that a <CODE>MemPool</CODE> simply
+forwards to <CODE>::operator new</CODE> any request for a block of memory of size
+different from that specified at the creation of the <CODE>MemPool</CODE> object;
+wrong size deallocations are similarly forwarded to <CODE>::operator delete</CODE>.
+</P>
+<A NAME="toc3"></A>
+<H3>Basic Use</H3>
+<P>
+The constructor for a <CODE>MemPool</CODE> requires that the size (in bytes) of the blocks
+it is to manage be specified (as the first argument).  We recommend that the
+<CODE>MemPool</CODE> be given a name (second argument as a string); the name is useful only
+for debugging.  The third argument may occasionally be useful for more advanced use.
+</P>
+<PRE>
+   MemPool workspace(16); // 16 byte slices used as temporary workspaces
+</PRE>
+<P></P>
+<PRE>
+   MemPool MemMgr(sizeof(widget), "memmgr for widgets");
+</PRE>
+<P></P>
+<P>
+Once the <CODE>MemPool</CODE> has been created, a new block of memory is obtained via a
+call to the member function <CODE>alloc</CODE>, and a block of memory is freed via a
+call to the member function <CODE>free</CODE> (only to be applied to blocks previously
+allocated by the same <CODE>MemPool</CODE>).  In fact, <CODE>alloc</CODE> and <CODE>free</CODE> have two
+variants:
+</P>
+<PRE>
+    MemPool::alloc()  allocates a block of the default size for the ``MemPool``
+  
+    MemPool::alloc(sz) allocates a block of ``sz`` bytes; if ``sz`` is not the
+    default size for the ``MemPool`` the request is passed on to ``::operator new``
+  
+    MemPool::free(ptr) frees a default sized block with address ``ptr``
+  
+    MemPool::free(ptr, sz) frees a block of ``sz`` bytes with address ptr, if
+    ``sz`` is not the default size for the ``MemPool`` the request is passed on to
+    ``::operator delete``
+</PRE>
+<P>
+The variants taking an explicit block size permit <CODE>MemPool</CODE>s to be used by
+a class specific operator new/delete pair (see example program below).
+In particular, it is not an error to ask a <CODE>MemPool</CODE> for a block of memory
+whose size differs from the size declared when the <CODE>MemPool</CODE> was
+constructed; indeed, this is a necessary capability if the <CODE>MemPool</CODE> is to
+be used inside operator new/delete.  Attempting to <CODE>alloc</CODE> too much
+memory will result in a <CODE>std::bad_alloc</CODE> exception being thrown.
+</P>
+<P>
+If you encounter bugs which may be due to incorrect memory management then
+<CODE>MemPool</CODE> has some facilities to help you detect various common bugs, and
+isolate their true causes.  How to do this is described in the following
+section <I>Debugging with MemPools</I>.
+</P>
+<P>
+It is possible to get some crude logging information from a <CODE>MemPool</CODE>.  The
+global variable <CODE>MemPoolFast::ourInitialVerbosityLevel</CODE> indicates the
+verbosity level for newly created <CODE>MemPool</CODE>s; the verbosity level of
+individual <CODE>MemPool</CODE> objects may be set explicitly by calling the member
+function <CODE>SetVerbosityLevel</CODE>.  The various verbosty levels are described
+below in the section entitled <I>The Verbosity Levels</I>.
+</P>
+<P>
+Technical note:
+<CODE>MemPool</CODE> is just a typedef for the true class name <CODE>MemPoolFast</CODE>
+  (or <CODE>MemPoolDebug</CODE> if you enable debugging).
+</P>
+<A NAME="toc4"></A>
+<H3>Debugging with MemPools</H3>
+<P>
+The preprocessor variable <CODE>CoCoA_MEMPOOL_DEBUG</CODE> can be set at compile-time
+to perform run-time checks and obtain debugging information and statistics.
+Note that <B>recompilation of all source files</B> depending on <CODE>MemPool</CODE> will be
+necessary.  When the preprocessor variable is set the typedef <CODE>MemPool</CODE>
+refers to the class <CODE>MemPoolDebug</CODE> -- throughout this section we shall
+speak simply of <CODE>MemPool</CODE>.
+</P>
+<P>
+Each <CODE>MemPool</CODE> object maintains a record of its own level of verbosity and
+debug checks.  Upon creation of a new <CODE>MemPool</CODE> object these levels are
+set automatically to the values of these two global variables:
+</P>
+<PRE>
+    MemPoolDebug::ourInitialDebugLevel
+    MemPoolDebug::ourInitialVerbosityLevel
+</PRE>
+<P>
+The values of these globals should be set <B>before creating</B> any MemPools,
+<I>i.e.</I> before creating the <CODE>GlobalManager</CODE> (which creates the MemPools
+for the ring of integers and the rationals).
+</P>
+<P>
+The ostream on which logging data is printed defaults to <CODE>std::clog</CODE> but
+may be changed to another ostream via a call like <CODE>MemPoolSetLogStream(LogFile)</CODE>;
+the logging stream is global, <I>i.e.</I> the same for all MemPools.
+</P>
+<P>
+Similarly the ostream on which error logs are printed defaults to <CODE>std::cerr</CODE>
+but may be changed to another ostream via a call like <CODE>MemPoolSetErrStream(ErrFile)</CODE>;
+the error stream is global, <I>i.e.</I> the same for all MemPools.
+</P>
+<P>
+After construction of a <CODE>MemPool</CODE> object its levels can be adjusted using
+the member functions:
+</P>
+<PRE>
+    MemPool MemMgr(...);        // construct MemPool
+    MemMgr.SetDebugLevel(n);    // change debug level for this object
+    MemMgr.SetVerbosityLevel(n);// change verbosity level for this object
+</PRE>
+<P>
+You can arrange for a <CODE>MemPool</CODE> to print out some summary statistics at
+regular intervals.  The interval (in seconds) used for such messages is
+approximately the value of
+</P>
+<PRE>
+   MemPoolDebug::ourOutputStatusInterval
+</PRE>
+<P></P>
+<A NAME="toc5"></A>
+<H3>The Verbosity Levels</H3>
+<P>
+To help in debugging and fine tuning, you can get some logging messages out of
+a <CODE>MemPool</CODE>; these are printed on <CODE>GlobalLogput</CODE> (see <A HREF="io.html"><CODE>io</CODE></A>).  Here is a
+description of the various levels of <I>verbosity</I>:
+</P>
+<DL>
+<DT><B>Level 0</B></DT><DD>
+  No logging information is produced (but error messages may be
+  produced if debugging is active, see below)
+<P></P>
+<DT><B>Level 1</B></DT><DD>
+  A brief message is produced upon creation of each <CODE>MemPool</CODE> object;
+  and another upon destruction (including some summary statistics).
+<P></P>
+<DT><B>Level 2</B></DT><DD>
+  In addition to level 1: a log message is produced for each new
+  loaf allocated by a <CODE>MemPool</CODE>, including some summary statistics.
+  This may be useful to monitor how much memory is being allocated,
+  and how quickly.
+<P></P>
+<DT><B>Level 3+</B></DT><DD>
+  In addition to level 2: a log message is produced for each
+  allocation and deallocation of a block by a <CODE>MemPool</CODE>; this can
+  be used to isolate memory leaks (see comment below).
+</DL>
+
+<A NAME="toc6"></A>
+<H3>Using Verbosity Level 3</H3>
+<P>
+This is a very verbose level: each allocation/deallocation gives rise to a
+printed message (on a single rather long line).  These messages can be
+analyzed to help isolate when a leaked block of memory is allocated; or, in
+conjunction with debug level 1, it can help find when a block of memory
+which is written to after being freed was allocated.  Note that this can
+produce enormous amounts of output, so you are advised to send logging
+output to a file.  The output may be processed by the program <CODE>leak_checker</CODE>
+(in this directory) to help track down memory leaks: see the user
+documentation in leak_checker.txt
+</P>
+<P>
+Each message about an alloc/free contains a sequence number: there are
+separate counts for calls to <CODE>alloc</CODE> and calls to <CODE>free</CODE>.  If the
+leak_checker program indicates that there is no matching <CODE>free</CODE> for
+the N-th call to <CODE>alloc</CODE> then the N-th call to <CODE>alloc</CODE> for that
+particular <CODE>MemPoolDebug</CODE> object can be intercepted easily in a
+debugger by setting a breakpoint in the function
+<CODE>MemPoolDebug::intercepted</CODE>, and by calling the member function
+<CODE>InterceptAlloc</CODE> with argument N at some point before the N-th call
+to <CODE>alloc</CODE>.  The N-th call to <CODE>free</CODE> can be intercepted in an
+analogous way by calling instead the member function
+<CODE>InterceptFree</CODE>.  It is probably a good idea to call
+<CODE>InterceptAlloc</CODE> or <CODE>InterceptFree</CODE> as soon as you can after the
+<CODE>MemPoolDebug</CODE> object has been created; of course, recompilation
+will be necessary.
+</P>
+<A NAME="toc7"></A>
+<H3>Debug Levels in MemPools</H3>
+<P>
+If CoCoA_MEMPOOL_DEBUG was set during compilation then each <CODE>MemPool</CODE>
+object performs some debug checking.  If the checks reveal a problem then
+an error message is printed on <CODE>GlobalErrput</CODE>.  Upon creation of a
+<CODE>MemPool</CODE> object, the debug level is set to the value of the global
+variable:
+</P>
+<PRE>
+    MemPoolDebug::ourInitialDebugLevel
+</PRE>
+<P>
+After creation the debug level can be adjusted by calling the member function
+<CODE>SetDebugLevel</CODE>; this must be called before the <CODE>MemPool</CODE> has allocated any
+space.  Any attempts to change the debug level are silently ignored after the
+first allocation has been made.
+</P>
+<P>
+Here are the meanings of the different levels of checking: (each higher
+level includes all lower levels)
+</P>
+<DL>
+<DT><B>Level 0</B></DT><DD>
+  A count of the number of allocations, deallocations and <I>active</I> blocks
+  is maintained: a block is <I>active</I> if it has been allocated but not
+  subsequently freed.  The only check is that the number of active blocks
+  is zero when the <CODE>MemPool</CODE> object is destroyed; an error message is printed
+  out only if there are some active blocks.  This level is rather faster than
+  the higher levels of debugging, but should detect the existence of leaked
+  memory; higher levels of debugging will probably be necessary to isolate
+  the cause of any leak.
+<P></P>
+<DT><B>Level 1</B></DT><DD>
+  This level should detect several types of common error: writing just outside
+  the allocated region, writing to a block shortly after freeing it, perhaps
+  reading from a block shortly after freeing it, trying to free a block not
+  allocated by the given <CODE>MemPool</CODE> object, perhaps reading from an uninitialized
+  part of an allocated block.  Freeing a zero pointer via a <CODE>MemPool</CODE> is also
+  regarded as worthy of a warning.
+<P></P>
+  When a block of memory is allocated it is filled with certain values
+  (including small <I>margins</I> right before and after the requested block).
+  The values in the margins are checked when the block is freed: anything
+  unexpected produces an error message.  A freed block is immediately
+  filled with certain other values to help detect reading/writing to the
+  block after it has been freed.  These values are checked when the block
+  is next reallocated.
+<P></P>
+<DT><B>Level 2</B></DT><DD>
+  This level has not been tested much.  It will probably be very much slower
+  than any lower level, and is intended to help track down cases where a freed
+  block is written to some time after it has been freed.  A freed block is
+  never reallocated, and all freed blocks are checked for being written to
+  each time <CODE>alloc</CODE> or <CODE>free</CODE> is called; an error message is printed if a
+  modified freed block is found.  You need to be pretty desperate to use this
+  level.  A corrupted freed block is cleared to its expected <I>free</I> state as
+  soon as it is reported -- so persistent writing to a freed block can be
+  detected.
+</DL>
+
+<A NAME="toc8"></A>
+<H3>Example: Using a MemPool as the memory manager for a class</H3>
+<P>
+Suppose you already have a class called MyClass.  Here are the changes to
+make so that heap-located instances of MyClass reside in slices managed by
+a MemPool; obviously stack-located instances cannot be managed by MemPool.
+</P>
+<P>
+Add in the definition of MyClass (typically in the file MyClass.H):
+</P>
+<PRE>
+   private:
+    static MemPool myMemMgr;
+  
+   public:
+    static inline void operator delete(void* DeadObject, size_t sz)
+    { myMemMgr.free(DeadObject, sz); }
+    inline void* operator new(size_t sz)
+    { return myMemMgr.alloc(sz); }
+</PRE>
+<P></P>
+<P>
+The class static variable must be defined in some <CODE>.C</CODE> file,
+probably MyClass.C is the most suitable choice:
+</P>
+<PRE>
+    MemPool MyClass::myMemMgr = MemPool(sizeof(MyClass));
+      or
+    MemPool MyClass::myMemMgr = MemPool(sizeof(MyClass), PoolName);
+      or
+    MemPool MyClass::myMemMgr = MemPool(sizeof(MyClass), PoolName, NrWordsInMargin);
+</PRE>
+<P>
+<CODE>PoolName</CODE> is a string: it is used only in logging and error messages in debugging
+  mode, but it might be useful when debugging even when CoCoA_MEMPOOL_DEBUG is
+  not defined; the default name is <CODE>Unnamed-MemPool</CODE>.
+</P>
+<P>
+<CODE>NrWordsInMargin</CODE> is used only with debugging, and can be used to alter the
+  width of the buffer zones placed before and after each slice (default=4).
+</P>
+<P>
+Here is a simple example program showing how <CODE>MemPool</CODE>s can be used,
+and how the debugging facilities can be employed.  Compile this program
+with <CODE>CoCoA_MEMPOOL_DEBUG</CODE> set, and then run it to see the error
+messages produced indicating improper use of memory resources.
+</P>
+<PRE>
+  #include &lt;cstddef&gt;
+  #include &lt;iostream&gt;
+  #include &lt;string&gt;
+  #include "CoCoA/MemPool.H"
+  
+  using CoCoA::MemPool;
+  using namespace std;
+  
+  class Date
+  {
+   public:
+    static void operator delete(void* DeadObject, size_t sz);
+    void* operator new(size_t sz);
+    
+    Date(int d=1, int m=1, int y=1900, char app[40]="??");
+    ~Date() {};
+    Date&amp; operator=(const Date&amp; rhs);
+    friend ostream&amp; operator &lt;&lt; (ostream&amp; cout, const Date&amp; D);
+  
+   private:
+    static MemPool date_mempool;
+    int day, month, year;
+    char appointment[40];
+  };
+  
+  // Define new versions of new and delete for Date...
+  inline void Date::operator delete(void* DeadObject, size_t sz)
+  {
+    date_mempool.free(DeadObject, sz);
+  }
+  
+  inline void* Date::operator new(size_t sz)
+  {
+    return date_mempool.alloc(sz);
+  }
+  
+  // We must initialize the static member Date::date_mempool...
+  MemPool Date::date_mempool = MemPool(sizeof(Date), "Date_Pool", 4);
+  
+  //----------------------------------------------------------------------//
+  Date::Date(int d, int m, int y, char app[40])
+  {
+    day = d;
+    month = m;
+    year = y;
+    strcpy(appointment, app);
+  }
+  
+  //----------------------------------------------------------------------//
+  
+  Date&amp; Date::operator=(const Date&amp; RHS)
+  {
+    if (this == &amp;RHS) return *this;
+    
+    day = RHS.day;
+    month = RHS.month;
+    year = RHS.year;
+    strcpy(appointment, RHS.appointment);
+    return *this;
+  }
+  
+  ostream&amp; operator &lt;&lt; (ostream&amp; cout, const Date&amp; D)
+  {
+    cout &lt;&lt; D.day &lt;&lt; " " &lt;&lt; D.month &lt;&lt; ", " &lt;&lt; D.year &lt;&lt; " \t";
+    cout &lt;&lt; "appointment: " &lt;&lt; D.appointment;
+    
+    return cout;
+  }
+  
+  //------------------------------  main  ------------------------------//
+  
+  int main()
+  {
+    cout &lt;&lt; endl &lt;&lt; "== EXAMPLE ==" &lt;&lt; endl &lt;&lt; endl;
+    const int N = 4000;
+    
+    Date *D1[N], *D2, *D3;
+  
+    D2 = new Date;
+    (*D2) = Date(6,12,1965, "compleanno");  cout &lt;&lt; "*D2 = " &lt;&lt; *D2 &lt;&lt; endl;
+    D3 = new Date;  cout &lt;&lt; "*D3 = " &lt;&lt; *D3 &lt;&lt; endl;
+  
+    delete D2;
+    delete D2;  // ERROR!  D2 already freed
+    
+    for ( int i=0 ; i&lt;N ; i++ )    D1[i] = new Date;
+    for ( int i=N-1 ; i&gt;=0 ; i-- )  delete  D1[i];
+  
+    Date *D8 = new Date[4];
+    D8[0] = Date(1,4,2001, "pesce d'Aprile");
+    delete D8;  // ERROR!  D8 not allocated by mempool
+    // D3 not deleted -- will be detected when mempool is destroyed
+    return 0;
+  }
+</PRE>
+<P></P>
+<A NAME="toc9"></A>
+<H2>Maintenance notes for the MemPool source code</H2>
+<P>
+The code for <CODE>MemPoolFast</CODE> and <CODE>MemPoolDebug</CODE> is exception-safe.  The only
+exception this code could cause is <CODE>std::bad_alloc</CODE> in the member functions
+<CODE>MakeNewLoaf</CODE> or by a forwarded call to <CODE>::operator new</CODE> inside the member
+functions <CODE>alloc</CODE>.
+</P>
+<P>
+The class <CODE>MemPoolFake</CODE> simply forwards all allocation/deallocation calls
+to <CODE>::operator new/delete</CODE>.  It was added hastily to enable a threadsafe
+compilation (assuming that <CODE>::operator new</CODE> and <CODE>::operator delete</CODE> are
+themselves threadsafe).
+</P>
+<P>
+The idea of <CODE>MemPool</CODE>s was taken from <I>Effective C++</I> by Scott Meyers,
+but the code here has evolved considerably from what was described
+in the book.
+</P>
+<P>
+There are two virtually independent implementations: one for normal use,
+and one for use while debugging, the selection between the two versions is
+determined by the preprocessor symbol CoCoA_MEMPOOL_DEBUG: if this symbol
+is undefined then <CODE>MemPool</CODE> is a typedef for <CODE>MemPoolFast</CODE> otherwise it is
+a typedef for <CODE>MemPoolDebug</CODE>.
+</P>
+<P>
+<CODE>MemPoolDebug</CODE> uses internally a <CODE>MemPoolFast</CODE> object to handle the genuine
+memory management operations while <CODE>MemPoolDebug</CODE> performs validity checks
+and maintains counters for various sorts of operation.
+</P>
+<A NAME="toc10"></A>
+<H3>MemPoolFast and loaf</H3>
+<P>
+The most important member functions of <CODE>MemPoolFast</CODE> are <CODE>alloc</CODE> and <CODE>free</CODE>
+for slices of the requested size; it is vital that these be fast (on average).
+Amazingly, no worthwhile gain in speed was observed when I made these
+functions inline; sometimes inline was noticeably slower (g++ oddity?).
+Anyway, for simplicity I have kept them out-of-line.
+</P>
+<P>
+The idea behind a <CODE>MemPoolFast</CODE> is quite simple: unused slices are strung
+together in a <I>free list</I>, the last unused slice contains a null pointer.
+So <CODE>alloc</CODE> simply returns a pointer to the first slice in the free list,
+while <CODE>free</CODE> inserts a new slice at the front of the free list.  The ctor
+makes sure that each slice is big enough to hold at least a pointer; the
+first part of a free slice is used to hold the pointer to the next free
+slice (any remaining space in a free slice is unused).
+</P>
+<P>
+Note that there is a conundrum in choosing the right C++ type for the slices
+of a loaf, since the values kept in unused slices are pointers to slices, and
+there is no C++ type which is a pointer to itself.  The type chosen for these
+entries is <CODE>void**</CODE>: this conveys the information that they are not pointers
+to C++ objects while also allowing pointer arithmetic (which is not allowed on
+values of type <CODE>void*</CODE>).  Nonetheless the code is necessarily peppered with
+casts (to convert a <CODE>void***</CODE> into a <CODE>void**</CODE>); these are necessarily
+<CODE>reinterpret_cast</CODE>s but should be absolutely safe since they are only ever
+applied to genuine pointers to values (or to the null pointer).  Actually the
+<CODE>reinterpret_cast</CODE>s could probably be replaced by two nested <CODE>static_casts</CODE>s
+passing via the type <CODE>void*</CODE> but this would not help readability in the
+slightest.
+</P>
+<P>
+What happens when a new slice is requested when the free list is empty?  A
+new <CODE>loaf</CODE> is created, and cut into slices which are linked together to
+form a free list.  A <CODE>loaf</CODE> is little more than a large chunk of raw memory
+acquired from the system (see below for more details).  Note that if
+several loaves are in use then the freed slices from different loaves are
+strung together in a single free list; no attempt is made to keep slices
+from different loaves separate.  In particular, no check is made for a loaf
+all of whose slices are unused; loaves are returned to the system only when
+the <CODE>MemPool</CODE> is destroyed.
+</P>
+<P>
+Most of the data members of <CODE>MemPoolFast</CODE> are simple and with an obvious role.
+Here are a few observations about aspects which may not be completely obvious.
+</P>
+<P>
+The data member <CODE>myLoaves</CODE> is an <CODE>auto_ptr</CODE> so that the class dtor can be
+simple; it also expresses the idea that the loaves pointed to are owned by
+the <CODE>MemPoolFast</CODE> object.  Note that each <CODE>loaf</CODE> has a next pointer which is
+also an <CODE>auto_ptr</CODE>, so destroying the first loaf will destroy them all.  I
+could not use a <CODE>std::list</CODE> because <CODE>loaf</CODE> does not have a copy ctor.
+</P>
+<P>
+The data member <CODE>myFillNewLoaf</CODE> is used only when a new loaf is created (in
+<CODE>MakeNewLoaf</CODE>).  If the flag is set, the slices in a new loaf are filled with
+the sentinel value expected by <CODE>MemPoolDebug</CODE>, i.e. <CODE>MEMPOOL_FREE_WORD</CODE>.
+This seemed the least obnoxious way of achieving the necessary behaviour.
+</P>
+<P>
+The data member <CODE>myVerbosityLevel</CODE> was added to allow some minimal logging
+of resource consumption even with <CODE>MemPoolFast</CODE> objects: a brief message is
+output whenever a new loaf is acquired.  It does complicate the class rather,
+but may be useful sometimes.
+</P>
+<P>
+The only member functions exhibiting some complexity are:
+<CODE>myOutputStatus</CODE> uses a loop to count how many freed slices there are in
+      each loaf, and the print out the results in <CODE>GlobalLogput</CODE>.
+</P>
+<P>
+<CODE>MakeNewLoaf</CODE> first decides roughly how many slices the new loaf should have;
+      creates the loaf, and inserts at the front of the list of loaves;
+      prints out a logging message if required.
+</P>
+<P>
+The separation of the class <CODE>loaf</CODE> from the class <CODE>MemPoolFast</CODE> is partly a
+historical accident -- a side-effect of the tortuous search for a tolerably
+clean implementation.  Overall, I regard it as a fairly happy accident because
+no details of the the class <CODE>loaf</CODE> are visible in the header file.
+</P>
+<P>
+The class <CODE>loaf</CODE> has a simple primary role: it owns the raw memory acquired
+from the system.  Destroying a <CODE>loaf</CODE> returns the raw memory to the system.
+Unfortunately the implementation became rather complicated.  Each <CODE>loaf</CODE>
+contains a <I>next pointer</I> so that <CODE>loaf</CODE>s can be linked together in a list.
+I could not use a <CODE>std::list</CODE> since a <CODE>loaf</CODE> does not have a copy ctor (nor
+assignment); I prefer not to play dangerous games with copy ctors which
+destroy their arguments (non-standard semantics), and a clean copy ctor
+would probably be horribly inefficient.  The <I>next pointer</I> is an <CODE>auto_ptr</CODE>
+so that destroying the first <CODE>loaf</CODE> in a list will actually destroy all of
+the <CODE>loaf</CODE>s in that list.
+</P>
+<P>
+To fulfil a request for logging information about utilization of slices in
+each <CODE>loaf</CODE>, I added four member functions:
+</P>
+<PRE>
+    IamOriginator      - true iff arg points to a slice of this loaf
+    myFreeCounterReset - reset counters to zero in this loaf list
+    myCountFreeSlice   - incr my counter if slice is mine, o/w pass to next loaf
+    myOutputStatus     - print out utilization stats.
+</PRE>
+<P>
+Apart from <CODE>IamOriginator</CODE>, I would much rather these functions did not exist.
+</P>
+<P>
+The implementation of a <CODE>loaf</CODE> is straightforward (but a bit messy).
+</P>
+<A NAME="toc11"></A>
+<H3>MemPoolDebug</H3>
+<P>
+The idea behind <CODE>MemPoolDebug</CODE> is that it should offer the same interface
+as <CODE>MemPoolFast</CODE> but will additionally perform validity checks and
+accumulate utilization statistics and print logging messages (if
+requested).  The implementation is quite straightforward but rather long
+and messy as the code offers several levels of debug checks and logging
+message verbosity.
+</P>
+<P>
+The idea behind a <CODE>MemPoolDebug</CODE> is that it manages slices in a manner
+which should help uncover incorrect use of memory: a newly allocated
+slice is filled with peculiar values (in case you read without first
+writing a sensible value there), a freed slice is immediately filled
+with an other peculiar value (in case you read after freeing), each
+slice has a small protective margin right before and after it (in case
+you write just outside the valid address range)...
+(the fill values are intended to be invalid as pointers, to help detect
+pointer following in <I>uninitialized memory</I>)
+</P>
+<P>
+A count is kept of the number of <CODE>alloc</CODE> and <CODE>free</CODE> calls.  This can
+help discover that some value was never freed, or maybe was freed twice.
+These counts are of type <CODE>size_t</CODE>, so they could overflow; but then
+you'd be a bit daft to try to debug such a large example, wouldn't you?
+</P>
+<P>
+The default initial debugging and verbosity levels can be modified by
+setting the values of certain global variables -- these value are respected
+only if you compiled with <CODE>CoCoA_MEMPOOL_DEBUG</CODE> set or if you used
+explicitly the class <CODE>MemPoolDebug</CODE> rather than the typedef <CODE>MemPool</CODE>.
+These values are consulted only when a <CODE>MemPoolDebug</CODE> object is created.
+Using global variables like this make its easy to vary the debug level
+(without having to recompile the whole library).
+</P>
+<UL>
+<LI><CODE>MemPoolDebug::ourInitialVerbosityLevel</CODE>
+       default verbosity level
+<LI><CODE>MemPoolDebug::ourInitialDebugLevel</CODE>
+       default debug level
+<LI><CODE>MemPoolDebug::ourDefaultMarginSize</CODE>
+       default margin size (see below)
+<LI><CODE>MemPoolDebug::ourOutputStatusInterval</CODE>
+       print utilization statistics at roughly this interval (in seconds)
+</UL>
+
+<P>
+All the genuine memory management operations are handled by <CODE>myMemMgr</CODE>,
+a <CODE>MemPoolFast</CODE> object belonging to the <CODE>MemPoolDebug</CODE> object.  This
+approach avoids having two similar copies of rather delicate code.
+</P>
+<P>
+The margin size must be fixed in the ctor because <CODE>myMemMgr</CODE> needs to know
+what size slices it must manage.  The margin size for a <CODE>MemPoolDebug</CODE>
+object cannot be changed later.  Distinct <CODE>MemPoolDebug</CODE> objects may
+have different margin sizes.
+</P>
+<P>
+The debug level may be changed after construction provided no slices have
+been issued; trying to make the various debug levels compatible would
+require very careful checking (which I cannot be bothered to do).
+</P>
+<P>
+The verbosity level can be changed at any time (since there is no reason
+not to allow this).
+</P>
+<P>
+The data member <CODE>myAliveOrDead</CODE> was added to help protect against attempts
+to use an already deleted <CODE>MemPoolDebug</CODE> object.  All public member
+functions check that the field <CODE>myAliveOrDead</CODE> contains the expected value
+before proceeding: a CoCoALib error is thrown if the value is wrong.  The
+correct value for a live <CODE>MemPoolDebug</CODE> object is the constant
+<CODE>MemPoolDebug::AliveMark</CODE>.
+</P>
+<P>
+The data member <CODE>myHeadOfUsedList</CODE> is used at the highest level of debugging.
+All freed slices are placed on this list so they cannot be reissued to the
+user.  Every call then scans all these freed slices to make sure they contain
+the correct fill value.  This is intended to help discover writes to freed
+memory long after the slice has been freed.  This level gets very slow on larger
+examples.
+</P>
+<A NAME="toc12"></A>
+<H2>Bugs, Shortcomings, etc</H2>
+<P>
+Idea for better locality of reference: keep two free lists, one for the
+most recent loaf, and one for all older loaves.  When most recent loaf
+fills up, create and use a new loaf unless the free list for all the
+older loaves exceeds 0.5 times the size of the most recent loaf.  Not
+sure what to do if the freelist for old loaves is very long.
+</P>
+<P>
+Add a new member function which <I>tidies up</I> the list of freed blocks?
+This might lead to better locality of reference, and ultimately to
+better run-time performance if called judiciously.
+</P>
+<P>
+Could it be worth trying to help preserve locality of reference?
+Maybe freed slices could be returned to their own loaves.  Properly
+nested alloc/free calls ought to preserve locality anyway.
+</P>
+<P>
+Perhaps the globals <CODE>ourInitialDebugLevel</CODE> and <CODE>ourInitialVerbosityLevel</CODE>
+could be set inside the ctor for <CODE>GlobalManager</CODE>??
+</P>
+<P>
+Member functions of <CODE>MemPoolFast/Debug</CODE> do not have names in accordance
+with the coding conventions.  Cannot decide when I should use <CODE>void*</CODE>
+and when I should use <CODE>slice_t</CODE> for the arg types.
+</P>
+<P>
+A potentially useful function could be one which tells the MemPool to
+check that it is empty (i.e. all allocated blocks have been freed).
+This is currently implicit in the debugging-mode dtor.
+</P>
+<P>
+It might be an idea to maintain a registry of all existing MemPools,
+so that they can be told towards the end of the run that they should
+all be empty.  Otherwise any MemPool which is never destroyed can
+never give an indication of any leaks of its own slices.
+</P>
+<P>
+Could there be alignment problems with funny margin sizes?
+What about machines where pointers are a different size from <CODE>int</CODE>s?
+</P>
+<P>
+The code may silently increase the size of requested blocks so that their
+lengths are integer multiples of the size of a <CODE>slice_t</CODE>.  This does mean
+that writes outside the requested block but within the silently extended
+block are not detected (in debugging mode) -- I guess that most block sizes
+are exact multiples anyway, so there is unlikely to be any problem in most
+practical situations.
+</P>
+<P>
+Is the function <CODE>AlreadyFreed</CODE> working as one would expect?  Currently
+it checks that the margins are those of a freed block, and uses that
+as the determining criterion.  The argument is that an attempt to
+free a block suggests that user probably thought it hadn't been freed
+and so the user accessible data area is quite probably corrupted
+(i.e. not simply full of <CODE>MEMPOOL_FREE_WORD</CODE> values).  I have also
+added a call to <CODE>OverwriteFreeCheck</CODE>, so that freeing an overwritten
+already freed block will cause two error messages to be printed.
+Previously, <CODE>AlreadyFreed</CODE> required that the data area be in tact for
+the block to count as already having been freed; an overwritten
+freed block would then be detected as an allocated block with
+corrupted margins.  Maybe a memory map for an overwritten freed
+block would be a useful addition? (similar to that produced for
+an allocated block with corrupt margins).
+</P>
+<P>
+The periodical printing of stats is rather crude.  To make it more
+sophisticated will just made the code even more complex though (sigh).
+</P>
+<P>
+<CODE>AutoPtrSlice</CODE> is still very experimental.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/MemPool.html -i txt/MemPool.txt -->
+</BODY></HTML>

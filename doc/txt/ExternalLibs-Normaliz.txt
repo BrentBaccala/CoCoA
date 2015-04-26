@@ -1,0 +1,63 @@
+      ExternalLibs-Normaliz
+      Copyright (c)  2010 Anna Bigatti, Christof Soeger
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{ExternalLibs-Normaliz}{Anna Bigatti, Christof Soeger}
+
+
+== User documentation ==
+%======================================================================
+
+**Normaliz** is a tool for computations in affine monoids, vector
+configurations, lattice polytopes, and rational cones.
+
+Here we should include the manual for the normaliz flags/functions,
+but we wait until **libnormaliz** interface is more stable.  For the
+moment look at the examples for available functions on
+``NormalizCone``s and setting flags.
+
+=== Examples ===
+- [ex-Normaliz1.C ../../examples/index.html#ex-Normaliz1.C]
+- [ex-Normaliz2.C ../../examples/index.html#ex-Normaliz2.C]
+
+
+=== Download and compile Normaliz ===
+
+ | [**libnormaliz** website http://www.mathematik.uni-osnabrueck.de/normaliz/]
+
+- **CoCoALib** (still at 29th July 2011) requires a more recent version
+than the official **Normaliz** release.  The authors will be quite happy
+to send you a snapshot in the meanwhile.
+
+Download and compile **Normaliz** following the instructions from the website.
+Then configure and compile **CoCoALib** typing
+``` 
+cd CoCoALib-0.99
+./configure --with-libnormaliz=<your_path_to>/libnormaliz.a
+make
+```
+
+
+== Maintainer documentation ==
+%======================================================================
+
+
+
+== Bugs, shortcomings and other ideas ==
+%======================================================================
+
+
+
+
+== Main changes ==
+%======================================================================
+
+**2011**
+- 26 July: new libnormaliz configuration (still a private copy)
+
+
+**2010**
+- 1 October: first inclusion
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,472 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      Coding Conventions</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      Coding Conventions</H1>
+<FONT SIZE="4">
+<I>      &copy;  2007-2010 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User and contributor documentation</A>
+      <UL>
+      <LI><A HREF="#toc2">Names of CoCoA types, functions, variables</A>
+      <LI><A HREF="#toc3">Order in function arguments</A>
+        <UL>
+        <LI><A HREF="#toc4">Explanation notes, exceptions, and more examples</A>
+        </UL>
+      <LI><A HREF="#toc5">Abbreviations</A>
+      </UL>
+    <LI><A HREF="#toc6">Contributor documentation</A>
+      <UL>
+      <LI><A HREF="#toc7">Guidelines from Alexandrescu and Sutter</A>
+      <LI><A HREF="#toc8">Use of ``#define``</A>
+      <LI><A HREF="#toc9">Header Files</A>
+      <LI><A HREF="#toc10">Curly brackets and indentation</A>
+      <LI><A HREF="#toc11">Inline Functions</A>
+      <LI><A HREF="#toc12">Exception Safety</A>
+      <LI><A HREF="#toc13">Dumb/Raw Pointers</A>
+      <LI><A HREF="#toc14">Preprocessor Symbols for Controlling Debugging</A>
+      <LI><A HREF="#toc15">Errors and Exceptions</A>
+        <UL>
+        <LI><A HREF="#toc16">During development</A>
+        <LI><A HREF="#toc17">Always</A>
+        </UL>
+      <LI><A HREF="#toc18">Functions Returning Complex Values</A>
+      <LI><A HREF="#toc19">Spacing and Operators</A>
+      </UL>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User and contributor documentation</H2>
+<P>
+This page summarises the coding conventions used in CoCoALib.  This
+document is useful primarily to contributors, but some users may find
+it handy too.  As the name suggests, these are merely guidelines; they
+are not hard and fast rules.  Nevertheless, you should violate these
+guidelines only if you have genuinely good cause.  We would also be
+happy to receive notification about parts of CoCoALib which do not
+adhere to the guidelines.
+</P>
+<P>
+We expect these guidelines to evolve slowly with time as experience grows.
+</P>
+<P>
+Before presenting the guidelines I mention some useful books.
+The first is practically a <I>sine qua non</I> for the C++ library:
+<B>The C++ Standard Library</B> by Josuttis which contains essential
+documentation for the C++ library.  Unless you already have quite a
+lot of experience in C++, you should read the excellent books by Scott
+Meyers: <B>Effective C++</B> (the new version), and <B>Effective STL</B>.
+Another book offering useful guidance is <B>C++ Coding Standards</B> by
+Alexandrescu and Sutter; it is a good starting point for setting
+coding standards.
+</P>
+<A NAME="toc2"></A>
+<H3>Names of CoCoA types, functions, variables</H3>
+<P>
+All code and "global" variables must be inside the namespace <CODE>CoCoA</CODE>
+(or in an anonymous namespace); the only exception is code which is
+not regarded as an integral part of CoCoA (e.g. the C++ interface to
+the GMP big integer package).
+</P>
+<P>
+There are numerous conventions for how to name classes/types,
+functions, variables, and other identifiers appearing in a large
+package.  It is important to establish a convention and apply it
+rigorously (plus some common sense); doing so will facilitate
+maintenance, development and use of the code.
+(The first three rules follow the convention implicit in <B>NTL</B>)
+</P>
+<UL>
+<LI>single word names are all lower-case (<I>e.g.</I> <CODE>ring</CODE>);
+<LI>multiple word names have the first letter of each word capitalized,
+  and the words are juxtaposed (rather than separated by underscore,
+   (<I>e.g.</I> <CODE>PolyRing</CODE>);
+<LI>acronyms should be all upper-case (<I>e.g.</I> <CODE>PPM</CODE>);
+<LI>names of functions returning a boolean start with <CODE>Is</CODE>
+  (<CODE>Are</CODE> if argument is a list/vector);
+<LI>names of functions returning a <A HREF="bool3.html"><CODE>bool3</CODE></A> start with <CODE>Is</CODE> and end with <CODE>3</CODE>
+  (<CODE>Are</CODE> if argument is a list/vector);
+<LI>variables of type (or functions returning a) pointer end with <CODE>Ptr</CODE>
+<LI>data members' names start with <CODE>my</CODE> (or <CODE>Iam/Ihave</CODE> if they are boolean);
+<LI>a class static member has a name beginning with <CODE>our</CODE>;
+<LI>enums are called <CODE>BlahMarker</CODE> if they have a single value
+  (<I>e.g.</I> <CODE>BigInt::CopyFromMPZMarker</CODE>) and <CODE>BlahFlag</CODE> if they have more;
+<LI>abbreviations should be used consistently (see below);
+<LI><B>Abstract base classes</B> and <B>derived abstract classes</B> normally
+  have names ending in <CODE>Base</CODE>;
+  in contrast, a <B>derived concrete class</B> normally has a name ending
+  in <CODE>Impl</CODE>.  Constructors for abstract classes should probably be
+  <CODE>protected</CODE> rather than <CODE>public</CODE>.
+</UL>
+
+<P></P>
+<P>
+It is best to choose a name for your function which differs from the
+names of functions in the C++ standard library, otherwise it can become
+necessary to use fully qualified names (e.g. <CODE>std::set</CODE> and
+<CODE>CoCoA::set</CODE>) which is terribly tedious.
+(Personally, I think this is a C++ design fault)
+</P>
+<P>
+If you are overloading a C++ operator then write the keyword
+<CODE>operator</CODE> attached to the operator symbol (with no intervening
+space).  See <CODE>ring.H</CODE> for some examples.
+</P>
+<A NAME="toc3"></A>
+<H3>Order in function arguments</H3>
+<P>
+When a function has more than one argument we follow the first
+applicable of the following rules:
+</P>
+<OL>
+<LI>the non-const references are the first args, e.g.
+ <UL>
+ <LI><CODE>myAdd(a,b,c)</CODE> as in <I>a=b+c</I>,
+ <LI><CODE>IsIndetPosPower(long&amp; index, BigInt&amp; exp, pp)</CODE>
+ </UL>
+<LI>the ring/PPMonoid is the first arg, e.g.
+ <UL>
+ <LI><CODE>ideal(ring, vector&lt;RingElem&gt;)</CODE>
+ </UL>
+<LI>the <I>main actor</I> is the first arg and the <I>with respect to</I> args follow, e.g.
+ <UL>
+ <LI><CODE>deriv(f, x)</CODE>
+ </UL>
+<LI>optional args go last, e.g.
+ <UL>
+ <LI><CODE>NewPolyRing(CoeffRing, NumIndets)</CODE>,
+ <LI><CODE>NewPolyRing(CoeffRing, NumIndets, ordering)</CODE>
+ </UL>
+<LI>the arguments follow the order of the common use or <I>sentence</I>, e.g.
+ <UL>
+ <LI><CODE>div(a,b)</CODE> for <I>a/b</I>,
+ <LI><CODE>IndetPower(P, long i, long/BigInt exp)</CODE> for <I>x[i]^exp</I>,
+ <LI><CODE>IsDivisible(a,b)</CODE> for <I>a is divisible by b</I>,
+ <LI><CODE>IsContained(a,b)</CODE> for <I>a is contained in b</I>
+ </UL>
+<LI>strongly related functions behave as if they were overloading
+   (--&gt; optional args go last), (??? is this ever used apart from <CODE>NewMatrixOrdering(long NumIndets, long GradingDim, ConstMatrixView OrderMatrix);</CODE>???)
+<LI>the more structured objects go first, e.g. ... (??? is this ever used ???)
+</OL>
+
+<P></P>
+<P>
+<B>IMPORTANT</B> we are trying to define a <B>good set of few rules</B>
+which is easy to apply and, above all, respects <I>common sense</I>.
+If you meet a function in CoCoALib not following these rules let
+us know: we will fix it, or fix the rules, or call it an interesting
+exception ;-)
+</P>
+<A NAME="toc4"></A>
+<H4>Explanation notes, exceptions, and more examples</H4>
+<UL>
+<LI>We don't think we have any function with 1 and 2 colliding
+<LI>The <I>main actor</I> is the object which is going to be worked on
+  to get the returning value (usually of the same type), the
+  <I>with respect to</I> are strictly constant, e.g.
+  <UL>
+  <LI><CODE>deriv(f, x)</CODE>
+  <LI><CODE>NF(poly, ideal)</CODE>
+  </UL>
+<LI>Rule 1 wins on rule 4, e.g.
+  <UL>
+  <LI><CODE>IsIndetPosPower(index, exp, pp)</CODE> and <CODE>IsIndetPosPower(pp)</CODE>
+  </UL>
+<LI>Rule 2 wins on rule 4, e.g.
+  <UL>
+  <LI><CODE>ideal(gens)</CODE> and <CODE>ideal(ring, gens)</CODE>
+  </UL>
+<LI>we should probably change:
+  <UL>
+  <LI><CODE>NewMatrixOrdering(NumIndets, GradingDim, M)</CODE> into <CODE>NewMatrixOrdering(M, GradingDim)</CODE>
+  </UL>
+</UL>
+
+<A NAME="toc5"></A>
+<H3>Abbreviations</H3>
+<P>
+The overall idea is that if a given concept in a class or function
+name always has the same name: either always the full name, or always
+the same abbreviation.  Moreover a given abbreviation should have a
+unique meaning.
+</P>
+<P>
+Here is a list for common abbreviations
+</P>
+<UL>
+<LI><CODE>col</CODE> -- column
+<LI><CODE>ctor</CODE> -- constructor
+<LI><CODE>deg</CODE> -- degree (exceptions: <CODE>degree</CODE> in class names)
+<LI><CODE>div</CODE> -- divide
+<LI><CODE>dim</CODE> -- dimension
+<LI><CODE>elem</CODE> -- element
+<LI><CODE>mat</CODE> -- matrix (exceptions: <CODE>matrix</CODE> in class names)
+<LI><CODE>mul</CODE> -- multiply
+<LI><CODE>pos</CODE> -- positive (or should it be <CODE>positive</CODE>?  what about <CODE>IsPositive(BigInt N)</CODE>?)
+</UL>
+
+<P></P>
+<P>
+Here is a list of names that are written in full
+</P>
+<UL>
+<LI><CODE>assign</CODE>
+<LI><CODE>one</CODE> -- not <CODE>1</CODE>
+<LI><CODE>zero</CODE> -- not <CODE>0</CODE>
+</UL>
+
+<A NAME="toc6"></A>
+<H2>Contributor documentation</H2>
+<A NAME="toc7"></A>
+<H3>Guidelines from Alexandrescu and Sutter</H3>
+<P>
+Here I paraphrase some of the suggestions from their book, picking out the
+ones I think are less obvious and are most likely to be relevant to CoCoALib.
+</P>
+<UL>
+<LI>Write correct, clean and simple code at first; optimize later.
+<LI>Keep track of object ownership; document any "unusual" behaviour.
+<LI>Keep implementation details hidden (<I>e.g.</I> make data members <CODE>private</CODE>)
+<LI>Use <CODE>const</CODE> as much as you reasonably can.
+<LI>Use prefix ++ and -- (unless you specifically do want the postfix behaviour)
+<LI>Each class should have a <I>single</I> clearly defined purpose; keep it simple!
+<LI>Guideline: member fns should be either <CODE>virtual</CODE> or <CODE>public</CODE> not both.
+<LI>Exception cleanliness: dtors, deallocate and <CODE>swap</CODE> should never throw.
+<LI>Use <CODE>explicit</CODE> to avoid making unintentional "implicit type conversions"
+<LI>Avoid <CODE>using</CODE> in header files.
+<LI>Use <CODE>CoCoA_ERROR</CODE> for sanity checks on args to public fns, and <CODE>CoCoA_ASSERT</CODE> for internal fns.
+<LI>Use <CODE>std::vector</CODE> unless some other container is obviously better.
+<LI>Avoid casting; if you must, use a C++ style cast (<I>e.g.</I> <CODE>static_cast</CODE>)
+</UL>
+
+<A NAME="toc8"></A>
+<H3>Use of ``#define``</H3>
+<P>
+Excluding the <I>read once trick</I> for header files, <CODE>#define</CODE>
+should be avoided (even in experimental code).  C++ is rich enough that
+normally there is a cleaner alternative to a <CODE>#define</CODE>: for
+instance, <CODE>inline</CODE> functions, a <CODE>static const</CODE>
+object, or a <CODE>typedef</CODE> -- in any case, one should avoid
+polluting the global namespace.
+</P>
+<P>
+If you must define a preprocessor symbol, its name should begin with
+the prefix <CODE>CoCoA_</CODE>, and the remaining letters should all be
+capital.
+</P>
+<A NAME="toc9"></A>
+<H3>Header Files</H3>
+<P>
+The <I>read once trick</I> uses preprocessor symbols starting
+with <CODE>CoCoA_</CODE> and then finishing with the file
+name (retaining the capitalization of the file name but with slashes
+replaced by underscores).  The include path passed to the compiler
+specifies the directory above the one containing the CoCoALib header files,
+so to include one of the CoCoALib header files you must
+prefix <CODE>CoCoA/</CODE> to the name of the file -- this
+avoids problems of ambiguity which could arise if two includable files have
+the same name.  This idea was inspired by NTL.
+</P>
+<P>
+Include only the header files you really need -- this is trickier to
+determine than you might imagine.  The reasons for minimising includes are
+two-fold: to speed compilation, and to indicate to the reader which
+external concepts you genuinely need.  In header files it often suffices
+simply to write a forward declaration of a class instead of including the
+header file defining that class.  In implementation files the definition
+you want may already be included indirectly; in such cases it is enough to
+write a comment about the indirectly included definitions you will be
+using.
+</P>
+<P>
+In header files I add a commented out <CODE>using</CODE> command
+immediately after including a system header to say which symbols are
+actually used in the header file.  In the implementation file I write
+a <CODE>using</CODE> command for each system symbol used in the file; these
+commands appear right after the <CODE>#include</CODE> directive which
+imported the symbol.
+</P>
+<A NAME="toc10"></A>
+<H3>Curly brackets and indentation</H3>
+<P>
+Sutter claims curly bracket positioning doesn't matter: he's wrong!
+Matching curly brackets should be either vertically or horizontally
+aligned.  Indentation should be small (<I>e.g.</I> two positions for each
+level of nesting); have a look at code already in CoCoALib to see the
+preferred style.  Avoid using tabs for indentation as these do not have a
+universal interpretation.
+</P>
+<P>
+The <CODE>else</CODE> keyword indents the same as its matching
+<CODE>if</CODE>.
+</P>
+<A NAME="toc11"></A>
+<H3>Inline Functions</H3>
+<P>
+Use <CODE>inline</CODE> sparingly.  <CODE>inline</CODE> is useful in two
+circumstances: for a short function which is called very many times (at
+least several million), or for an extremely short function (e.g. a field
+accessor in a class).  The first case may make the program faster; the
+second may make it shorter.  You can use a profiler
+(<I>e.g.</I> <CODE>gprof</CODE>) to count how often a function is called.
+</P>
+<P>
+There are two potential disadvantages to <CODE>inline</CODE> functions:
+they may force implementation details to be publicly visible, and they
+may cause code bloat.
+</P>
+<A NAME="toc12"></A>
+<H3>Exception Safety</H3>
+<P>
+<I>Exception Safety</I> is an expression invented/promulgated by Sutter to
+mean that a procedure behaves well when an exception is thrown during its
+execution.  All the main functions and procedures in CoCoALib should be
+fully exception safe: either they complete their computations and return
+normally, or they leave all arguments essentially unchanged, and return
+exceptionally.  A more relaxed approach is acceptable for
+functions/procedures which a normal library user would not call directly
+(<I>e.g.</I> non-public member functions): it suffices that no memory is
+leaked (or other resources lost).  Code which is not fully exception-safe
+should be clearly marked as such.
+</P>
+<P>
+Consult one of Sutter's (irritating) books for more details.
+</P>
+<A NAME="toc13"></A>
+<H3>Dumb/Raw Pointers</H3>
+<P>
+If you're using dumb/raw pointers, improve your design!
+</P>
+<P>
+Dumb/raw pointers should be used only as a last resort; prefer C++ references
+or <CODE>std::auto_ptr&amp;lt;...&amp;gt;</CODE> if you can.  Note
+that it is especially hard writing exception safe code which contains dumb/raw
+pointers.
+</P>
+<A NAME="toc14"></A>
+<H3>Preprocessor Symbols for Controlling Debugging</H3>
+<P>
+During development it will be useful to have functions perform
+<I>sanity checks</I> on their arguments.  For general use, these checks
+could readily produce a significant performance hit.
+</P>
+<P>
+Compilation without setting any preprocessor variables should produce
+fast code (i.e. without non-vital checks).  Instead there is a
+preprocessor symbol (<CODE>CoCoA_DEBUG</CODE>) which can be set to
+turn on extra sanity checks.
+Currently if <CODE>CoCoA_DEBUG</CODE> has value zero, all non-vital checks
+are disabled; any non-zero value enables all additional checks.
+</P>
+<P>
+There is a macro <CODE>CoCoA_ASSERT(...)</CODE> which will check that its
+argument yields <CODE>true</CODE> when <CODE>CoCoA_DEBUG</CODE> is set;
+if <CODE>CoCoA_DEBUG</CODE> is not set it does nothing (not even evaluating
+its argument).  This macro is useful for conducting extra sanity checks
+during debugging; it should <B>not be used</B> for checks that must always
+be performed (<I>e.g.</I> in the final optimized compilation).
+</P>
+<P>
+There is currently no official preprocessor symbol for (de)activating
+the gathering of statistics.
+</P>
+<P>
+<B>NB</B> I wish to avoid having a plethora of symbols for switching
+debugging on and off in different sections of the code, though I do
+accept that we may need more than just one or two symbols.
+</P>
+<A NAME="toc15"></A>
+<H3>Errors and Exceptions</H3>
+<A NAME="toc16"></A>
+<H4>During development</H4>
+<P>
+Conditions we want to verify <B>solely during development</B> (i.e. when
+compiling with <CODE>-DCoCoA_DEBUG</CODE>) can be checked simply by using
+the macro <CODE>CoCoA_ASSERT</CODE> with argument the condition.  Should
+the condition be false, a <CODE>CoCoA::ErrorInfo</CODE> object is thrown --
+this will cause an abort if not caught.  The error message indicates the
+file and line number of the failing assertion.  If the compilation
+option <CODE>-DCoCoA_DEBUG</CODE> is not enabled then the macro does
+nothing whatsoever.  An example of its use is:
+</P>
+<PRE>
+    CoCoA_ASSERT(index &lt;= 0 &amp;&amp; index &lt; length);
+</PRE>
+<P></P>
+<A NAME="toc17"></A>
+<H4>Always</H4>
+<P>
+A different mechanism is to be used for conditions which must be
+checked even <B>after development is completed</B>.
+</P>
+<P>
+What should happen when one tries to divide by zero?  Or even asks for
+an exact division between elements that do not have an exact quotient
+(in the given ring)?
+</P>
+<P>
+Answer: call the macro <CODE>CoCoA_ERROR(err_type, location)</CODE> where
+<CODE>err_type</CODE> should be one of the error codes listed in <CODE>error.H</CODE>
+and <CODE>location</CODE> is a string saying where the error was detected
+(e.g. the name of the function which discovered it).
+Here is an example
+</P>
+<PRE>
+    if (trouble)
+      CoCoA_ERROR(ERR::DivByZero, "applying partial ring homomorphism");
+</PRE>
+<P>
+The macro <CODE>CoCoA_ERROR</CODE> never returns: it will throw
+a <CODE>CoCoA::ErrorInfo</CODE> object.  See the example programs for the
+recommended way of catching and handling exceptions: so that an informative
+message can be printed out.  See <CODE>error.txt</CODE> for advice on
+debugging when an unexpected CoCoA error is thrown.
+</P>
+<A NAME="toc18"></A>
+<H3>Functions Returning Complex Values</H3>
+<P>
+C++ tends to copy the return value of a function; this is undesirable if the
+value is potentially large and complex.  An obvious alternative is to supply
+as argument a reference into which the result will be placed.  If you choose
+to return the value via a reference argument then make the reference argument
+<B>the first one</B>.
+</P>
+<PRE>
+    myAdd(rawlhs, rawx, rawy);  // stands for:  lhs = x + y
+</PRE>
+<P></P>
+<A NAME="toc19"></A>
+<H3>Spacing and Operators</H3>
+<P>
+All <B>binary operators</B> should have one space before and one space after
+the operator name (unless both arguments are particularly short and simple).
+<B>Unary operators</B> should not be separated from their arguments by
+any spaces. 
+Avoid spaces between <B>function</B> names and the immediately
+following bracket.
+</P>
+<PRE>
+  expr1 + expr2;
+  !expr;
+  UsefulFunction(args);
+</PRE>
+<P></P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/00CodingConventions.html -i txt/00CodingConventions.txt -->
+</BODY></HTML>

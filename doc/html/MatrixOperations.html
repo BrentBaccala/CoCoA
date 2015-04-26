@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      MatrixOperations</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      MatrixOperations</H1>
+<FONT SIZE="4">
+<I>      &copy;  2009,2012 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for MatrixOperations</A>
+    <LI><A HREF="#toc2">Maintainer documentation for MatrixOperations</A>
+    <LI><A HREF="#toc3">Bugs, Shortcomings and other ideas</A>
+    <LI><A HREF="#toc4">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for MatrixOperations</H2>
+<P>
+<CODE>MatrixOperations</CODE> gathers together a number of operations on matrices; in
+most cases these operations are happy to accept a <CODE>MatrixView</CODE>
+(see <A HREF="MatrixView.html"><CODE>MatrixView</CODE></A>) as argument.
+</P>
+<P>
+When not specified, a matrix argument is of type <CODE>ConstMatrixView</CODE>.
+</P>
+<P>
+There are two ways of multiplying two matrices together.  The infix
+operators return a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>; the procedural version may be
+slightly faster than the infix operator.
+</P>
+<UL>
+<LI><CODE>mul(matrix&amp; lhs, M1, M2)</CODE> -- a procedure equivalent to <CODE>lhs = M1*M2;</CODE>, note that <CODE>lhs</CODE> might be a <CODE>SparseMatrix</CODE> <B>(not yet implemented)</B>
+<LI><CODE>operator*(M1, M2)</CODE>  -- the product <CODE>M1*M2</CODE>
+<LI><CODE>operator+(M1, M2)</CODE>  -- the sum <CODE>M1+M2</CODE>
+<LI><CODE>operator-(M1, M2)</CODE>  -- the difference <CODE>M1-M2</CODE>
+<LI><CODE>power(M, n)</CODE>  compute <CODE>n</CODE>-th power of <CODE>M</CODE>; if <CODE>n</CODE> is negative then <CODE>M</CODE> must be invertible
+<LI><CODE>operator*(n, M1)</CODE>   -- scalar multiple of <CODE>M1</CODE> by <CODE>n</CODE> (integer or RingElem)
+<LI><CODE>operator*(M1, n)</CODE>   -- scalar multiple of <CODE>M1</CODE> by <CODE>n</CODE> (integer or RingElem)
+<LI><CODE>operator/(M1, n)</CODE>   -- scalar multiple of <CODE>M1</CODE> by <CODE>1/n</CODE> (where <CODE>n</CODE> is integer or RingElem)
+<LI><CODE>operator-(M1)</CODE>      -- scalar multiple of <CODE>M1</CODE> by -1
+</UL>
+
+<P>
+Here are some matrix norms.  The result is an element of the ring
+containing the matrix elements.  Note that <CODE>FrobeniusNorm2</CODE> gives the
+<B>square</B> of the Frobenius norm (so that the value surely lies in the
+same ring).
+</P>
+<UL>
+<LI><CODE>FrobeniusNorm2(M)</CODE>  -- the <B>square</B> of the Frobenius norm
+<LI><CODE>OperatorNormInfinity(M)</CODE> -- the infinity norm, ring must be ordered
+<LI><CODE>OperatorNorm1(M)</CODE> -- the one norm, ring must be ordered
+</UL>
+
+<P>
+Here are some fairly standard functions on matrices.
+</P>
+<UL>
+<LI><CODE>det(M)</CODE>      -- determinant of <CODE>M</CODE> (M must be square)
+<LI><CODE>rank(M)</CODE>     -- rank of <CODE>M</CODE> (the base ring must be an integral domain)
+<LI><CODE>inverse(M)</CODE>  -- inverse of <CODE>M</CODE> as a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>
+<LI><CODE>adjoint(M)</CODE>  -- adjoint of <CODE>M</CODE> as a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>
+<LI><CODE>PseudoInverse(M)</CODE> -- PseudoInverse of <CODE>M</CODE> as a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>.
+                   I suspect that it requires that the matrix be of full rank.
+<LI><CODE>LinSolve(M,rhs)</CODE>  -- solve for <CODE>x</CODE> the linear system <CODE>M*x = rhs</CODE>; result is a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>; if no soln exists, result is the 0-by-0 matrix
+<LI><CODE>LinKer(M)</CODE>  -- solve for <CODE>x</CODE> the linear system <CODE>M*x = 0</CODE>; returns a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A> whose columns are a base for <CODE>ker(M)</CODE>
+</UL>
+
+<P>
+Here are some standard operations where the method used is specified explicitly.
+It would usually be better to use the generic operations above, as those should
+automatically select the most appropriate method for the given matrix.
+</P>
+<UL>
+<LI><CODE>void det2x2(RingElem&amp; d, M)</CODE>  -- for 2x2 matrices
+<LI><CODE>void det3x3(RingElem&amp; d, M)</CODE>  -- for 3x3 matrices
+<LI><CODE>void DetByGauss(RingElem&amp; d, M)</CODE>
+<LI><CODE>RankByGauss(std::vector&lt;long&gt;&amp; IndepRows, M)</CODE>
+<LI><CODE>InverseByGauss(M)</CODE> -- some restrictions (needs gcd)
+<LI><CODE>AdjointByDetOfMinors(M)</CODE>
+<LI><CODE>AdjointByInverse(M)</CODE> --  base ring must be integral domain
+<LI><CODE>LinSolveByGauss(M,rhs)</CODE> -- solve a linear system using gaussian elimination
+                    (base ring must be a field), result is a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>
+<LI><CODE>LinSolveByHNF(M,rhs)</CODE> -- solve a linear system using Hermite NormalForm
+                    (base ring must be a PID), result is a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>
+<LI><CODE>LinSolveByModuleRepr(M,rhs)</CODE> -- solve a linear system using module element representation, result is a <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>
+</UL>
+
+<UL>
+<LI><CODE>void GrammSchmidtRows(MatrixView&amp; M)</CODE>  -- NYI
+<LI><CODE>void GrammSchmidtRows(MatrixView&amp; M, long row)</CODE>  -- NYI
+</UL>
+
+<A NAME="toc2"></A>
+<H2>Maintainer documentation for MatrixOperations</H2>
+<P>
+Most impls are quite straightforward.
+</P>
+<P>
+<CODE>power</CODE> is slightly clever with its iterative impl of binary powering.
+</P>
+<P>
+<CODE>LinSolveByGauss</CODE> is a little complicated because it tries to handle all
+cases (<I>e.g.</I> full rank or not, square or more rows than cols or more cols than rows)
+</P>
+<A NAME="toc3"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+Can we make a common "gaussian elimination" impl which is called by the
+various algorithms needing it, rather than having several separate
+implementations?
+</P>
+<P>
+Is the procedure <CODE>mul</CODE> really any faster than the infix operator?
+</P>
+<A NAME="toc4"></A>
+<H2>Main changes</H2>
+<P>
+<B>2012</B>
+</P>
+<UL>
+<LI>June: Added negation, multiplication and division of a matrix by a scalar.
+<LI>April: Added LinSolve family (incl. LinSolveByGauss, LinSolveByHNF, LinSolveByModuleRepr)
+</UL>
+
+<P></P>
+<P>
+<B>2011</B>
+</P>
+<UL>
+<LI>May: Added power fn for matrices: cannot yet handle negative powers.
+<LI>March: added multiplication by RingElem
+</UL>
+
+<P></P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/MatrixOperations.html -i txt/MatrixOperations.txt -->
+</BODY></HTML>

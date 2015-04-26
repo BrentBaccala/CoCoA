@@ -1,0 +1,22 @@
+RingWithID(2,"RingWithID(1)[a,b] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(1,"QQ")
+
+RingWithID(5,"RingWithID(2)[x[1],x[2],x[3]] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(2,"RingWithID(1)[a,b] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(1,"QQ")
+
+
+RingWithID(7,"RingWithID(6)[x[1],x[2],x[3]] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(6,"FractionField(RingWithID(2))")
+  with BaseRing  RingWithID(2,"RingWithID(1)[a,b] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(1,"QQ")
+
+
+
+RingWithID(10,"RingWithID(9)[x[1],x[2],x[3]] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(9,"RingWithID(2)/ideal(a^2 -2)")
+  with BaseRing  RingWithID(2,"RingWithID(1)[a,b] -- RingDistrMPolyClean")
+  with CoeffRing RingWithID(1,"QQ")
+
+
+

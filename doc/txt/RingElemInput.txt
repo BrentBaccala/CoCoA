@@ -1,0 +1,47 @@
+      RingElemInput
+      Copyright (c)  2014 Anna M. Bigatti
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{RingElemInput}{Anna M. Bigatti}
+
+
+== Examples ==[examples]
+%----------------------------------------------------------------------
+- [ex-PolyInput2.C ../../examples/index.html#ex-PolyInput2.C]
+-
+
+== User documentation ==
+%======================================================================
+These are the functions for [[RingElem]] input.
+Let ``in`` be a ``string`` or ``stream`` (e.g. reading from file),
+and ``R`` any [[ring]].
+They both return the expression read from ``in`` and evaluated in
+``R``.
+
+- ``ReadExpr(in, R)`` -- keeps reading to the end of input (so it's
+convenient for reading from a string)
+- ``ReadExprSemicolon(in, R)`` -- stops at the semicolon (convenient for reading from file or standard input)
+-
+
+Recognized operations are
+``` + - * / ^ ()
+
+
+== Maintainer documentation ==
+%======================================================================
+Code is so nice it does not need any documentation! ;-)
+
+
+== Bugs, shortcomings and other ideas ==
+%======================================================================
+
+
+== Main changes ==
+%======================================================================
+
+**2014**
+- January (v0.99533): first release
+-
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For "txt2tags safety" leave 2 empty lines after the last line of text.

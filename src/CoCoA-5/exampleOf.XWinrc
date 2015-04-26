@@ -1,0 +1,6 @@
+SilentExit
+Menu apps {
+	C5 EXEC ./runC5
+}
+RootMenu apps
+

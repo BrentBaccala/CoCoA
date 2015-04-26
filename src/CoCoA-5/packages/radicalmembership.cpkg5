@@ -1,0 +1,100 @@
+Package $radicalmembership -- Radical memebrship functions
+
+export IsInRadical;
+export MinPowerInIdeal;
+
+Alias HP := $hp,
+      GB := $gb,
+      SP := $sppoly;
+
+Define About()
+  PrintLn "    Author:  A.M.Bigatti";
+  PrintLn "    Date:    9 Oct 2009";
+EndDefine; -- About
+
+--------------------------------------------------------------
+// IsInRadical(X, I);  -- X IDEAL or POLY
+// MinPowerInIdeal(F, Var I);  -- F^P In I, only For homog
+--------------------------------------------------------------
+
+Define IsInRadical(X, I)
+  If not(type(I) = IDEAL) Then
+    error("IsInRadical: second arg must be IDEAL");
+  EndIf;
+  If not(type(X) IsIn [RINGELEM, IDEAL]) Then
+    error("IsInRadical: first arg must be POLY or IDEAL");
+  EndIf;
+  If IsHomog(X) And IsHomog(gens(I)) Then
+    If type(X) = RINGELEM  Then Return $.IsInRadicalPolyH(X,I);  EndIf;
+    If type(X) = IDEAL Then Return $.IsInRadicalIdealH(X,I); EndIf;
+  Else
+    If type(X) = RINGELEM  Then Return $.IsInRadicalPoly(X,I);  EndIf;
+    If type(X) = IDEAL Then Return $.IsInRadicalIdeal(X,I); EndIf;
+  EndIf;
+EndDefine; -- IsInRadical
+
+--------------------------------------------------------------
+
+Define IsInRadicalIdeal(J, I)
+  Foreach F In gens(J) Do
+    If not($.IsInRadicalPoly(F, I)) Then Return False; EndIf;
+  EndForeach;
+  Return True;
+EndDefine; -- IsInRadicalIdeal
+
+Define IsInRadicalPoly(F, I)
+  P := RingOf(I);
+  R := CoeffRing(P);
+  IsInRadicalPolyRing ::= R[x[1..NumIndets(P)],t];
+  t := RingElem(IsInRadicalPolyRing, "t");
+  Phi := RMap(indets(IsInRadicalPolyRing, "x"));
+  J := ideal([image(G,Phi) | G In gens(I)]) + ideal(image(F,Phi)*t-1);
+  Return (1 IsIn elim([t], J));
+EndDefine; -- IsInRadicalPoly
+
+
+Define IsInRadicalIdealH(J, I)
+  Foreach F In gens(J) Do
+    If not($.IsInRadicalPolyH(F, I)) Then Return False; EndIf;
+  EndForeach;
+  Return True;
+EndDefine; -- IsInRadicalIdeal
+
+
+Define IsInRadicalPolyH(F, I)
+  Return $.MinPowerInIdeal(F, I) <> -1;
+EndDefine; -- IsInRadicalPolyH
+
+
+Define MinPowerInIdeal(F, I)
+  If IsHomog(F) And IsHomog(gens(I)) Then
+    P := RingOf(I);
+    R := CoeffRing(P);
+    IsInRadicalPolyHRing ::= R[x[1..NumIndets(P)],t];
+    t := RingElem(IsInRadicalPolyHRing, "t");
+    Phi := RMap(indets(IsInRadicalPolyHRing, "x"));
+    D := deg(F);
+    J := ideal([image(G,Phi) | G In gens(I)]) + ideal(image(F,Phi)-t^D);
+    L := [ G In ReducedGBasis(J) | len(G)=1 And deg(G)=deg(G,t)];
+    If L = [] Then Return -1; EndIf;
+    F := L[1]; -- at most one element in L
+    Return deg(F)/D;
+  Else
+    If not($.IsInRadicalPoly(F, I))
+      Then Return -1;
+    Else      
+      GB := GBasis(I);
+      D := 1;
+      FD := F;
+      While not(FD IsIn I) Do
+	FD := FD*F;
+	incr(ref D);
+      EndWhile;
+      Return D;
+    EndIf;
+  EndIf;
+EndDefine; -- IsInRadicalPoly
+--------------------------------------------------------------
+
+
+EndPackage; -- Package $radicalmembership

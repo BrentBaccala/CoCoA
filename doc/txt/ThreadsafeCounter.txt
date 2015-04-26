@@ -1,0 +1,62 @@
+      ThreadsafeCounter
+      Copyright (c)  2012 John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{ThreadsafeCounter}{John Abbott}
+
+
+== User documentation for ThreadsafeCounter ==
+%======================================================================
+
+A ``ThreadsafeCounter`` is simply a counter (based on a ``long``) which
+may be incremented in a threadsafe manner.
+
+
+=== Constructors ===[constructors]
+%----------------------------------------------------------------------
+
+There is only one constructor, the default constructor:
+
+- ``ThreadsafeCounter()`` -- create new counter starting at zero.
+-
+
+=== Operations on ThreadsafeCounters ===[operations]
+%----------------------------------------------------------------------
+
+There is only one operation:
+
+- ``TCS.myAdvance(n)``  -- increment the counter by ``n``, and
+    return the value of the counter prior to incrementing.
+-
+
+Note that ``myAdvance`` is likely to be quite slow as it uses mutexes.
+
+A ``ThreadsafeCounter`` may be printed; this is intended primarily to
+permit debugging.
+
+
+
+== Maintainer documentation ==
+%======================================================================
+
+I copied the code from a BOOST example.  It's so simple there are
+obviously no deficiencies!
+
+``operator<<`` is probably not threadsafe (but does that matter?)
+
+
+== Bugs, shortcomings and other ideas ==
+%======================================================================
+
+No check for overflow!
+
+You cannot query the counter's value without incrementing it.
+
+
+== Main changes ==
+%======================================================================
+
+**2012**
+- 05-May (v0.9951): first version
+
+

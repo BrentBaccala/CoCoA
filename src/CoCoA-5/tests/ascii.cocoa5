@@ -1,0 +1,16 @@
+<< "tests/assert.cocoa5";
+
+BeginTest("ascii([65, 65])");
+AssertEqual(ascii([65, 65]), "AA");
+
+BeginTest("ascii(97)");
+AssertEqual(ascii(97), "a");
+
+For I:=ascii("A")[1] to ascii("Z")[1] Do
+	BeginTest("ascii("+ascii(I)+")");
+	AssertEqual(I, ascii(ascii(I))[1]);
+EndFor
+
+BeginTest("ascii(\"gio\")");
+AssertEqual(ascii("gio"), [ascii("g")[1], ascii("i")[1], ascii("o")[1]]);
+

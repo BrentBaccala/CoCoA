@@ -1,0 +1,117 @@
+      SmallFpImpl
+      Copyright (c)  2005,2010-2013 John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{SmallFpImpl}{John Abbott}
+
+
+
+== User documentation for SmallFpImpl ==
+%======================================================================
+
+The class ``SmallFpImpl`` is a very low level implementation class for fast
+arithmetic in a small, prime finite field.  It is **not intended** for use
+by casual CoCoALib users, who should instead see the documentation in
+[[QuotientRing]] (in particular the function ``NewZZmod``), or possibly the
+documentation in [[RingFp]], [[RingFpLog]], and [[RingFpDouble]].
+
+The class ``SmallFpImpl`` offers the possibility of highly efficient
+arithmetic in small prime finite fields.  This efficiency comes at a
+cost: the interface is rather unnatural and intolerant of mistakes.  The
+emphasis is unequivocally on speed rather than safety or convenience.
+
+The full speed of ``SmallFpImpl`` depends on many of its functions being
+inlined.  The values to be manipulated must be of type ``SmallFpImpl::value_t``.
+This is an unsigned machine integer type, and the values ``0`` and ``1``
+may be used normally (but other values **must** be reduced before being used).
+
+**All operations** on values must be effected by calling member functions
+of the ``SmallFpImpl`` class.  Here is a brief summary.
+```
+  SmallFpImpl::IsGoodCtorArg(p);   // true iff ctor SmallFpImpl(p) will succeed
+  SmallFpImpl::ourMaxModulus();    // largest permitted modulus
+  SmallFpImpl ModP(p, convention); // create SmallFpImpl object
+  long n;
+  BigInt N;
+  BigRat q;
+  SmallFpImpl::value_t a, b, c;
+
+  ModP.myModulus();         // value of p (as a long)
+
+  ModP.myReduce(n);         // reduce mod p
+  ModP.myReduce(N);         // reduce mod p
+  ModP.myReduce(q);         // reduce mod p
+
+  ModP.myExport(a);         // returns a preimage (of type long) according to symm/non-neg convention.
+
+  ModP.myNegate(a);         // -a mod p
+  ModP.myAdd(a, b);         // (a+b)%p;
+  ModP.mySub(a, b);         // (a-b)%p;
+  ModP.myMul(a, b);         // (a*b)%p;
+  ModP.myDiv(a, b);         // (a*inv(b))%p;  where inv(b) is inverse of b
+  ModP.myPower(a, n);       // (a^n)%p;  where ^ means "to the power of"
+  ModP.myIsZeroAddMul(a,b,c) // a = (a+b*c)%p; result is (a==0)
+
+```
+For ``myExport`` the choice between least non-negative and symmetric
+residues is determined by the convention specified when constructing
+the ``SmallFpImpl`` object.  This convention may be either
+``GlobalSettings::SymmResidues`` or
+``GlobalSettings::NonNegResidues``.
+
+
+=== Advanced Use: delaying normalization in a loop ===
+
+The normal mod p arithmetic operations listed above always produce
+a normalized result.  In some loops it may be possible to compute
+several iterations before having to normalize the result.  The following
+three functions help implement such a delayed normalization strategy.
+```
+    ModP.myNormalize(a);     -- FULL normalization of a
+    ModP.myHalfNormalize(a); -- *fast*, PARTIAL normalization of a
+    ModP.myMaxIters();
+```
+
+The value of ``myMaxIters()`` is the largest number of unnormalized
+products (of normalized values) which may be added to a partially
+normalized value before risking overflow.  The partial normalization
+operation is quick (at most a comparison and a subtraction).
+Naturally, the final result must be fully normalized.  See example
+program ``ex-SmallFp1.C`` for a working implementation.
+
+
+== Maintainer documentation for SmallFpImpl ==
+%======================================================================
+
+Most functions are implemented inline, and no sanity checks are
+performed (except when ``CoCoA_DEBUG`` is enabled).  The constructor
+does do some checking.
+
+``SmallFpImpl::value_t`` **must** be an unsigned integral type; it is a
+typedef to a type specified in ``CoCoA/config.H`` -- this should allow
+fairly easy platform-specific customization.
+
+This code is valid only if the square of ``myModulus`` can be represented
+in a ``SmallFpImpl::value_t``; the constructor checks this condition.
+Most functions do not require ``myModulus`` to be prime, though division
+becomes only a partial map if it is composite; and the function
+``myIsDivisible`` is correct only if ``myModulus`` is prime.  Currently the
+constructor rejects non-prime moduli.
+
+The code assumes that each value modulo p is represented as the least
+non-negative residue (//i.e.// the values are represented as integers in
+the range 0 to p-1 inclusive).  This decision is linked to the fact
+that ``SmallFpImpl::value_t`` is an unsigned type.
+
+The constants ``myResidueUPBValue`` and ``myIterLimit`` are to allow efficient
+exploitation of non-reduced multiplication (//e.g.// when trying to
+compute an inner product modulo p).  See example program ``ex-SmallFp1.C``
+
+The return type of ``NumBits`` is ``int`` even though the result is
+always non-negative -- I do not like ``unsigned`` values.
+
+
+== Bugs, Shortcomings, and other ideas ==
+%======================================================================
+
+Should there be a ``myIsMinusOne`` function?

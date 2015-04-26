@@ -1,0 +1,10 @@
+L := [1,2,3];
+remove(ref L, 2);
+PrintLn L;
+insert(ref L, 1, "a");
+PrintLn L;
+insert(ref L, 3, "b");
+For I:=1 to 10 Do
+	PrintLn L;
+	remove(ref L, 1);
+EndFor;

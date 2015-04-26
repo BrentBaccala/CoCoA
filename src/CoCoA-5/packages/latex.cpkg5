@@ -1,0 +1,162 @@
+-- $Id: latex.cpkg5,v 1.15 2014/08/16 13:33:10 abbott Exp $
+-- part of CoCoA distribution
+
+Package $latex
+
+Export latex;
+Export LaTeX;
+
+------------------------------------------------------------------
+
+Define Latex_Indet(X)
+  L := IndetSubscripts(X);
+  S := IndetName(X);
+  If L <> [] Then
+    S := S + "_{" + Sprint(L[1]);
+    For J := 2 To len(L) Do
+      S := S + "\\, " + Sprint(L[J]);
+    EndFor;
+    S := S + "}";
+  EndIf;
+  Return S;
+EndDefine;
+
+Define Latex_Term(T)
+  L := log(T);
+  S := "";
+  For I := 1 To len(L) Do
+    If L[I] <> 0 Then
+      S := S + $.Latex_Indet(indet(owner(T),I));
+      If L[I] > 10 Then	S := S + "^{" + Sprint(L[I]) + "}";
+      Elif L[I]<>1 Then	S := S + "^"  + Sprint(L[I]);
+      EndIf;
+    EndIf;
+  EndFor;
+  Return S;
+EndDefine;
+
+
+Define Poly(P)
+  S := "";
+  CLis := coefficients(P);
+  If characteristic(owner(P))<>0 Then CLis := [ C[1] | C In CLis ]; EndIf;
+  TLis := support(P);
+  If  CLis = [] Then  S := S + " 0";
+  Elif deg(TLis[1]) = 0 Then  S := S + Sprint(CLis[1]);
+  Else
+    If CLis[1] = -1 Then S := S + " - ";
+    Elif CLis[1] <> 1 Then S := S + Sprint(CLis[1]) + " ";   EndIf;
+    S := S + $.Latex_Term(TLis[1]);
+    For I := 2 To len(CLis) Do
+      If deg(TLis[I]) > 0 Then
+	If CLis[I] = -1 Then S := S + " - ";
+	Elif CLis[I] = 1 Then S := S + " + ";
+	Elif CLis[I] > 0 Then S := S + " + " + Sprint(CLis[I]);
+	Else S := S + " " + Sprint(CLis[I]);
+	EndIf;
+        S := S + Latex_Term(TLis[I]);
+      Else
+	If CLis[I] > 0 Then S := S + " + " + Sprint(CLis[I]);
+	Else S := S + " " + Sprint(CLis[I]);
+	EndIf;
+      EndIf;
+    EndFor;
+  EndIf;
+  Return S;
+EndDefine; -- Poly
+
+
+Define RatF(F)
+  If IsOne(den(F)) Then Return $.Poly(num(F));  EndIf;
+  Return "\\frac{" + $.Poly(num(F)) + "} {" + $.Poly(den(F)) + "}";
+EndDefine;
+
+
+Define Mat(A)
+  NR := NumRows(A);
+  NC := NumCols(A);
+  S := "\\left( \\begin{array}{" + sum(NewList(NC, "c")) + "} ";
+  For I := 1 To NR Do
+    S := S + "\n  ";
+    For J := 1 To NC-1 Do
+      S := S + Latex(A[I,J]) + " & ";
+    EndFor;
+    S := S + Latex(A[I,NC]);
+    If I < NR Then S := S + " \\\\"; EndIf;
+  EndFor;
+  S := S + " \\end{array}\\right) ";
+  Return S;
+EndDefine;
+
+Define List(L)
+ S := "[ \\ ";
+ LL := len(L);
+  If LL > 0 Then S := S + Latex(L[1]); EndIf;
+ For I := 2 To LL Do
+   S := S + ",\n" + Latex(L[I]);
+ EndFor;
+ Return S + "\\ ]";
+EndDefine;
+
+Define Ideal(L)
+  S := "(";
+  L := gens(L);
+  LL := len(L);
+  If LL > 0 Then S := S + $.Poly(L[1]); EndIf;
+  For I := 2 To LL Do
+    S := S + ",\n" + "  " + $.Poly(L[I]);
+  EndFor;
+  S := S + ")";
+  Return S;
+EndDefine;
+
+Define LaTeX(X)
+  If type(X) <> type(untagged(X)) Then Return $.StrTagged(X); EndIf;
+  If type(X) = RINGELEM And IsPolyRing(RingOf(X))  Then Return Poly(X);
+  Elif type(X) = RINGELEM And IsQQ(RingOf(X)) Then Return Sprint(X);
+  Elif type(X) = RINGELEM And IsFractionField(RingOf(X)) Then Return RatF(X);
+  Elif type(X) = MAT    Then Return $.Mat(X);
+  Elif type(X) = LIST   Then Return $.List(X);
+  Elif type(X) = IDEAL  Then Return $.Ideal(X);
+  Else Return Sprint(X);
+  EndIf;
+EndDefine; -- LaTeX
+
+Define latex(X) Return LaTeX(X); EndDefine;
+
+Define StrTagged(X)
+  If type(X)=TAGGED("$gb.Res") Then Return $gb.Latex_Res(X); EndIf;
+  Return $.Latex(untagged(X));
+EndDefine; -- StrTagged
+
+
+EndPackage; -- latex
+
+
+
+-------------------------------------------------------------
+-- THESE SHOULD BE IN A PROPER TEST FILE (or in the doc)!!!
+
+-- Use R ::= QQ[t,x,y,z];
+-- F := x-2*y+z-t-1;
+-- S := LaTeX(F^2);
+
+-- F := (x-2*y)/(x*z+3);
+-- S := LaTeX(F^2);
+
+-- A := Mat([[x,2, x+t-3],[y,1, z^12]]);
+-- S := LaTeX(A);
+
+-- Use A ::= QQ[x[1..3,1..4]];
+-- F := x[1,1] +x[1,3];
+-- S := LaTeX(3 F^3);
+
+-- N := Mat([ [ x[I,J] | J In 1..4 ] | I In 1..3]);
+-- S := LaTeX(N);
+
+-- L := Indets();
+-- S := LaTeX(L);
+
+-- N := Mat([ [ x[I,J]/(x[J,I]+x[I,J]) | J In 1..3 ] | I In 1..3]);
+-- S := LaTeX(N);  S;
+

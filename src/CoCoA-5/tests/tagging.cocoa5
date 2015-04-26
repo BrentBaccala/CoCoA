@@ -1,0 +1,56 @@
+a := tagged(7, "dots");
+
+PrintLn "\n\n---Unexisting record---";
+PrintLn a;
+
+PrintLn "\n\n---Wrong type---";
+PrintTagged := 3;
+PrintLn a;
+
+PrintLn "\n\n---No fields ---";
+PrintTagged := Record[];
+PrintLn a;
+
+PrintLn "\n\n---Field of wrong type--";
+PrintTagged.dots := 3;
+PrintLn a;
+
+PrintLn "\n\n---Wrong arity---";
+PrintTagged.dots := func () endfunc;
+PrintLn a;
+
+PrintLn "\n\n---By ref1---";
+PrintTagged.dots := func (ref A, B) endfunc;
+PrintLn a;
+
+PrintLn "\n\n---By ref2 --";
+PrintTagged.dots := func (A, ref B, opt x) endfunc;
+PrintLn a;
+
+PrintLn "\n\n---By ref3---";
+PrintTagged.dots := func (ref A, ref B) endfunc;
+PrintLn a;
+
+PrintLn "\n\n---Not a proc---";
+PrintTagged.dots := func (A, B, opt C) return 47; endfunc;
+Try
+	PrintLn a;
+UponError e Do
+	PrintLn "should get here...";
+EndTry
+
+PrintLn "\n\n---Finally... the one! ;-) ---";
+PrintTagged.dots := func (Device, V)
+		For I:=1 to V Do
+			Print "." On Device;
+		EndFor
+	EndFunc;
+PrintLn a;
+
+PrintLn "\n\n---Other tests---";
+PrintLn "tag=", tag(1);
+PrintLn "tag=", tag(tagged(1, "one"));
+PrintLn "tag=", tag(untagged(tagged(tagged(1, "one"), "two")));
+//PrintLn "tag=", tag(func () endfunc ());
+
+

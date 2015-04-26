@@ -1,0 +1,24 @@
+This is the README file for the directory CoCoALib/src/server/.
+
+**WARNING** the server code has lain idle for a long time now (May 2013)
+
+Date: 22 May 2005
+
+In this directory you will find the file CoCoAServer.C.  To compile the
+server run the command "make server" from the COCOA_ROOT directory; running
+the command "make" in this directory should have the same effect.
+
+The CoCoA server can be called via a socket from CoCoA-4.6 (and later versions).
+
+When the server is running it will reply to all requests from any CoCoA-4.6
+running on the same machine: one single server can handle requests from
+many users.  CoCoA-4.6 can also be set to call a server running on another
+computer.  (see instructions in the CoCoA-4.6 manual).
+
+The protocol used for communication is "vaguely" inspired by OpenMath.
+
+For developers: to generate a table of timings
+  make benchmarks
+New benchmarks for the server should be added to BenchmarkSrc.cocoa
+
+The files SocketStream* implement a C++ interface to POSIX style sockets.

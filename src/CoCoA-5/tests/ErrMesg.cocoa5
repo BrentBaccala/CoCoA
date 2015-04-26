@@ -1,0 +1,16 @@
+R ::= QQ[x,y,z];
+K := NewFractionField(R);
+
+Try
+  PrintLn "gcd in field now throws Error 24May2012";
+  gcd(zero(K), RingElem(K,"x")) = 1;
+UponError e Do
+  PrintLn GetErrMesg(e); PrintLn;
+EndTry
+
+Try
+  PrintLn "gcd in field now throws Error 24May2012";
+  gcd(zero(K), zero(K)) = 0;
+UponError e Do
+  PrintLn GetErrMesg(e); PrintLn;
+EndTry

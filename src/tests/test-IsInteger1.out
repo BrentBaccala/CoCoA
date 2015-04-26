@@ -1,0 +1,78 @@
+START OF TEST for IsInteger over ZZ
+The ring element 29 is the image of the integer 29
+The ring element 420707233300201 is the image of the integer 420707233300201
+END OF TEST for IsInteger over ZZ
+
+
+START OF TEST for IsInteger over QQ
+The ring element 29 is the image of the integer 29
+The ring element 29/2 is not the image of an integer.
+The ring element 29/3 is not the image of an integer.
+The ring element 29/30 is not the image of an integer.
+The ring element 420707233300201 is the image of the integer 420707233300201
+END OF TEST for IsInteger over QQ
+
+
+START OF TEST for IsInteger over RingWithID(2,"FFp(2)")
+The ring element 1 is the image of the integer 1
+The ring element 1 is the image of the integer 1
+The ring element 1 is the image of the integer 1
+END OF TEST for IsInteger over RingWithID(2,"FFp(2)")
+
+
+START OF TEST for IsInteger over RingWithID(3,"FFp(3)")
+The ring element 2 is the image of the integer 2
+The ring element 1 is the image of the integer 1
+The ring element 1 is the image of the integer 1
+END OF TEST for IsInteger over RingWithID(3,"FFp(3)")
+
+
+START OF TEST for IsInteger over RingWithID(4,"FFp(32003)")
+The ring element 29 is the image of the integer 29
+The ring element 16016 is the image of the integer 16016
+The ring element 21345 is the image of the integer 21345
+The ring element 18136 is the image of the integer 18136
+The ring element 14356 is the image of the integer 14356
+END OF TEST for IsInteger over RingWithID(4,"FFp(32003)")
+
+
+START OF TEST for IsInteger over RingWithID(5,"FFp(1000003)")
+The ring element 29 is the image of the integer 29
+The ring element 500016 is the image of the integer 500016
+The ring element 333344 is the image of the integer 333344
+The ring element 233335 is the image of the integer 233335
+The ring element 182288 is the image of the integer 182288
+END OF TEST for IsInteger over RingWithID(5,"FFp(1000003)")
+
+
+START OF TEST for IsInteger over RingWithID(6,"RingWithID(0)/ideal(174)")
+The ring element 29 is the image of the integer 29
+The ring element 145 is the image of the integer 145
+END OF TEST for IsInteger over RingWithID(6,"RingWithID(0)/ideal(174)")
+
+
+START OF TEST for IsInteger over RingWithID(7,"RingWithID(0)/ideal(1048576)")
+The ring element 29 is the image of the integer 29
+The ring element 349535 is the image of the integer 349535
+The ring element 130793 is the image of the integer 130793
+END OF TEST for IsInteger over RingWithID(7,"RingWithID(0)/ideal(1048576)")
+
+
+START OF TEST for IsInteger over RingWithID(8,"RingTwinFloat(32)")
+The ring element 29 is the image of the integer 29
+The ring element 29/2 is not the image of an integer.
+The ring element 29/3 is not the image of an integer.
+The ring element 29/30 is not the image of an integer.
+The ring element 420707233300201 is the image of the integer 420707233300201
+END OF TEST for IsInteger over RingWithID(8,"RingTwinFloat(32)")
+
+
+START OF TEST for IsInteger over RingWithID(9,"RingTwinFloat(16)")
+The ring element 29 is the image of the integer 29
+The ring element 29/2 is not the image of an integer.
+The ring element 29/3 is not the image of an integer.
+The ring element 29/30 is not the image of an integer.
+Failed to decide whether the ring element 0.4207072333*10^15 is or is not the image of an integer.
+END OF TEST for IsInteger over RingWithID(9,"RingTwinFloat(16)")
+
+

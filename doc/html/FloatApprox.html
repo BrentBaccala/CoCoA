@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      FloatApprox</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      FloatApprox</H1>
+<FONT SIZE="4">
+<I>      &copy;  2014 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#constructors">Pseudo-constructors for binary representation</A>
+      <LI><A HREF="#constructors">Pseudo-constructors for decimal representation</A>
+      </UL>
+    <LI><A HREF="#toc5">Maintainer documentation</A>
+    <LI><A HREF="#toc6">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc7">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-empty.C">ex-empty.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+These functions determine a "floating point" approximation to an
+integer or rational.  The base of the representation is either 2 or 10.
+</P>
+<P>
+See also: <A HREF="ToString.html"><CODE>ToString</CODE></A> for functions producing readable numbers.
+</P>
+<A NAME="constructors"></A>
+<H3>Pseudo-constructors for binary representation</H3>
+<UL>
+<LI><CODE>MantissaAndExponent2(x,prec)</CODE> determine the <CODE>MantExp2</CODE> structure for <CODE>x</CODE> with precision <CODE>prec</CODE>
+<LI><CODE>FloatApprox(x,prec)</CODE> apply <CODE>MantissaAndExponent2</CODE> then convert the result into <CODE>BigRat</CODE>.
+</UL>
+
+<P>
+The value of <CODE>prec</CODE> is the number of bits in the mantissa; if unspecified, it defaults to 53.
+</P>
+<P>
+A <CODE>MantExp2</CODE> structure contains 4 public data fields:
+</P>
+<UL>
+<LI><CODE>mySign</CODE> an <CODE>int</CODE> having value -1 or 1
+<LI><CODE>myExponent</CODE> a <CODE>long</CODE>
+<LI><CODE>myMantissa</CODE> a <CODE>BigInt</CODE> (between <CODE>2^(prec-1)</CODE> and <CODE>2^prec-1</CODE>)
+<LI><CODE>myNumDigits</CODE> a <CODE>long</CODE> (just the value of  <CODE>prec</CODE>)
+</UL>
+
+<P>
+As an exception if <CODE>x=0</CODE> then all fields are set to 0.
+</P>
+<P>
+The structure represents the value <CODE>mySign * (myMantissa/2^(myNumDigits-1)) * 2^myExponent</CODE>.
+</P>
+<A NAME="constructors"></A>
+<H3>Pseudo-constructors for decimal representation</H3>
+<UL>
+<LI><CODE>MantissaAndExponent10(x,prec)</CODE> determine the <CODE>MantExp10</CODE> structure for <CODE>x</CODE> with precision <CODE>prec</CODE>
+</UL>
+
+<P>
+The value of <CODE>prec</CODE> is the number of (decimal) digits in the mantissa;
+if unspecified, it defaults to 5.
+</P>
+<P>
+A <CODE>MantExp10</CODE> structure contains 4 public data fields:
+</P>
+<UL>
+<LI><CODE>mySign</CODE> an <CODE>int</CODE> having value -1 or 1
+<LI><CODE>myExponent</CODE> a <CODE>long</CODE>
+<LI><CODE>myMantissa</CODE> a <CODE>BigInt</CODE> (between <CODE>10^(prec-1)</CODE> and <CODE>10^prec-1</CODE>)
+<LI><CODE>myNumDigits</CODE> a <CODE>long</CODE> (just the value of  <CODE>prec</CODE>)
+</UL>
+
+<P>
+As an exception if <CODE>x=0</CODE> then all fields are set to 0.
+</P>
+<P>
+The structure represents the value <CODE>mySign * (myMantissa/10^(myNumDigits-1)) * 10^myExponent</CODE>.
+</P>
+<A NAME="toc5"></A>
+<H2>Maintainer documentation</H2>
+<P>
+The implementation is simple rather than efficient.  The current design
+ensures that 0.5ulp is rounded consistently (currently towards zero).
+</P>
+<P>
+The only tricky parts were deciding how to round in the case of a tie,
+and correct behaviour when the mantissa "overflows".  I finally
+decided to delegate rounding to <CODE>RoundDiv</CODE>: it is easy to implement,
+and I wanted a solution which was symmetric about zero, so that the two
+<CODE>MantissaAndExponent</CODE> fns applied to <CODE>N</CODE> and to <CODE>-N</CODE> would always
+give the same result except for sign.
+</P>
+<P>
+Mantissa overflow requires special handling, but it's quite easy.
+</P>
+<P>
+Printing of a <CODE>MantExp2</CODE> or <CODE>MantExp10</CODE> structure is simple rather
+than elegant.
+</P>
+<A NAME="toc6"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+Using <CODE>mpfr</CODE> would surely be better.
+</P>
+<P>
+The fields of a <CODE>MantExp2</CODE> and <CODE>MantExp10</CODE> are publicly accessible;
+I'm undecided whether it is really better to supply the obvious accessor fns.
+</P>
+<P>
+The conversion in <CODE>MantissaAndExponent10</CODE> is rather slow when the input
+number is large.
+</P>
+<P>
+In principle the call to <CODE>ILogBase</CODE> could fail because of overflow;
+but in that case <CODE>ILogBase</CODE> itself should report the problem.
+</P>
+<P>
+In principle a mantissa overflow could trigger an exponent overflow
+(<I>i.e.</I> if the exponent was already the largest possible long).
+</P>
+<A NAME="toc7"></A>
+<H2>Main changes</H2>
+<P>
+<B>2014</B>
+</P>
+<UL>
+<LI>April (v0.99533): first release
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/FloatApprox.html -i txt/FloatApprox.txt -->
+</BODY></HTML>

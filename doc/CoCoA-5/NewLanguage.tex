@@ -1,0 +1,2684 @@
+\documentclass{book}[12,a4paper]
+%\textwidth 140mm
+%\textheight 196mm
+%\evensidemargin 15mm
+%\oddsidemargin 15mm
+%\topmargin 10mm
+%--------------------------------------------------
+\setlength{\textwidth}{15.5cm}
+\setlength{\oddsidemargin}{0cm}
+\setlength{\evensidemargin}{0cm}
+
+\setlength{\textheight}{22.5cm}
+\setlength{\topmargin}{0cm}
+
+\setlength{\parskip}{4pt}
+
+\tolerance=150 % for overfull
+\mathsurround 1.5pt
+
+%\usepackage[colorlinks,hyperindex,urlcolor=blue]{hyperref}
+\usepackage[urlcolor=blue]{hyperref}
+\usepackage{xspace}
+%%\usepackage{boxedminipage} % for boxedminipage in syntax environment
+\usepackage{multicol} % for two-column table of contents
+\usepackage{listings}
+\usepackage{color}
+
+\usepackage{enumitem}
+\setlist{nolistsep}  % no extra separation before and between items
+\renewcommand{\labelenumi}{(\alph{enumi})} % enumerate -> (a), (b), ...
+
+
+%-- COLOURS ------------------------------------------------------------
+
+\usepackage{colortbl}
+\definecolor{red-}{rgb}{1.0,0.2,0.0}
+\definecolor{blue-}{rgb}{0.0,0.1,0.8}
+\definecolor{green-}{rgb}{0.0, 0.6, 0.0}
+\definecolor{gold}{rgb}{0.8,0.7,0.0}
+\definecolor{DarkGreen}{rgb}{0.0,0.5,0.0}
+\definecolor{LightGreen}{rgb}{0.8,1.0, 0.8}
+
+\long\def\red#1{{\textcolor{red-}{#1}}}
+\long\def\green#1{{\textcolor{green-}{#1}}}
+\long\def\blue#1{{\textcolor{blue-}{#1}}}
+\long\def\gold#1{{\textcolor{gold}{\bf #1}}}
+
+\usepackage{makeidx}
+\makeindex
+%--------------------------------------------------
+
+% FAMILY BBB OF DOUBLE STROKED LETTERS
+\font\tenmsb=msbm10
+\font\sevenmsb=msbm7
+\newfam\msbfam
+       \textfont\msbfam=\tenmsb
+       \scriptfont\msbfam=\sevenmsb
+\def\bbb#1{{\fam\msbfam #1}}
+
+\def\FF{{\bbb F}}
+\def\QQ{{\bbb Q}}
+\def\ZZ{{\bbb Z}}
+\def\CC{{\bbb C}}
+\def\AA{{\bbb A}}
+\def\KK{\overline{\bbb Q}}
+\def\ie{{\it i.e.}}
+\def\eg{{\it e.g.}}
+
+\def\cocoalib{{CoCoALib}\xspace}
+\def\mydots{$...$}
+
+\def\refandpage#1{{\ref{#1}, pg.\pageref{#1}}}
+
+\newenvironment{syntax}
+{\goodbreak\noindent\textbf{Syntax}\\
+ \begin{tabular}{|p{0.9\textwidth}|}\hline}
+{\\\hline\end{tabular}}
+%%{\noindent\textbf{Syntax}\\\begin{boxedminipage}{\textwidth}}
+%%{\end{boxedminipage}}
+
+%----------------------------------------------------------------------
+\title{Notes about CoCoA~5 Language \& Interpreter}
+\author{J~Abbott, A~Bigatti, G~Lagorio}
+\date{2010-07-29}
+%----------------------------------------------------------------------
+\begin{document}
+\definecolor{listinggray}{gray}{0.95}
+\lstset{language=pascal}
+\lstset{commentstyle=\textit}
+\lstset{% general command to set parameter(s) 
+backgroundcolor=\color{listinggray},
+rulecolor=\color{blue},
+frame=single,
+basicstyle=\ttfamily\small, % typewriter type 
+keywordstyle=\color{black}\bfseries, % bold black keywords 
+identifierstyle=, % nothing happens 
+%commentstyle=\color{white}, % white comments 
+}
+
+\maketitle
+\begin{multicols}{2}
+\tableofcontents
+\end{multicols}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{Language Definition}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Open matters}
+\label{open-matters}
+
+\red{TODO:Add proper index.}
+
+\index{package}
+Decide how to initialize ``package global variables''; in CoCoA~4 there is
+a function called \texttt{Initialize} which is called when a package is
+loaded (only the first time, or every time??)  What happens if someone
+tries to read the value of a ``package variable'' before that package has
+been loaded???  Ideally the package should be auto-loaded when this happens
+(if it is allowed).
+
+\index{source@\texttt{Source}}
+\index{package}
+In what contexts does it make sense to allow the \texttt{Source} command?
+What are the semantics if it is used inside a function and tries to assign
+to variables, or tries to redefine the function we are executing???
+Anna points out that in CoCoA~4 it is used inside a function for loading
+the manual pages.  The \texttt{source} command can also be used to force
+explicit loading of package~---~see comment above about ``package variables''.
+
+
+\chapter{Introduction}
+
+This document describes the language for the interactive system
+CoCoA~5~---~chapter~\ref{diffs4-5} summarises the main differences from the
+language for CoCoA~4.  We are well aware that CoCoA~4 has become very
+popular, with many users (mostly researchers and students) scattered all
+around the globe.  We want to make the transition to CoCoA~5 as painless as
+reasonably possible for these people.  As a consequence one of the design
+aims was to avoid gratuitous \textit{backward incompatibility} in the new
+language.  One reason for the success of the language of CoCoA~4 was its
+\textit{natural mathematical expressivity}; we intend that CoCoA~5 will 
+maintain this desirable feature.
+
+\section{Brief Summary of CoCoA~5}
+
+The language of CoCoA~5 is a fairly standard imperative language, \ie~with
+variables, functions and procedures, loop commands, \texttt{if} commands,
+and so on.  The language is designed to facilitate two main types of use:
+direct interactive computation with the system, and also the addition of
+new features through functions defined in \index{package}packages
+(see Section~\ref{command:package}).
+
+We are expecting (and hoping) that almost all CoCoA~4 users will migrate to
+the new CoCoA~5.  This gives us a good idea of the typical CoCoA~5 user, at
+least initially.  Most CoCoA~4 users fall into one of two main categories:
+namely students of mathematics, and researchers in mathematics (especially
+algebra and algebraic geometry).  Moreover, many of these users have little
+or no experience with advanced concepts from computer science.  We can use
+this information to guide us in the design of the new language.
+%The language syntax has been chosen to be ``natural'' for mathematicians.
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Short Language Description}
+
+In this chapter we present a succinct description of most aspects of the
+language; further (painful) details will be given in the next chapter.
+Where the new CoCoA~5 is incompatible with the old CoCoA~4 language, we shall
+put in references to the relevant part(s) of chapter~\ref{diffs4-5}.
+
+\section{General Overview}
+
+The language is a fairly standard interactive imperative language: the user
+may define new functions, execute commands, and store values in variables.
+A fundamental concept is that of a polynomial ring, and the main data types
+are elements of such rings (\ie~polynomials), matrices and lists of these.
+As is usual for computer algebra systems arithmetic is generally exact,
+with the consequence that results can easily become quite large and
+cumbersome.
+
+We point out one potential oddity of the CoCoA~5 language: functions are
+regarded as normal values (strictly they are {\it first class values}), and
+this means that functions and variables should normally have different names.
+
+\subsection{The Notion of Current Ring}
+
+A fundamental concept in CoCoA~4 is that of \textit{current ring}.  A
+similar concept exists in CoCoA~5, but it has been made weaker.  The
+current ring indicates the default ring in which computations will take
+place: principally this lets the user write the indeterminates of the
+ring in a natural manner.  An important exception is that purely integer or
+rational computations are performed without taking into account the current
+ring~---~\eg~a \texttt{for} loop running from $1$ to $100$ should not
+change behaviour if the current ring has a small characteristic!
+
+The command specifying the current ring tells the system which identifiers
+correspond to indeterminates, so the user can write a polynomial in a
+natural way.  Here is an example where \texttt{x}, \texttt{y} and
+\texttt{alpha} are specified as indeterminates, while \texttt{f} is a
+program variable:
+\begin{lstlisting}
+Use QQ[x,y,alpha];
+f := x + alpha*y;
+PrintLn f*(2*x-f);
+\end{lstlisting}
+
+
+\section{Identifiers}
+\label{identifiers}
+
+\index{identifier}
+An \textbf{identifier} is a name given to some entity which will be
+manipulated by the system (\eg~the name of a variable, of a function or of
+an indeterminate).
+
+In CoCoA~5 an identifier must begin with a letter or an underscore, and may
+be followed by any number of letters, underscores or digits.  Two
+identifiers are equal when they are equal as strings: upper and lower case
+letters are distinct, so the identifiers \texttt{a} and \texttt{A} are
+different.
+
+\red{QUESTION} Should there be a limit to the length?  Say 1000 chars??
+
+
+\section{Variables}
+
+\index{variable}
+A \textbf{variable} is a named box used for storing values: the name must be an
+identifier (see section~\refandpage{identifiers}).  In CoCoA~5 variables are not
+themselves typed, \ie~a value of any type may be assigned to any variable.
+In contrast, the particular value held in a variable will have a type, but
+the type is a characteristic of that value and not of the variable itself.
+For instance the following excerpt is quite valid:
+\begin{lstlisting}
+  X := 1;       // X now contains an integer value
+  X := "ciao";  // X now contains a string value
+\end{lstlisting}
+
+It is an error to attempt to access the value of a variable before having
+assigned a value to that variable.  For instance, the following will trigger
+an error in a fresh CoCoA~5 session:
+\begin{lstlisting}
+  PrintLn UnusedVariable; // ERROR because UnusedVariable has no value
+\end{lstlisting}
+
+\red{JAA QUESTION} should it be a syntax error if the first appearance of
+a variable in a fn-proc definition is not as the lhs of an assignment?
+
+Associated to each variable are its \textbf{lifetime} and its
+\textbf{scope}.  When a variable is in scope we are able to access its
+value just by writing the name of the variable.  A variable memorizes its
+value throughout its lifetime, but as soon as lifetime of the variable end,
+the value contained is lost or forgotten~---~\ie~next time the variable is
+recreated it will contain no value.
+
+CoCoA~5 offers three sorts of variable with differing lifetimes and scopes:
+\begin{itemize}
+\item {\bf top-level variables} these are normally used for storing results
+  during an interactive session.  These variables are in scope only at top
+  level; they are not visible inside any function or procedure.  The
+  lifetime of the variable is from its creation to the end of the
+  (interactive) session.
+
+\item {\bf local variables} these are used for storing temporary results
+  inside the definition of a fn-proc.  These variables are in scope only
+  inside the fn-proc which created them~---~\red{is its scope the whole of the fn-proc, or just from it first lexical appearance to the end? Does it make any difference?}.  The lifetime of each variable is
+  from its creation until that invocation of the fn-proc exits (either via
+  \texttt{return} or via exception propagation).  The formal parameters of a
+  function or procedure can be considered to be local variables with values
+  assigned when the function is called.  In a recursive function, each
+  separate invocation behaves as though it were a separate function.
+
+\item \textbf{loop variables} these are almost identical to local
+  variables, except that the scope and lifetime are both limited just to
+  the loop.  Note that a loop variable can hide a local variable of the
+  same name~---~analogously the variable of a loop at top level will hide a
+  top-level variable of the same name.
+
+\item {\bf global variables} these variables are always in scope (both at
+  top level and inside a fn-proc).  The lifetime of each global variable is
+  from its creation until the end of the session.
+  Global variables should be used sparingly.
+\end{itemize}
+
+\begin{quote}\index{package}
+  \red{{\bf QUESTION} Are there also package local variables?  This would be a
+  sort of global variable that somehow belongs to a package?}
+\blue{ANNA: the port number in CoCoA~4 for talking to CoCoAServer is in a
+  package variable}
+\end{quote}
+
+\begin{quote}
+  {\bf QUESTION} Are there also static local variables as in C++?
+  \red{JAA: this seems to be an unnecessary complication to me}
+\end{quote}
+
+The bound variables in a \texttt{for} or \texttt{foreach} loop have scope
+limited to the body of the loop, and the lifetime ends when control leaves
+the loop; analogous rules apply to the bound variable in a list constructor.
+The variable in an \texttt{UponError} block has scope and lifetime up to
+the corresponding \texttt{EndTry}.  \red{CHECK following sentence}  A warning
+is issued whenever any of these bound variables hides another variable
+(ie~has the same name as a variable which is in scope).
+
+
+\subsection{Protecting Variables}
+
+% Here is an outline; for more details see section~\ref{global-state}.
+
+\index{protect@\texttt{Protect}}
+A new feature in CoCoA~5 (\ie~not available in CoCoA~4) is the possibility
+to \textit{protect} variables~---~the idea is to offer a means of
+preventing a (precious) value from being accidentally overwritten by a
+careless assignment.  Only a whole variable may be protected:
+\eg~individual entries in a list, matrix or record cannot be protected.
+
+All variables are born unprotected except for those introduced by
+\texttt{for} and \texttt{foreach} loops and list constructor loops, and also the
+\texttt{UponError} variable.  See also section~\refandpage{defining-fns}.
+
+An unprotected variable behaves as a normal variable in an imperative
+language: \eg~it may be assigned to, it may be passed by reference,
+\textit{etc.}  In contrast a protected variable may neither be assigned to
+nor passed by reference (even if there would be no attempt to change the
+value of the variable, because the point of a reference parameter in
+CoCoA~5 is to allow the called fn-proc to change the value if it wants to).
+Attempting to assign to a protected variable or to pass it by reference
+will produce a run-time error.  The idea of protecting variables came from
+the notion of \texttt{const} in the C++ language.
+
+There are commands to \textbf{protect} and to \textbf{unprotect} variables.
+% The level of protection is indicated
+% (internally) by a flag associated to that variable: the commands simply set
+% or reset the flag.
+It is not an error to repeatedly protect or unprotect a
+variable~---~but a warning will be issued upon double protection or double
+unprotection.  The command for protecting a variable accepts an optional
+string which should say why the variable is being protected (\eg~a
+\texttt{for} loop could say that the variable was protected by \texttt{for}).
+This string would be printed out when giving an error message that an
+attempt to violate the protection has occurred.
+
+There is a note about a curious interaction of \texttt{protect} with reference
+variables in section~\refandpage{protecting-reference-parameters}.
+
+
+
+\begin{quote}
+  {\bf QUESTION} Do we want a function which says whether a variable is
+  protected or not? \red{JAA thinks such a function would be a BAD IDEA}
+  \green{Anna: should we have a function to get the protection string?}
+\end{quote}
+
+
+%----------------------------------------------------------------------------
+\section{Functions vs Procedures}
+\label{defining-fns}
+
+See also \ref{command:fun-proc}
+
+New functions and procedures may be defined in the CoCoA~5 language (see also
+subsection~\refandpage{keyword:define}).
+CoCoA~5 distinguishes between functions and procedures based on the form of
+any \texttt{return} commands which appear in the body:
+\begin{itemize}
+\item if there is no \texttt{return} command, then it is a procedure;
+\item if all \texttt{return} commands are without a value to return, then it
+  is a procedure;
+\item if all \texttt{return} commands are with a value to return, then it is
+  a function;
+\item if some \texttt{return} commands have values and others do not, then it
+  is a parse-time error.
+\end{itemize}
+
+It is not a ``grammatical'' error for the last command in a function
+body to be something other than a \texttt{return} command.  If during
+\textbf{execution} control reaches the end of such a function body
+then a run-time error will be triggered.  We allow this so that
+authors are not obliged to put useless return commands at the ends of
+functions just to keep the parser happy.
+
+A fn-proc definition may appear only at top level.  Note that
+defining a fn-proc sets the value of the variable
+whose name is the same as the function.  The variable is also flagged as
+protected (to avoid accidentally overwriting the function definition).
+\red{JAA: WHICH VARIABLE???  Global?  Top-level?}  Have to be careful here,
+otherwise the scope rules will cause trouble!!  What happens if the identifier
+refers to a variable which is already protected (and perhaps with a value
+which is not a function)?
+
+There are differences with CoCoA-4: see \refandpage{diffs:defining-fns}.
+
+
+\subsection{Value Parameters and Reference Parameters}
+
+A function may have zero or more formal parameters.  CoCoA~5 distinguishes
+two types of formal parameter: \textbf{value parameters} and
+\textbf{reference parameters}.  The two different types of parameter may be
+mixed freely in the list of formal parameters.
+
+A value parameter acts rather like a local variable which is given an
+initial value when the fn-proc is called.  The initial value is effectively
+a \textbf{copy} of the value supplied by the caller~---~so assigning to a
+value parameter will not affect any of the caller's variables.  Here is a
+simple example:
+\begin{lstlisting}
+  Define proc(X) -- X is a value parameter
+    X := 99;
+  EndDefine;
+  N := 1;
+  proc(N);
+  PrintLn N;     -- This will print 1
+\end{lstlisting}
+
+In contrast, the purpose of a reference parameter is to refer to a value
+belonging to the caller, and to give permission to the called fn-proc to
+change that value \textit{if it wants to} (and for this reason protected variables
+may not be passed by reference).  So in the called fn-proc assigning to a
+reference parameter will change the value of one of the caller's variables
+(and if that variable is itself a reference parameter then a caller's
+caller variable will change, and so on).  Here is a simple example:
+\begin{lstlisting}
+  Define Proc(var X) -- X is a reference parameter
+    X := 99;
+  EndDefine;
+  N := 1;
+  Proc(N);
+  PrintLn N;         -- This will print 99
+  L := [2,3];
+  Proc(L[2]);
+  PrintLn L;         -- This will print [2,99]
+\end{lstlisting}
+
+
+\red{COMMENT} Note that reference parameters in CoCoA are not a way to make
+a fn-proc call faster (\eg~in contrast to (const) references in C++).  Indeed they
+are probably slightly slower than normal value parameters.
+
+\red{UPDATE} We will keep \texttt{Var} as an obsolescent keyword in the first
+few versions: it should be relaced by \texttt{ref}.  The keyword \texttt{ref}
+should also be placed before the corresponding argument in the call; if the
+keyword is absent in the call then a run-time warning will be issued.
+
+When calling a fn-proc with reference parameters, the caller must supply
+suitable values for the reference parameters~---~supplying an unsuitable
+value will trigger a run-time error.  In a fn-proc call each argument
+corresponding to a reference parameter must be a valid l-value (\ie~an
+expression which can appear on the left of an assignment, in particular is
+must not be protected) with the additional restriction that the l-value
+already exists and has a value~---~\eg~it is an error to try to pass a
+non-existent variable (or non-existent record field) as a reference
+parameter.  \red{JAA: why this additional restriction??  Maybe we can remove
+the restriction??}
+
+\begin{lstlisting}
+Define SetToOne(Var X)
+  X := 1;
+EndDefine;
+Y := 99;
+SetToOne(Y);  -- Same as Y := 1;
+protect Y;
+SetToOne(Y);  -- Gives run-time error, because Y is now protected.
+SetToOne(UnusedVariable); -- Gives run-time error.
+\end{lstlisting}
+
+
+\subsubsection{Some Delicate Issues Related to Reference Parameters}
+\label{delicate-issues}
+
+Semantic problems can arise when aliasing occurs between two (or more)
+reference parameters.  The point is that a reference can be to a subpart
+of the value of a variable, and that subpart could cease to exist if
+the structure of the variable is changed through another reference
+parameter.  Below are some examples to illustrate various possible problems.
+
+CoCoA~5 allows aliasing between function arguments (largely because it is
+infeasible to make the necessary checks).  It is difficult to characterise
+precisely when problems will arise, though we note that aliasing is not a
+problem if assignments through references do not change the structure.
+
+This simple example changes the structure of \texttt{L} from a list into an
+integer, and then triggers and error when attempting to use the reference
+to the first element of \texttt{L}, a concept which no longer makes sense since
+\texttt{L} is now an integer.
+\begin{lstlisting}
+  Define Problem(Var X, Var Y)
+    X := 1;
+    Y := 2;
+  EndDefine;
+  L := [1, 2];
+  Problem(L, L[1]); -- This call will start but will fail doing "Y := 2"
+\end{lstlisting}
+
+This example of aliasing is a little more subtle: the index into the list
+is aliased.  The point here is that the reference is determined just once
+prior to executing the call; subsequent changes to indices do not alter the
+reference.
+\begin{lstlisting}
+  Define Problem(Var X, Var Y)
+    X := 1;
+    Y := 2;
+  EndDefine;
+  L := [11,22];
+  I := 2;
+  Problem(I,L[I]);
+  PrintLn "I=",I,"  L=",L; -- prints I=1  L=[11,2]
+\end{lstlisting}
+The important point in this example is that the references are fixed during argument
+preparation for the call.  The fact that the index \texttt{I} is changed
+during execution of the call by the assignment \texttt{X:=1} does not change
+what the reference parameter \texttt{Y} refers to; thus it is the second
+element of \texttt{L} which gets set by the assignment \texttt{Y:=2}.
+
+Here is a still more arcane case.  This is nasty code, but not
+forbidden~---~if you write code like this, you deserve what's coming to
+you!  Even without the problems resulting from a structural change, this
+code is bad because its behaviour varies depending on the order of
+evaluation of the arguments when preparing a function call.
+\begin{lstlisting}
+  Define SetToZero(Var X)
+    X := 0;
+    Return X;
+  EndDefine;
+  Define Problem(Var X, Y)
+    If Y > 0 Then
+      Return Y;
+    Else
+      Return X;
+    EndIf;
+  EndDefine;
+  L := [1,2]; PrintLn Problem(L[1], 1+SetToZero(L));  -- Possibly OK
+  L := [3,4]; PrintLn Problem(L[1],   SetToZero(L));  -- Surely fails
+\end{lstlisting}
+What happens here is that the evaluation of the second argument changes the
+value of \texttt{L} in such a way that the reference in the first argument is
+no longer valid.  The second call to \texttt{Problem} surely fails because it
+attempts to access the value refered to by \texttt{X}, but we know that the
+reference is already invalid.  The first call will succeed if the first
+argument is evaluated before the second (once inside the function no
+attempt is made to access \texttt{X}), and will fail if the second is
+evaluated before the first (the failure actually occurs during argument
+evaluation rather than inside the function \texttt{Problem}).
+
+
+\section{Expressions in CoCoA~5}
+
+\subsection{Integer constants}
+
+Integer constants are always in decimal, and are just sequences of decimal
+digits.  There is no specific limit on the size of an integer constant,
+though for practical reasons an implementation may impose a limit
+(\eg~depending on RAM available or \red{limits} of underlying functions
+such as STL's \texttt{getline}).  There is no intrinsic mechanism for
+splitting long integer constants into several short pieces~---~very long
+constants are rare, and we do not anticipate problems handling input
+containing long lines.
+
+
+\subsection{Decimal Constants}
+
+For convenience CoCoA~5 allows decimal constants (\ie~ones containing a
+decimal point).  These are simply converted into exact
+rational numbers (\eg~\texttt{2.55} will be converted into $51/20$).  There
+must be at least one digits before the decimal point and at least one digit
+after the decimal point~---~so \texttt{1.3} is OK, but \texttt{1.} and
+\texttt{.3} will give errors.  Trailing zeroes are effectively ignored; thus
+\texttt{1.23} and \texttt{1.230} both produce the same value.
+
+There is no special mechanism for specifying an exponent; the effect must
+be achieved by explicit multiplication by a power of $10$.  For example,
+the value $1.2345\times10^{-6}$ can be produced by either by the decimal
+constant \texttt{0.0000012345} or by the computation \verb|1.2345*10^(-6)|.
+It is possible that the computation will be effected as part of the parsing
+process rather than at run-time~---~the implementation is free choose when
+to do the computation.
+
+\subsection{String literals}
+
+String literals are delimited by double quote characters,
+\eg~\verb|"string"|.  It is a syntax error for a newline to appear inside a
+string literal.  The backslash character functions as an escape inside a
+string literal.  The recognised escape sequences are:
+\begin{itemize}
+\setlength{\itemsep}{-3pt}
+\item \verb|\n| this sequence is replaced by a newline character
+\item \verb|\t| this sequence is replaced by a tab character
+\item \verb|\\| this sequence is replaced by a (single) backslash character
+\item \verb|\"| this sequence is replaced by a double-quote character
+\end{itemize}
+Inside a string literal a backslash followed by any other character is an error.
+
+There is no specific limit on the length of a string literal, though for
+practical reasons an implementation may impose a limit
+(\eg~depending on RAM available or \red{limits} of underlying functions
+such as STL's \texttt{getline}).
+
+A long string literal may be broken in smaller pieces which are concatenated
+using the \texttt{+} operator.  The concatenation may occur as part of the
+parsing process or at run time, the implementation is free to choose when.
+
+There are differences with CoCoA-4: see \ref{diffs:StringLiterals},
+pg.\pageref{diffs:StringLiterals}).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Commands}
+
+For differences with CoCoA-4 see \ref{diff:commands}.
+
+%----------------------------------------------------------------------
+\section{Commands Valid Only at Top Level}
+
+%--------------------------------------------------
+\subsection{\textit{Expression}: Implicit \texttt{Print}}
+
+\textbf{Assignments} and \textbf{procedure calls} may be used as
+commands in any context.  But at top level it is permitted to use any
+\textbf{expression} as a command~---~the behaviour is as though the
+expression were the (sole) argument to a \texttt{Print} command.
+
+%--------------------------------------------------
+\subsection{\texttt{ciao} and \texttt{quit}}
+\index{ciao@\texttt{Ciao}}
+\index{quit@\texttt{Quit}}
+
+These (totally equivalent) commands terminate the interactive session.
+All buffered output is flushed prior to termination, and all
+resources are freed.  All variables go out scope.
+
+\red{JAA: can the quit command appear in file read by the source command?}
+It does not seem nice that sourcing a file could terminate the whole session.
+
+
+\subsection{\texttt{source}}
+\index{source@\texttt{Source}}
+
+See also comment in section~\ref{open-matters}.
+Perhaps there should be a limit to the depth of nesting of source commands?
+A recursive source in CocoA~4 fails after about 250 recursions (on my computer).
+
+\begin{quote}
+  {\bf NOTE} Anna thinks that \texttt{source} should be allowed in a wider
+context.  If \texttt{source} is allowed inside a function, John wonders what
+happens if a \texttt{source} command should redefine the function currently
+being executed.  We should check the use of \texttt{source} in existing code,
+and then decide what should be allowed.  Also, if \texttt{source} happens
+inside a function, and there is an assignment to a variable in the file
+sourced, is the variable regarded as being local to that function? 
+\end{quote}
+
+\begin{quote}
+  \textbf{NOTE} How should errors propagate through a source command?
+  The command itself could trigger an error if the file to read does not
+  exist or is unreadable (or there are no more file descriptors available).
+\end{quote}
+
+Just by chance I found the definition of Anna's \texttt{MakeCheck} function in CoCoA4.
+It contained essentially one line of this form: \texttt{PrintLn Time Source\mydots}.  Boggle!
+
+%--------------------------------------------------
+\subsection{\texttt{use}}
+\label{command:use}
+\index{use@\texttt{Use}}
+
+This command selects a specific ring as the \textbf{current ring}.  If the
+specified ring contains symbols then the top-level variables having the
+names of those symbols are set.  If the symbol has no index then the
+variable is set to have as value the image of that symbol in the chosen
+ring.  For indexed symbols, the variable receives a special value (\red{a
+  hash map??}) upon which the only valid operation is indexing: given a
+correct index-tuple the value produces the corresponding image in the ring;
+it is an error to give an invalid index-tuple.  Since these special values
+have ``dodgy semantics'' they may not be assigned, copied, or passed as
+arguments.
+
+\begin{lstlisting}
+  P := QQ[x[2], x[4]];
+  Use P;
+  -- The top level variable x is set to a "special value"
+  PrintLn x[2]; -- the indeterminate x[2]
+  PrintLn x[3]; -- This will give error
+  y := x;       -- This will give error
+\end{lstlisting}
+
+\red{TRICKY} what happens if an indet happens to have the same name as
+a function?  It would seem that the function will be deleted... (see
+answer immediately below)
+
+\red{ANSWER?} Anna suggests that \texttt{use} will silently change the
+value of a protected variable iff its reason string indicates that the
+protection was applied by an earlier execution of the \texttt{use}
+command.
+
+\begin{enumerate}
+\item At top level the "Use" command sets various top-level variables
+  so that the indets of the chosen ring can be accessed in an easy and
+  natural manner [note: a special value has to be used for indets with
+  indices].  We recall that the "Use" command checks whether all the
+  relevant top level variables are writable before setting any of them
+  -- naturally, it also "unsets" any top-level variables set by the
+  previous "Use" command (the unsetting happens only after the
+  writability check has passed).
+
+  The indets of the current ring can be accessed from inside a
+  function by using a "top-level import" command [proposed name:
+  TopLevel] (or perhaps a special "top-level indeterminate import"
+  command?).  There is no such short-cut for accessing the
+  indeterminates of any other ring (including any ring which may have
+  been passed as a parameter); the indets must instead be obtained by
+  calling an indet accessor function e.g. indet(P, 2).
+
+\item For simple polynomial rings, CoCoA5 will accept the syntax used
+  in CoCoA4 (only in certain contexts, e.g. after the special ring
+  assignment "::=").  More complicated rings must be constructed
+  stepwise, i.e. by calling "pseudo-ctor" functions whose syntax
+  closely resembles that used for constructing rings in CoCoALib.
+\end{enumerate}
+% 
+------------------------------------------------------------------
+%%\section{Commands valid in any context}
+
+\section{\textbf{:=} -- Assignment}
+
+\begin{syntax}
+\textit{identifier} \texttt{:=} \textit{expression}
+\end{syntax}
+
+Assignment will produce an error if the variable on the left hand side is
+protected; this condition is checked before the right hand side is
+evaluated (to reduce the risk of waiting for a long computation only to
+discover that it cannot be assigned, and thus the result is simply discarded).
+\begin{lstlisting}
+Y := Fact(1000000);  -- will take a few seconds
+protect Y;
+Y := Fact(1000000000); -- gives error instantly
+\end{lstlisting}
+
+We use the name \textbf{l-value} to denote an expression which may appear
+on the left of an assignment.  The only valid l-values are:
+\begin{itemize}
+\item an unprotected variable
+\item an l-value followed by an indexing operator
+\item an l-value followed by a field selector
+\end{itemize}
+Each numerical index must correspond to an existing position; and each
+non-final field selector (or string index) must correspond to an existing
+field.  A final field selector (or string index) which does not correspond
+to an existing field is allowed, and will cause the creation of the field
+with initial value being the value assigned.
+
+The assignment itself produces no value, so cannot be used inside an
+expression; \eg~it is a syntax error to cascade assignments.  The
+assignment effectively \textbf{makes a copy} of the value of the right hand
+side (though the implementation may be ``clever'' and use a lazy copying
+strategy).
+
+\begin{quote}
+  \textbf{NOTE}
+  Giovanni pointed out that writability of the l-value should also be checked
+  after evaluation of the right hand side, because the right hand side could
+  in theory change the writability of the l-value \red{JAA: thinks this can
+  happen only if the lhs is a global variable}.
+\end{quote}
+
+
+\section{Definition and call of functions and procedures}
+\label{command:fun-proc}
+
+\subsection{\texttt{Define\mydots [Return\mydots]\mydots EndDefine}}
+\label{keyword:define}
+
+\begin{syntax}
+\texttt{define} \textit{identifier} \texttt{(} \textit{arg-list} \texttt{)}\\
+\ \ \textit{commands}\\
+\texttt{enddefine}
+\end{syntax}
+
+\begin{syntax}
+\texttt{return}\\
+\texttt{return} \textit{expr}
+\end{syntax}
+
+The first form is a proc-return, the second is a fn-return; it is a syntax
+error if the two forms are mixed inside the same fn-proc definition~---~see section~\ref{defining-fns}.
+The \texttt{return} command may appear only inside a fn-proc definition.
+It is a syntax error for \texttt{return} to appear outside a fn-proc.
+\texttt{return} may appear inside loops and conditionals inside the fn-proc.
+
+\begin{quote}
+  {\bf NOTE} CoCoA~4 allows \texttt{Return} to be used at top level.  It
+  simply returns the value of its argument.  \red{JAA thinks this is a bad
+feature.}
+\end{quote}
+
+%--------------------------------------------------
+\subsection{Procedure call}
+
+\red{JAA: it should be possible to give an instant (run-time) error if a
+  procedure call turns out to be a function call~---~this requires keeping
+  a distinction between fn and proc in the internal representation}
+Do we want to do this?  Do we want to promise this?
+
+The arguments to the call are evaluated in an unspecified order.  Then the
+procedure name is evaluated, and the call made.  If the call produces a return
+value then a run-time error is triggered.
+
+%----------------------------------------------------------------------
+\section{Loop Commands}
+
+%--------------------------------------------------
+\subsection{\texttt{For\mydots To\mydots [Step\mydots] Do\mydots EndFor}}
+\label{keyword:for}
+\index{for@\texttt{For}}
+
+\begin{syntax}
+\texttt{for} \textit{var} \texttt{:=} \textit{start-val} \texttt{to}
+\textit{end-val} $[$ \texttt{step} \textit{step-val} $]$ \texttt{do}\\
+\ \ \textit{commands}\\
+\texttt{endfor}
+\end{syntax}
+
+The step value must be non-zero; if it is not specified explicitly the value is taken to be 1.
+
+The semantics.  \textit{start-val} and \textit{end-val} are evaluated ``in parallel''.
+No iterations are performed if the sign of stepvalue is opposite to the sign of
+\textit{end-val} minus \textit{start-val}.
+
+The local variable \textit{var} has scope and lifetime limited to the body of the loop
+(\red{JAA qn}: what about start/end/step? is it out of scope there??).  The variable is
+protected.
+
+The variable \textit{var} is initialized to the \textit{start-val}.  The
+termination condition is then checked, and if satisfied the loop
+terminates.  Otherwise the body of the loop is executed.  If the loop was
+not terminated (\eg~by a \texttt{break} command) then at the end of the loop
+body the value of \textit{var} is updated (\red{HOW? CocoA4 or C
+  semantics?}) before looping back to perform the termination check.
+
+Inside the loop body the \texttt{break} command causes immediate termination of the loop;
+and execution continues from immediately after the loop.  The \texttt{continue} command
+causes execution to jump to the end of the loop body.
+
+
+\red{QUESTION:} the types of the values of start, end and step should all be explicitly integer (or rational)?
+Or should a polynomial which happens to be an integer be allowed?
+
+\red{QUESTION:} should very long loops be allowed? (\ie~more than $2^{32}$ iterations)
+
+\red{QUESTION:} should we allow rational step values?
+
+%--------------------------------------------------
+\subsection{\texttt{Foreach\mydots EndForeach}}
+\label{keyword:foreach}
+\index{foreach@\texttt{Foreach}}
+
+\begin{syntax}
+\texttt{foreach} \textit{var} \texttt{in} \textit{list-val} \texttt{do}\\
+\ \ \textit{commands}\\
+\texttt{endforeach}
+\end{syntax}
+
+The semantics.
+
+The local variable \textit{var} has scope and lifetime limited to the body of the loop
+(\red{JAA qn}: what about list-val? is it out of scope there??).  The variable is
+protected.
+
+The expression \textit{list-val} is evaluated.  If the result is not a
+list/array then a run-time error is triggered.  If the list is empty, no
+iterations are performed, and the loop terminates.  Otherwise the variable
+\textit{var} assumes succesively the values in that list with the body of
+the loop being executed once for each value.  Assigning to the variable
+\textit{var} (after unprotecting it) does not affect the list-val; and at
+the next iteration the variable \textit{var} will advance to the next value
+in the list.
+
+Here is a short example
+\begin{lstlisting}
+l := [1,2,3];
+foreach x in l do
+  Print x, " ";
+  unprotect x;
+  x := 99;
+  Print x, "  ";
+endforeach;
+PrintLn l;
+\end{lstlisting}
+The output will be \verb|1 99  2 99  3 99  [1, 2, 3]|.
+
+%--------------------------------------------------
+\subsection{\texttt{While\mydots EndWhile}}
+\label{keyword:while}
+\index{while@\texttt{While}}
+
+\begin{syntax}
+\texttt{while} \textit{bool-expr} \texttt{do}\\
+\ \ \textit{commands}\\
+\texttt{endwhile}
+\end{syntax}
+
+The semantics.  The bool-expr is evaluated.  If the result is false
+then the loop terminates.  Otherwise the loop-body is executed once,
+and execution loops back to evaluate bool-expr again.
+
+\red{QUESTION:} what is the scope (\& lifetime) a variable first
+introduced in the loop body?
+
+%--------------------------------------------------
+\subsection{\texttt{Repeat\mydots Until\mydots}}
+\label{keyword:repeat}
+\index{repeat@\texttt{Repeat}}
+
+\begin{syntax}
+\texttt{repeat}\\ 
+\ \ \textit{commands}\\
+\texttt{until} \textit{bool-expr}
+\end{syntax}
+
+The semantics.  The loop-body is executed once, then bool-expr is
+evaluated.  If the result is true then the loop terminates.  Otherwise
+execution loops back to execute the body once again.
+
+%--------------------------------------------------
+\subsection{\texttt{Repeat\mydots EndRepeat}}
+\label{keyword:repeat}
+\index{repeat@\texttt{Repeat}}
+
+\begin{syntax}
+\texttt{Repeat}\\ 
+\ \ \textit{commands}\\
+\texttt{EndRepeat}
+\end{syntax}
+
+The semantics.  The loop-body is executed infinitely many time, unless
+a \texttt{break} or \texttt{return} is met.
+It is equivalent to \texttt{While True Do\mydots EndWhile}
+or \texttt{Repeat\mydots Until False}.
+
+%--------------------------------------------------
+\subsection{\texttt{break} and \texttt{continue}}
+\label{keyword:break}
+\index{break@\texttt{Break}}
+
+The \texttt{break} and \texttt{continue} commands may appear only inside a
+loop.  It is a syntax error if the command appears outside any such loop.
+
+\red{QUESTION} Some languages allow \texttt{break} and \texttt{continue} to
+specify how many loop levels to go up before acting~---~is this useful for
+us?  JAA thinks that the number of levels should be an explicit constant
+(and not a variable or more general expression).
+
+\begin{quote}
+  \textbf{NOTE} the \texttt{break} and \texttt{continue} commands
+  introduce the possibility of unreachable code.  Do we care about
+  this?  In fact \texttt{return} can produce unreachable code too.
+\end{quote}
+
+%----------------------------------------------------------------------
+\section{\texttt{If\mydots Then\mydots (ElseIf\mydots) [Else\mydots] EndIf}}
+\label{keyword:if}
+\index{if@\texttt{If}}
+
+\begin{syntax}
+\texttt{if} \textit{bool-expr1} \texttt{then}\\
+\ \ \textit{commands1}\\
+\texttt{endif}
+\end{syntax}
+
+\begin{syntax}
+\texttt{if} \textit{bool-expr1} \texttt{then}\\
+\ \ \textit{commands1}\\
+\texttt{else}
+\ \ \textit{commands3}\\
+\texttt{endif}
+\end{syntax}
+
+\begin{syntax}
+\texttt{if} \textit{bool-expr1} \texttt{then} \textit{commands1}\\
+( \texttt{elseif} \textit{bool-expr2} \texttt{then} \textit{commands2} )$*$\\
+$[$ \texttt{else} \textit{commands3} $]$\\
+\texttt{endif}
+\end{syntax}
+
+The semantics of this command are fairly obvious.  The bool-exprs are
+evaluated in order until one of them yields true, at which point the
+corresponding then-block is evaluated.  If none of the bool-exprs yields
+true then the final else-block is executed; if there is no final
+else-block, no commands are executed.
+
+Each then-block and the else-block must contain at least one command.
+
+%----------------------------------------------------------------------
+\section{\texttt{Print} and \texttt{PrintLn}}
+\index{command:print}
+\index{print@\texttt{Print}}
+
+There are two printing commands:
+\begin{syntax}
+\texttt{Print} \textit{expr} [\texttt{On} \textit{expr}]\\
+\texttt{PrintLn} \textit{expr} [\texttt{On} \textit{expr}]
+\end{syntax}
+
+\begin{itemize}
+\item At top-level, an expression as a command has an implicit \texttt{Print}
+  (and not \texttt{PrintLn}).
+
+\item A newline is printed immediately before printing the prompt
+    (e.g. the command \texttt{PrintLn 3;} will leave a blank line before
+     the next prompt)
+
+\item Printing of strings
+  \begin{enumerate}
+  \item a string by itself prints out only its content (e.g. a string
+    containing the 5 chars \verb|"abc"| will print out those 5 chars)
+  \item a string S inside any other structure is printed out as an
+    "input form" (i.e. a double-quote char followed by the content of
+    the string withe all special chars suitably escaped, and finally
+    followed by another double-quote char -- the intention is that
+    this printed form should be a valid string literal whose value is
+    equal to that of S).  (e.g. if S contains the 5 chars \verb|"abc"|
+    its input form is \verb|"\"abc\""|)
+  \end{enumerate}
+\end{itemize}
+
+\red{What about the versions which print onto a specific output device???
+  JAA is not too keen on the \texttt{On} suffix; can we do better?}
+
+\red{JAA: now I'm used to the C++ approach, and these commands seem
+  ``clunky'' to me, but they're probably more natural to people not used
+    to C++.}
+
+See also section {\refandpage{tagged}}.
+
+%------------------------------------------------------------
+\section{\texttt{protect} and \texttt{unprotect}}
+\label{keyword:protect}
+\index{protect@\texttt{Protect}}
+
+\begin{syntax}
+\texttt{protect} \textit{identifier} $[$ \texttt{:} \textit{string-expr} $]$\\
+\texttt{unprotect} \textit{identifier}
+\end{syntax}
+
+What symbol or keyword to use to separate the identifier from the explanatory string?
+
+At the moment the commands can act on only a single identifier at a time; if experience
+says we should allow multiple identifiers then we can extend the language.  Also it would
+be tricky to find a readable syntax allowing multiple identifiers to be protected each
+with its own explanatory string.
+
+\red{Roune}We could also allow a shorthand syntax allowing initialization and protection:\\
+\texttt{protect} \textit{identifier} \texttt{:=} \textit{expr} $[$ \texttt{:} \textit{string-expr} $]$\\
+
+\red{COMMENT} seems risky, how to specify the explanatory string in such a way that it is clearly not part of the rhs of the assignment?  Perhaps use some keyword?  \texttt{because}?
+
+
+
+\section{Errors and Exception handling}
+\label{exceptions}
+
+I have bundled ``errors'' and ``exceptions'' together because it seems
+likely that the principal use for exceptions will be to manage errors;
+however, other uses are permitted.  There are two commands related to
+exceptions: one to trigger them, the other to intercept them and
+handle them in some way.  The design is loosely based on what C++
+does.
+
+The new way of throwing and handling errors/exceptions is definitely
+incompatible with the syntax and mechanism used in CoCoA~4: see
+\refandpage{diffs:errors}.
+
+%----------------------------------------
+\subsection{Triggering an Exception: \texttt{Error}}
+\index{error@\texttt{Error}}
+
+\begin{syntax}
+\texttt{error} \textit{expr}
+\end{syntax}
+
+The expression after \texttt{Error} must evaluate to a string (it is possible
+that a wider range of values will be allowed in the future).  If the
+expression does not evaluate to a string then a \texttt{BadErrorType}
+exception is thrown.
+
+Upon successful execution of an \texttt{Error} command, the
+interpreter switches into an {\bf exception-return} state.  In this
+state, the interpreter immediately returns from any functions it is in
+until either top level is reached (when a suitable ``unhandled
+exception'' error message is displayed, and the normal state is
+resumed) or the interpreter finds that execution is inside the first
+part of a \texttt{Try} block (see below) in the current function
+(being in the second ``\texttt{UponError}'' part does not count).
+
+The chosen keyword is \texttt{Error} to maintain superficial similarity with
+the \texttt{Error} procedure in CoCoA~4.  The name is not ideal because it
+disguises the fact that it can be used for throwing exceptions which are
+not errors.
+
+%----------------------------------------
+\subsection{Catching an Exception: \texttt{Try\mydots UponError\mydots EndTry}}
+\index{try@\texttt{Try}}
+
+The expression must produce a string value~---~otherwise you get an error?!?
+
+\begin{syntax}
+\texttt{Try} \\
+\ \ {\it main-commands} \\
+\texttt{UponError} {\it variable} \\
+\ \ {\it handler-commands} \\
+\texttt{EndTry}
+\end{syntax}
+
+Execution of a \texttt{Try} block is:
+\begin{itemize}
+\item The \textit{main-commands} are executed normally, until either
+  the last of these commands has been executed successfully or some
+  command threw an exception (which has not been handled by any other
+  \texttt{Try} block).
+\item If all the \textit{main-commands} were executed successfully
+  then everything between \texttt{UponError} and \texttt{EndTry} is
+  skipped, and execution resumes immediately after the \texttt{EndTry}
+  keyword.
+\item If instead, one of the \textit{main-commands} threw an unhandled
+  exception then execution jumps immediately to the \texttt{UponError}
+  part of the block (and the interpreter returns to its normmal state
+  from the exception-return state); the value of the thrown expression
+  is placed into the (implicitly \texttt{protect}ed) variable named
+  after the \texttt{UponError} keyword; execution then proceeds with
+  the \textit{handler-commands}.
+\item If all the \textit{handler-commands} complete successfully then
+  execution continues from immediately after the \texttt{EndTry}
+  keyword.
+\item If another exception should be thrown during execution of the
+  \textit{handler-commands} then that exception propagates upwards.
+\end{itemize}
+
+
+\textbf{Technical}\\
+The way of catching and handling an exception is only vaguely similar
+to the corresponding mechanism in C++.  An important difference is
+that CoCoA is not statically typed, so it makes no sense to allow
+multiple ``catch'' blocks after a ``try'' block; indeed, in CoCoA
+there must be exactly one ``catch'' block.
+
+\red{IDEA} instead of the identifier after keyword \texttt{UponError},
+we could use a fixed name (\eg~\texttt{ErrorString})~---~is this a good
+or bad idea?  I mention it only because it might improve readability
+marginally.  It could conceivably cause some limitations if we want to
+nest a \texttt{try} block inside an \texttt{UponError} block\mydots ouch!
+
+%--------------------------------------------------
+\section{\texttt{Package\mydots EndPackage}}
+\label{command:package}
+\index{package@\texttt{Package}}
+
+\begin{syntax}
+\texttt{Package} \\
+(\texttt{Export} \textit{identifier})* \\
+(\texttt{Alias} \textit{identifier} \texttt{:=} \textit{expression})* \\
+(\texttt{Define}\mydots\texttt{EndDefine})* \\
+(\textit{identifier} \texttt{:=} \textit{expression})*
+\end{syntax}
+
+\begin{quote}
+  {\bf QUESTION} JAA thinks that \texttt{Package} introduces a new sort
+of context.  Are commands valid at top level valid also inside a package?
+\end{quote}
+
+\red{The main idea is that a package is very similar to a namespace in C++;
+but packages **cannot** be nested!}
+
+\begin{enumerate}
+\item  Package names begin with a dollar sign.  Inside a package a dollar
+  sign by itself refers to the package in which it occurs.  The variables
+  in a package thus have names like \$PackName.VarName.
+  
+\item  Exporting a name from a package\\
+  A package name may be exported to top-level (so you do not need to use
+  the package prefix to access the value).  An export operation exports
+  a **reference** to the package variable -- so if the value (of the package
+  variable) changes then this change is also seen via the top-level name.
+  If the top-level name is already in use an error/warning is issued
+  (perhaps depends on whether the top-level name is protected?).
+  [see also a comment in (a) about problems with reloading a package]
+
+\item Initialization of packages  \\
+  In CoCoA 4 each package had a special "initialize" function which was
+  called each time the package was loaded (normally only once).
+  
+\item What happens when you reload a package?\\
+  Proposed solution:
+  all existing variables in the namespace are eliminated, and then
+  the package is reloaded (e.g. if a function were deleted from the
+  package, its definition is removed when the packages is reloaded).
+  
+  \red{ A problem could arise if someone has taken a reference to a
+    top-level variable defined by the old version of the package but
+    which has been removed from the new version -- this would result
+    in a dangling reference: is this true?}  
+\end{enumerate}
+
+\subsection{Name lookup rules for package bodies}
+
+In CoCoA-4 you have to use the prefix \verb|$.| to call a fn-proc of
+the same package, while it seems more natural to consider a package
+declaration as a scope and allow to directly access package members
+(C4 restricts package members to be functions only, C5 will not have
+such a restriction).  This is what happens at top-level (fn-proc F may
+call top-level fn-proc G with G()) and would simplify moving code from
+top-level to a package and vice versa.
+Unfortunately, this is not what happens with function scopes:
+\begin{lstlisting}
+Define Whatever()
+    F := Lambda () .... EndLambda;
+    G := Lambda() ...
+\end{lstlisting}
+cannot call F() without explicitly importing it
+Nevertheless, [GL: if I remember correctly] we think it is better to 
+allow to use the names inside the packages without any (mandatory) 
+prefix. Warnings might be emitted for "suspicious" situations (for 
+instance, a fn-proc name hides a top-level name)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Differences between CoCoA~4 and CoCoA~5}
+\label{diffs4-5}
+
+The design of CoCoA~4 is nearing its 20th birthday, and some features which
+originally seemed perfectly adequate are now seen to be excessively
+restrictive.  The new ``computational engine'', CoCoALib, offers a much
+wider range of abilities than the compute engine integrated into CoCoA~4;
+and easy access to these new capabilities implies extensions to the language.
+The last few versions of CoCoA~4 have been designed to give warnings about
+obsolescent features which will not be supported in the new CoCoA~5.  The
+intention is that CoCoA~4 code which runs without warnings will most likely
+run in CoCoA~5~---~and perform the same computation!  Some CoCoA~4 code
+will not be valid in CoCoA~5; and in these cases the hope is that the error
+message produced by CoCoA~5 will help guide the user in modifying his
+program so that it becomes valid in CoCoA~5.  We definitely want to avoid
+the situation where a CoCoA~4 program remains valid in CoCoA~5 but acquires
+different semantics~---~unless the code triggers a bug in CoCoA~4, of course!
+
+
+%----------------------------------------------------------------------------
+
+\section{Things not in CoCoA~5}
+
+\green{Anna: I moved this here from the end of previous chapter.  I
+  think this should be merged with the following section}
+
+Here is a summary of features which we chose not to include in the language
+for CoCoA~5 and the reasons we rejected them.
+
+\begin{itemize}
+\item {\it string literals containing newlines} apart from the CoCoA~4
+  manual it is very rare for a string literal to contain a newline
+  character.  John also thinks that it is easily detrimental to readability
+  of the code; also many programming languages do not allow it.  Also a
+  common problem in CoCoA~4 was an unended string literal which easily put
+  the interactive session into a coma-like state.  In CoCoA~5 instead of
+  using an explicit newline a newline character can be placed in a string
+  literal using the escape sequence \verb|\n|.
+\item  {\it string literals between single quotes} in CoCoA~4 string
+  literals could be delimited either by double quotes or by single quotes
+  (with both delimiters being the same type).  In CoCoA~5 only double
+  quotes may be used to delimit string literals; attempting to use single
+  quote will result in a syntax error.
+\item 
+\end{itemize}
+
+\section{String literals}
+\label{diffs:StringLiterals}
+
+Here are some backward incompatiblities.
+
+In CoCoA~4 string literals could also be delimited by single quotes
+(instead of double quotes); this gives an error in CoCoA~5.
+
+The use of backslash as an escape inside strings literals leads to an
+{\bf incompatibility} with CoCoA~4 (version 4.7.5):
+\begin{itemize}
+\item \verb|PrintLn "abc\ndef";| in CoCoA~4 prints out \verb|abcndef|
+\item \verb|PrintLn "abc\ndef";| in CoCoA~5 prints out \verb|abc| newline \verb|def|
+\end{itemize}
+
+The prohibition on the use of a newline character in a string literal is
+backward incompatible with CoCoA~4.  The following code is valid in CoCoA~4
+but will produce a syntax error (at the end of the first line) in CoCoA~5:
+\begin{lstlisting}
+  Mesg := "First line
+  Second line";
+\end{lstlisting}
+To achieve the desired effect in CoCoA~5 the code should be rewritten as follows:
+\begin{lstlisting}
+Mesg := "First line\n"
+      + "Second line\n";
+\end{lstlisting}
+
+\section{Decimal constants}
+
+Exponents are allowed in CoCoA~5, they were not allowed in CoCoA~4 (because
+of an ambiguity).
+
+\blue{JAA: this is (slightly) backward incompatible} because in CoCoA4
+an expression like \verb|1.23e-4| is valid but means \verb|1.23*e-4|.  JAA
+thinks that this is a ``technical incompatibility'' because he doubts
+anyone has actually ever written an expression which would change meaning
+(the letter \texttt{e} is most uncommon as an indeterminate).
+\green{Anna: are we really allowing this?}
+
+\section{New commands in CoCoA-5}
+\label{diff:commands}
+
+%The commands available in CoCoA~5 are very similar to those in CoCoA~4.
+The main additions are the \texttt{continue} command, the \texttt{protect} and
+\texttt{unprotect} commands.
+
+\section{Obsolescent commands}
+
+Several obsolescent commands of CoCoA~4 do not exist in CoCoA~5; these
+include \texttt{Clear}, \texttt{Destroy}, \texttt{Delete}, \texttt{EoF},
+\texttt{Help}, \texttt{Using} and so on.
+
+\red{JAA does not recall about these}: \texttt{Alias}, \texttt{Block},
+\texttt{Describe}, \texttt{Panel}, \texttt{Set} and \texttt{Unset},
+\texttt{Skip}, \texttt{Time}
+
+
+\section{\texttt{Ciao} and \texttt{Quit}}
+
+In CoCoA~4 the \texttt{Quit} command may appear not at top level,
+\eg~inside a function or in the \texttt{then}-part of an \texttt{if} command.
+We have decided to disallow this, as we could not think of a good use for
+the feature.
+
+
+\section{Reference Parameters}
+
+The semantics of reference parameters are a bit ``dodgy'' (and certainly
+undocumented).  Their odd behaviour caused the CoCoA~4 implementation of
+Quicksort to have cubic complexity!
+
+In CoCoA~4 it is possible to pass a temporary value by reference~---~this
+is not permitted in CoCoA~5.  Here's an example showing why CoCoA~4 had to
+allow references to temporaries:
+\begin{lstlisting}
+I := Ideal(x);
+GBI := GBasis(I);  -- modifies I by storing its G-basis
+J := Ideal(y);
+GB := GBasis(I+J); -- arg is temporary passed by reference
+\end{lstlisting}
+The point is that the function \texttt{GBasis} returns a useful result and
+also has a side effect (namely setting the \texttt{GBasis} field of the
+ideal) which sometimes serves no useful purpose.  CoCoA~5 avoids this
+problem by offering ``mutable'' fields in ideals and modules.\red{IS THIS TRUE???}
+\green{Anna: the \cocoalib function is \texttt{TidyGens(const ideal\& I)}}
+
+\section{Distinction between functions and procedures}
+\label{diffs:defining-fns}
+
+CoCoA~4 did not make any distinction between functions and procedures.
+They were really all regarded as functions.  Indeed a \texttt{return} command
+without value did in fact return a special ``null'' value; the same value
+was returned if execution in a fn-proc ``fell off the end''.  It was also
+permitted to write functions which sometimes returned a (normal) value and
+sometimes returned the special ``null'' value (perhaps this was inspired by LISP?)
+
+In CoCoA~5 the two types of subprogram are distinguished.  A syntax error
+will be triggered if \texttt{return} commands both with and without values
+appear inside the same subprogram.
+
+In CoCoA~5 a procedure call may appear as a standalone command (inside a fn-proc)
+whereas a standalone function call will produce a run-time error~---~the most recent
+versions of CoCoA~4 produce a warning if the call happens to return a value.
+
+We think that making a clear distinction between functions and procedures
+will contribute to writing better code with more clearly defined semantics.
+Also the presence of both types of \texttt{return} in a subprogram is
+probably unintentional and so should be signalled as an error~---~we have
+never encountered a subprogram which correctly contained both types of
+\texttt{return}.
+
+See \refandpage{defining-fns}.
+
+
+\section{Error handling}
+\label{diffs:errors}
+
+The mechanisms for triggering and handling errors have been
+\textbf{radically changed}.
+The new mechanism is largely inspired by that of C++.
+See \refandpage{exceptions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Postponed and discarded ideas}
+
+%----------------------------------------------------------------------
+\section{Postponed ideas}
+\label{postponed}
+
+\subsection{Records and maps}
+\index{record@\texttt{Record}}
+
+We recall that in CoCoA4 the name of a field in a Record is restricted
+to being a valid CoCoA4 identifier -- particular exclusions are the
+empty string and all CoCoA4 keywords!  The proposal is to adopt the
+analogous rule for Records in CoCoA5.  The advantage of the
+restriction is that it makes the standard printed form of a Record
+into a valid input form (yielding an equivalent value) -- allowing
+arbitrary strings as field names would make it difficult to achieve
+this.  Moreover if we wish to extend the capability of using a Record
+as a map, it is probably better simply to introduce a new data
+structure implementing a map [e.g. like a C++ std::map] in full
+generality (i.e. one which can map from any object to any other
+object).
+
+It was decided that adding maps is of low priority for the moment, so
+further discussion is deferred to some future time (e.g. CoCoA-19 :-)
+
+
+\subsection{Unicode and wstrings (and wchar\_t)}
+
+GL reports that there are many conflicting standards (for linearizing
+unicode strings into byte streams, e.g. files), and moreover that the
+definition of \texttt{wstring} \& \verb|wchar_t| is platform dependent.
+In view of these uncertainties, and of the complete lack of experience
+with unicode within our group, he proposed sticking with normal byte
+strings FOR THE TIME BEING -- this allows us to concentrate on more
+urgent matters.
+
+%----------------------------------------------------------------------
+\section{Discarded ideas}
+\label{discarded}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{Interpreter Notes}
+
+\chapter{Basics}
+
+\section{Introduction}
+
+This document goes hand in hand with another which describes the language
+for CoCoA~5, and its principal differences from the language of CoCoA~4.
+Here we are primarily concerned with details pertinent to the interpreter,
+both its design and its realization.
+
+An important goal is to maintain good (though not necessarily
+absolute) backward compatibility with the interpreter of CoCoA~4.
+That is, a clean well-designed CoCoA~4 program which is syntactically
+valid also in CoCoA~5 should have the same semantics as it did in
+CoCoA~4~---~any places where this guiding principle is not adhered to
+will be very clearly indicated (and a strong justification given for
+changing the semantics).
+
+The current idea is to situate the interpreter inside the
+CoCoA~5 server.  The user will interact with the interpreter using a
+user interface, which might be a separate program (perhaps running on a
+separate computer).  In this document we are concerned with aspects which
+affect directly the interpreter~---~these will naturally include some
+influences from the design of the server and of the user interface.
+
+\bigskip
+
+The interpreter will maintain a {\it global state\/} and will receive
+trees from the parser/UI which it will attempt to execute.  We suppose
+that the execution normally succeeds, but recognise that it may fail
+due to run-time errors (\eg~request to perform an impossible or nonsensical
+operation such as division by zero, insufficient resources to complete
+the computation).  The interpreter will also allow the user to interrupt
+a computation.
+
+\index{source@\texttt{Source}}
+The \texttt{Source} command in CoCoA~4, if retained in CoCoA~5, implies that
+the interpreter will need to call the parser.  We must decide what the
+exact semantics are, and when the \texttt{Source} command may be used (\eg~only
+at top level?).  If an error occurs, what should the context be?
+Is a syntax error also trappable as a run-time error?
+
+\section{Interrupting a Computation}
+
+\index{interrupt}
+\index{kill|see{interrupt}}
+\index{pause|see{interrupt}}
+Here we distinguish between two sorts of interruption: a {\bf kill} which is intended to
+stop the computation outright, and a {\bf pause} which allows the computation to be resumed.
+A kill should always have an immediate effect, but will lose all unsaved
+state in the interpreter.
+
+Ideally a pause will provoke an almost immediate response from
+the interpreter, though there will be some cases where an immediate
+response cannot be achieved (\eg~if GMP is in the middle a long computation).
+After a pause it will always be possible to resume execution,
+or to discard the partial computation and return to top-level with the
+current global state intact.  It may be possible to allow the user to
+inspect certain values prior to resuming the computation.
+
+\begin{quote}
+  {\bf QUESTION} Is there a scenario where resumption from  a pause may fail?
+\end{quote}
+
+
+\section{The Global State}
+\label{global-state}
+
+\index{variable}
+The interpreter will maintain a {\bf global state}, \ie~an environment of
+top-level variable names and their values (presumably this can be implemented
+easily using a \verb|std::map| or \verb|boost::hash_map|).  The allowed names are defined
+by the parser (essentially, alphanumeric strings which begin with a
+letter).  New variables are created simply by assigning to them; conversely,
+it is an error to attempt to read the value of a variable which has not
+already been assigned to.
+
+Each variable may have only one value at a time: the value may be a
+function definition, or a ring, or a ``normal'' value.  The variable itself
+has no type: \ie~it is allowed to assign to a variable a value of a type
+completely different from the type of the currently held value.
+
+\subsection{Protecting Variables}
+
+\index{protect@\texttt{Protect}}
+All variables have a flag (and also a string giving the reason why flag was
+set)
+indicating whether the variable is {\bf protected} or not.  When the flag
+is set, it means that an error will result if the interpreter attempts to
+assign a value to that variable (even if the value is the same as the value
+currently held in the variable).  The interpreter has commands for raising
+and lowering the flag of a variable: currently the proposed command names are
+\texttt{Protect} and \texttt{Unprotect}.
+
+
+\section{Types of Values, Automatic Conversions}
+
+\index{conversions}
+Whereas a variable does not have a type, each value does have a (run-time)
+type.  In general there is no automatic conversion between types except
+for these conversions:
+\begin{itemize}
+\item conversion from \texttt{INT} to \texttt{RAT}
+\item conversion from \texttt{RAT} with denominator 1 to \texttt{INT}
+\item conversion from \texttt{INT} to \texttt{RINGELEM}
+\item conversion from \texttt{RAT} to \texttt{RINGELEM} (may produce a
+run-time error if the denominator is a zero-divisor)
+\end{itemize}
+
+\index{types}
+Here is a list of the different types of value which must be handled:
+\begin{itemize}
+\item \texttt{INT} unlimited range integer
+\item \texttt{RAT} unlimited range rational number
+\item \texttt{BOOL} a boolean
+\item \texttt{STRING} a string (over what character set???)
+\item \texttt{RING} a ring
+\item \texttt{MAT} a matrix (over a given ring)
+\item \texttt{RECORD} an open record (a structure associating strings with values)
+\item \texttt{FUNCTION} a function/procedure
+\item \texttt{RINGELEM} a value of some ring (the value itself knows which ring)
+\item \texttt{IDEAL} an ideal of some ring (the ideal itself knows which ring)
+\item \texttt{MODULE} a quotient of submodules of some free module (it knows the ring)
+\item \texttt{MODULEELEM} an element of a module (called \texttt{VECTOR} in CoCoA~4)
+\item \texttt{REFERENCE} a reference to value slot belonging to another variable (or structure).
+\end{itemize}
+
+Here is a list of types which might be useful in CoCoA~5, but I am not sure yet:
+\begin{itemize}
+\item \texttt{NULL} the type of the null value
+\item \texttt{DEVICE} the type of an i/o device
+\item \texttt{VECTOR} the type of a module element (very similar to a \texttt{LIST})
+\item \texttt{LIST} a datastructure combining features of a \texttt{std::list} with those of a \texttt{std::vector}
+\item \texttt{TAGGED} the tags are used to enable special ``pretty printing'' (via a rather suspect mechanism in CoCoA 4)
+\end{itemize}
+
+Here is a list of types which are present in CoCoA~4 but which appear not to be
+necessary in CoCoA~5:
+\begin{itemize}
+\item \texttt{ERROR} a value of any type may be thrown (as in C++); an object of
+this type in CoCoA~4 triggered the error whenever it was evaluated
+\item \texttt{ZMOD} this type is covered as a ring element
+\item \texttt{POLY} this type is covered as a ring element
+\item \texttt{RATFUN} this type is covered as a ring element
+\end{itemize}
+
+To achieve acceptable run-time performance at least some of the values must offer
+lazy copying (\eg~reference counting with copy-on-write).  Lazy copying appears
+to be essential for \texttt{MAT}, \texttt{LIST} and \texttt{RECORD}.  It may also be
+desirable for \texttt{IDEAL} and \texttt{MODULE} but note that these two have ``mutable
+fields'' (\eg~the Gr\"obner basis stored internally), so we may want to be able to
+write without copying in such cases?
+
+\begin{quote}
+  {\bf NOTE} Anna thinks that if ``mutable'' fields in ideals and modules
+  are updated in C++ functions then we may not need to do anything special
+  for these cases.
+\end{quote}
+
+
+\section{Passing Function Parameters}
+
+\red{JAA:2010-03-15} the arguments to fn-proc call may be prepared in any
+order; I think we do not want to guarantee left-to-right evaluation.  In
+any case, all actual parameters (even ones corresponding to formal
+parameters which are never used) are evaluated before the call starts.
+The call proper begins only if the evaluation of all the parameters was
+successful.  Args corresponding to reference parameters must be checked for
+suitability (\ie~that they are valid l-values).
+\medskip
+
+As in CoCoA~4 function parameters may be passed ``by value'' or ``by reference''.
+If the argument is passed by value then effectively a copy of the value is placed in
+the formal parameter.  However, to achieve acceptable run-time performance we
+shall require the use of ``lazy copies'' (\ie~reference counting on the values
+manipulated by the interpreter).
+
+In contrast, a value passed by reference makes no (notional) copy; instead the
+formal parameter refers to the same value slot as the variable supplied in that
+parameter position when the call was made.  Thus assigning a new value to the
+formal parameter inside the function will alter the value of the variable in
+the caller.
+
+A run time error will be signalled if the variable passed by reference is
+protected (even if the procedure would make no attempt to assign a new value).
+A run time error will be signalled if the variable passed by reference has
+no value (the variable must be both readable and writable).
+
+\subsection{Passing by value}
+
+Is there anything to add???
+
+\subsection{Passing by Reference}
+\index{var@\texttt{Var}}
+\index{ref@\texttt{Ref}}
+Refer to earlier section which describe the desired behaviour of reference parameters.
+
+Now how can we achieve this behaviour reasonably efficiently?  And in such a
+way that is never possible to create a dangling reference whose use could
+provoke {\it undefined behaviour\/} or some other unpleasant result.
+
+The solution to the problem is closely related to the precise definition
+of an object of type \texttt{REFERENCE}.  The need to avoid dangling references
+appears to exclude the possibility to implement a reference as merely a
+pointer to the ``object value cell'' (because it seems to be very hard to
+tell whether that cell has become deallocated, and it would thus be very hard
+to give a sensible error in the first example in this section).  Thus a
+reference is a non-trivial value.  The current suggestion is that a
+reference should be a pointer to an entry in a ``variable--value''
+table together with a (possibly empty) list of indexes to access
+the subobject actually refered to.  This suggestion would require that
+temporary values passed by reference are somehow registered in a suitable
+``variable--value'' table.  In the case of temporary values the reference
+could in fact just refer to the subobject; it is not strictly necessary to
+place the ``root'' value in the ``variable--value'' table, just the
+subobject could be placed there (because in the case of temporary values it
+is not possible to have references to more than a single subobject of the
+temporary object).
+
+This proposed implementation does imply that accessing values passed by
+reference where the value passed is a subobject will incur an indexing
+overhead upon {\bf each access.}  However, since we believe that it will be
+extremely rare to have more than two levels of indexing, this overhead is
+probably quite tolerable.
+
+\subsection{Protecting reference parameters}
+\label{protecting-reference-parameters}
+
+\index{protect@\texttt{Protect}}
+Inside a function a ``var'' parameter can be \texttt{Protect}ed.  This simply
+means that assignment to it is forbidden~---~it does not ``protect'' the
+object refered to (\eg~if another ``var'' parameter refers to the same
+object, then the value can still be changed through that other parameter
+(assuming it has not itself been \texttt{Protect}ed)).  I recall that a
+protected variable (nor any subpart of it) cannot be passed as a ``var''
+parameter to another function.
+
+Here is a concocted example to show that the value of a protected variable
+may change (in the presence of aliases)
+\begin{lstlisting}
+Define Proc(Var X, Var Y)
+  Protect X;
+  Print "Before X=",X;
+  Y := 0;
+  PrintLn " and after X=",X;
+EndDefine;
+V := 1;
+Proc(V,V);  -- will print  Before X=1 and after X=0
+\end{lstlisting}
+
+
+\subsection{Optional Parameters}
+\label{global:optional}
+\index{opt@\texttt{Opt}}
+
+Two possibilities: the first should be used when the args form a sort
+of (homogeneous) list, for instance \texttt{GCD(...)},
+\texttt{Ideal(...)}.  In contrast, the second would be used when a
+function has some optional parameters, for instance
+\texttt{FloatStr(Val)} and \texttt{FloatStr(Val, Digits)}.
+
+
+
+\begin{enumerate}
+\item \texttt{...} essentially the same as in CoCoA 4
+  \begin{itemize}
+  \item must be the sole argument
+  \item the actual params MUST NOT BE ref params
+  \item we can pass "..." as the arg(s) to another fn call
+    (in C4 can be passed only to another fn which expects "...")
+  \item individual params can be accessed via the array ARGV
+    (params passed by value, ARGV is protected)
+  \end{itemize}
+\item  the final arg(s) may be marked as "optional"
+
+\begin{verbatim}
+UNRESOLVED DISCUSSION:
+(1) May optional args be of "ref" type?
+(2) how to tell whether an arg has a value??
+Note that (2) becomes complicated if (1) is "yes":
+we need to distinguish several cases
++ opt ref arg was supplied (exists and is writable)
++ opt ref arg was supplied but lvalue passed doesn't exist
++ opt ref arg was supplied but lvalue passed is protected
++ opt ref arg was supplied but lvalue passed no longer exists (due to a subsequent structural change)
++ opt ref arg was not supplied
+\end{verbatim}
+
+\red{
+  Giovanni suggested that the optional args are always created, and
+  that those which do not correspond to an actual arg are given a
+  special "void" value.  As hinted above there are complications when
+  optional ref args are allowed.
+  The idea of default values for missing optional args (as is done in
+  C++) was not to Anna's liking: she cited the way in which
+  Hilbert(...) is implemented in CoCoA4.  JAA thinks that it might be
+  difficult to specify a default value for an optional ref arg.
+}
+\end{enumerate}
+
+\medskip
+(older comment)
+We are thinking that it could be useful to have optional parameters to
+functions/procedures.  The details have yet to be worked out.  The
+preliminary suggestion is a syntax something this like:
+\begin{lstlisting}
+Define HilbertFn(M, Opt N)
+...
+EndDefine;
+\end{lstlisting}
+
+\medskip
+(older comment)
+How best to implement ``varargs''?  Some languages have optional
+  function parameters.  It could be handy to have a function whose first
+  arg(s) are by reference and then there are some optional normal args
+  (\eg~\texttt{HilbertFn}).
+
+
+
+\chapter{Anticipated difficulties}
+
+Automatic conversion may lead to some unpleasant surprises (\eg~must
+make sure that it cannot ping-pong back and forth, and we should be
+wary of possible adverse effects on run-time performance.
+
+In CoCoA~4 rings had (print) names which were useful in printing resolutions
+and also printing values not belonging to the current ring.  JAA suspects that
+the print names of rings may not be necessary in CoCoA~5~---~\eg~in resolutions
+we could always use the letter \texttt{R} and then add a line saying ``where $R=\cdots$''
+at the end.
+
+It will probably be useful for (user-defined) functions to have names (at least for the
+purposes of debugging and perhaps profiling).  A normally defined function
+could take its name from the \texttt{Define} command; an anonymous function
+would have to call itself ``anonymous'', if it must have a name.  Perhaps
+there should also be a numerical identifier so that anonymous functions
+can be distinguished.  Note that assigning a function to another variable
+might lead to problems: does the name remain the same or does it become
+the name of the new variable?  Perhaps the functions could also have numerical
+indices which never change, and a function for looking up the ``original''
+name of the function with a given index?
+
+\section{Specific Points and Questions}
+
+\begin{itemize}
+
+\item The result of a function call is a right value; in contrast, a procedure call
+  produces no value, and it is an error to put a procedure call where a value is needed.
+  In particular a command such as \texttt{return f(n);} requires that \texttt{f(n)} produce
+  a value, so \texttt{f} must be a function and not a procedure.
+
+\item Suppose the function \texttt{F} returns a record, is one allowed to
+  have a statement of this form \texttt{F(X).Field := 1;}?  Such a statement
+  is seemingly pointless because the record whose field has been altered
+  will be discarded immediately. \red{ANSWER} the definition of l-value (above, somewhere)
+  does not allow function calls.
+
+\item unlike in CoCoA~4, a new record field may be created with an
+  assignment of this form: \texttt{Rec["field"] := Value;}
+
+\item what are the permitted ``signatures'' of an equality test?  How are
+  these related to automatic type conversions?  Equality test between
+  functions should be forbidden in any case.  We should be allowed to test
+  whether any value is ``nil'' (either using equality o via an \texttt{IsNil}
+  function).  \red{QUESTION(JAA): what is nil?}
+
+\item  Do functions have names?  What happens in this situation?
+\begin{lstlisting}
+Define Func(X)
+   ...
+EndDefine;
+Gunc := Func;
+Gunc(99); -- causes an error, what does the backtrace say?
+\end{lstlisting}
+JAA thinks it is best that the function should retain its original name (which
+was somehow set by the \texttt{Define} command).
+
+\item Anonymous functions: external ``local'' names are captured by value,
+  and the variable becomes protected inside the anonymous function (to
+  avoid someone thinking they can modify the external value).  There are
+  number of potentially difficult points related to anonymous functions:
+  it is probably better to leave them until CoCoA~5.1 (or CoCoA~6??)
+
+\item \index{protect@\texttt{Protect}}
+  If we do allow
+  users to unprotect the variable in a \texttt{For}, what will happen at the
+  end of an iteration if the value of the loop variable has been changed?
+  (NB CoCoA~4 simply ignores the changed value, and proceeds to the next
+  iteration with the next value).  Anna and Giovanni suggest ``impl defined
+  behaviour'' if you unprotect and change the value of a variable which
+  was born protected.
+
+\end{itemize}
+
+OLDER COMMENTS BELOW!!!
+
+\index{interrupt}
+User should be able to interrupt a running computation.  Once
+interrupted there could be the choice of whether to continue,
+abandon the computation, or abort the whole program.  Checkpointing
+would be nice, but that is probably far too hard for the moment.
+
+How to avoid run-away computations?  For instance, a computation the
+owner forgot about, or if the UI crashes.  The \texttt{screen} program
+allows users to reconnect to their computations~---~this would be nice.
+
+What security issues are there?
+
+The server can send at least two sorts of output to the UI: the result
+of the computation, and logging information.  Are there further types?
+What about dialogs immediately after an interrupt or exception?
+
+\index{prompt}
+The UI should have prompts (if the user wants them).  The prompt could
+give some idea about the state of parsing: \eg~top level, inside a
+string, inside a function definition, etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{Appendix: Minutes of meetings and other emails}
+
+\small
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Minutes of meetings}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 26 April 2010}\label{26Apr2010}
+
+Included: \refandpage{command:print}.
+\begin{verbatim}
+(1) At top-level, an expression as a command has an implicit "Print"
+    (and not "PrintLn").
+
+(2) A newline is printed immediately before printing the prompt
+    (e.g. the command "PrintLn 3;" will leave a blank line before
+     the next prompt)
+
+(3) Printing of strings
+    (a) a string by itself prints out only its content
+      (e.g. a string containing the 5 chars "abc" will print out those 5 chars)
+    (b) a string S inside any other structure is printed out as an "input form"
+      (i.e. a double-quote char followed by the content of the string withe all
+       special chars suitably escaped, and finally followed by another double-quote
+       char -- the intention is that this printed form should be a valid string
+       literal whose value is equal to that of S).
+      (e.g. if S contains the 5 chars "abc" its input form is "\"abc\"")
+\end{verbatim}
+
+Included: \refandpage{global:optional}.
+\begin{verbatim}
+(4) Optional args
+    Two possibilities:
+    (a)  "..." essentially the same as in CoCoA 4
+         - must be the sole argument
+         - the actual params MUST NOT BE ref params
+         - we can pass "..." as the arg(s) to another fn call
+           (in C4 can be passed only to another fn which expects "...")
+         - individual params can be accessed via the array ARGV
+           (params passed by value, ARGV is protected)
+
+    (b)  the final arg(s) may be marked as "optional"
+         UNRESOLVED DISCUSSION:
+         (1) May optional args be of "ref" type?
+         (2) how to tell whether an arg has a value??
+         Note that (2) becomes complicated if (1) is "yes":
+         we need to distinguish several cases
+         + opt ref arg was supplied (exists and is writable)
+         + opt ref arg was supplied but lvalue passed doesn't exist
+         + opt ref arg was supplied but lvalue passed is protected
+         + opt ref arg was supplied but lvalue passed no longer exists (due to a subsequent structural change)
+         + opt ref arg was not supplied
+
+         Giovanni suggested that the optional args are always created,
+         and that those which do not correspond to an actual arg are
+         given a special "void" value.  As hinted above there are
+         complications when optional ref args are allowed.
+
+         The idea of default values for missing optional args (as is
+         done in C++) was not to Anna's liking: she cited the way in
+         which Hilbert(...) is implemented in CoCoA4.  JAA thinks that
+         it might be difficult to specify a default value for an optional
+         ref arg.
+
+   The idea is that (4a) will be used when the args form a sort of
+   (homogeneous) list, for instance GCD(...), Ideal(...).
+   In contrast, (4b) would be used when a function has some optional
+   parameters, for instance  FloatStr(Val) & FloatStr(Val, Digits).
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 6 May 2010}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(1) The Define command and protection of variables.
+
+ (a) it is an error to attempt to change the value of protected variable
+     using the Define command.
+
+ (b) the Define command **does not automatically** protect the variable defined;
+     see also (1c) below.
+
+ (c) [THIS IDEA HAS BEEN SUSPENDED until we discuss packages]
+     a new compound command  "Protect Define F(x) ... EndDefine" which is
+     equivalent to  "Define F(x) ... EndDefine; Protect F;" but saves
+     writing the function name twice.
+     An analogous extension of the form  "Protect X := 1;"  was vetoed
+     because "Protect" can work only on a variable whereas an assignment
+     will allow any l-value on its lhs; and we fear people may be
+     confused when they discover that they cannot do  "Protect X.Field := 1;".
+     [JAA is not convinced by this argument for prohibiting  "Protect X:=1;"]
+\end{verbatim}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(2) Fine points of the Protect and Unprotect commands
+
+ (a) allowed syntaxes
+     unprotect <identifier>;
+     protect <identifier>;
+
+ (aa) The following two have been SUSPENDED until we discuss packages.
+      protect <identifier> := <expr>;  // equiv to  <id> := <expr>; protect <id>;
+      protect define <identifier>(...) ... enddefine;  [see also (1c)]
+
+ (ab) We defer approval of the syntax allowing a "reason" to be given when
+      protecting a name; the proposed syntax is
+      protect <identifier>: <string-expr>;
+
+ (b) It is an error to protect or unprotect a name which has no value.
+
+ (c) It is an error to try to protect a name which is already protected;
+     similarly it is an error to try to unprotect a name which is unprotected.
+
+ (d) It is an error to attempt to assign to a protected name (either through
+     an assignment or via the Define command).
+\end{verbatim}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(3) Distinguishing local and non-local variables in a fn-proc
+
+ With reference to JAA's email of 2010-04-27 "Variables inside functions".
+ The main point in that email was the importance of distinguishing correctly
+ local and non-local variables while maintaining backward compatibility
+ with CoCoA-4, and avoiding any "nasty surprises".  Here is the proposed
+ solution.
+
+ (a) during parsing any name which appears as an l-value (i.e. lhs of an
+     assignment or "ref" parameter in a fn-call) is considered a local variable;
+     all formal parameters are local too!
+
+ (b) if the first textual appearance of a local variable is not as an l-value
+     then a warning is produce about the variable (possibly) being used before
+     it is initialized;
+
+ (c) a warning is printed for any identifier which is not (the name of) a local
+     variable UNLESS it appears (syntactically) as the name of a function to call;
+     the identifier refers to the global variable with that name.
+
+ (d) there will be a command similar to C++'s "using": it suppresses the warnings
+     mentioned in (c) associated with that name.  It is an error if a name given
+     in a "using" command appears as an l-value [the name cannot be both local and
+     non-local].  The keyword & syntax for the "using" command have not been decided.
+     (Can a single command list several names?  Do we want to allow the command to
+      specify a local name different from the non-local one?[JAA: bad idea]  Must
+      the "using" command appear at the very start of the function?)
+
+ (e) there will be a special command for assigning to non-local variables; ordinary
+     assignment will not work (since it implies that the name is local).  The
+     keyword and syntax of the command have not been decided.  JAA suggests the
+     keyword "SetGlobal".  There is no way to pass a global as a ref parameter:
+     you must use a local and then the "SetGlobal" command.
+     [JAA BELIEVES THAT this neatly avoids the problem of the "protectedness" of a
+      name changing while lhs/rhs of an assignment are evaluated]
+
+ (f) recall that loop variables **hide** any other variables of the same name
+     (so it is not an error if a loop variable has the same name as a non-local
+      given in a "using" command -- a warning might be appropriate though?)
+
+
+Referring back to JAA's email of 2010-04-27, here is what I think the above
+rules say about the various cases in the email:
+(1a) & (1b)  no problems, no surprises.
+
+(2a)  F is clearly a local variable (because it appears as an l-value)
+(2b)  Warning about F possibly being used before it has a value:
+        F appears as an l-value, so is local with scope the whole of G
+        the apparent call to F in the first line of G would fail at run-time.
+
+(2c)  The same as for (2b): the second call to F produces no further warning
+      as it occurs after F has been assigned to.
+
+(3a) N is a local variable in F, and hides the global with the same name.
+
+(3b) Rule (c) above produces a warning (because there is no "using" command for N).
+     The definition of F is OK; it will compute cubes until the value of the global
+     N is changed.
+
+(3c) Essentially the same as for (3b); the local variable M changes nothing.
+     At least, if N is a typo for M, the user will get a warning.
+
+
+-----------------------------------------------------------------------------
+Here's an interesting consequence: consider the following code excerpt.
+
+Use QQ[x];
+Define cyclotomic(n)
+  Return factor(x^n-1);
+EndDefine;
+cyclotomic(3);
+
+The fn definition will produce a warning about "x", but the definition is
+accepted, and the fn will work as expected so long as the global "x" has
+the value x (ummm, how do I explain this clearly?? :-)  It does not matter
+whether "Use Q[x];" appears before or after the fn definition.
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 21 May 2010}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(1)  Nested fns, and the difference between
+     [A]  Define f(x) ... EndDefine;
+     [B]  f := lambda(x) ... endlambda;
+
+     They are not equivalent!
+     Without a special syntax it seems impossible to create a recursive lambda
+     (and even harder to create two mutually recursive lambdas).  This
+     is related to the question of importing by value of reference:
+     consider the following example (comprising 2 assignments to "fact")
+        fact := lambda(n)
+                  if n > 0 then
+                    return 1;
+                  else
+                    return 0;
+                  endif;
+                endlambda;
+        fact := lambda(n)
+                  if n > 1 then
+                    return n*fact(n-1);
+                  else
+                    return 1;
+                  endif;
+                endlambda;
+     The result will be a proper factorial function only if the name
+     "fact" is imported by reference.  Indeed, with import by value
+     you cannot create a recursive fn using lambda.
+
+(1a) We define the concept "top-level" (to describe variables) to mean those
+     variables assigned outside a fn-proc definition.  These comprise
+     the normal variables one uses in an interactive session together
+     with the "top-level" variables from packages whose names are of
+     the form $PkgName.VarName  (see (2c) below).
+
+(1b) The "Define" command cannot be used inside a fn-proc definition.
+     The main motivation for this decision is simply to help the user
+     who forgot an EndDefine by issuing an error the next time a
+     "define" command is seen.  Also by requiring a different syntax
+     for nested fn-proc definitions we can adopt (potentially)
+     different rules for the automatic importing of names.  For the
+     "define" command we are constrained by backward compatibility;
+     we have a rule which seems to work well [a name appearing only as
+     the fn-proc name in a call is automatically imported by reference
+     (and must be a top-level name)].
+
+     Another motive was that JAA wants (as much as possible) that code
+     maintains a fixed meaning independent of its context.  So for
+     example if we define at top level two functions like this:
+       define g(x)  return f(x-1); enddefine;
+       define f(x)  return x+1; enddefine;
+     then we can cut-and-paste this code into a function, and it
+     should keep the same meaning:
+       define h(y)
+         define g(x)  return f(x-1); enddefine;
+         define f(x)  return x+1; enddefine;
+         return g;
+       enddefine;
+       h(1); -- what should this do?  Print 1?
+     This seems to require that g automatically imports the local
+     variable f **by reference** (recall that at top level f is
+     automatically imported by reference).  Importing by value will
+     cause trouble because f had no value at the time g was defined!
+     Since importing local variables by reference is problematic, it
+     should not happen automatically.
+
+(1c) Top-level names are normally imported by reference (as we think
+     this leads to more natural behaviour -- see email "Import(ant)
+     email").  If a top-level name can be imported by value then the
+     mechanism should make it evident that something special is happening!
+
+(1d) Names imported by value could be made into constants (to avoid
+     potentially confusing semantics -- see email "da considerare anche").
+
+(1e) We still have doubts about the how best to import local variables
+     in a manner which avoids "nasty surprises" and which does not
+     entail a complicated (and costly) implementation of the
+     interpreter (e.g. closures & consequently GC for them).
+
+(1f) Give warning if a local var has same name as the fn being defined.
+     These two will give a warning (but not an error).
+       Define f(x)  f:=0; ...; EndDefine;
+       Define f(f)  ....  EndDefine;
+\end{verbatim}
+
+Included: \refandpage{command:package}
+\begin{verbatim}
+(2)  Packages
+
+We had a preliminary discussion about packages -- the topic arose
+because it is related to the discussion above about importing names.
+The main idea is that a package is very similar to a namespace in C++;
+but packages **cannot** be nested!
+
+(2a)  What happens when you reload a package?
+
+      Proposed solution:
+      all existing variables in the namespace are eliminated, and then
+      the package is reloaded (e.g. if a function were deleted from the
+      package, its definition is removed when the packages is reloaded).
+
+      A problem could arise if someone has taken a reference to a top-level
+      variable defined by the old version of the package but which has been
+      removed from the new version -- this would result in a dangling reference.
+
+(2b)  Initialization of packages
+
+      In CoCoA 4 each package had a special "initialize" function which was
+      called each time the package was loaded (normally only once).
+
+(2c)  Package names begin with a dollar sign.  Inside a package a dollar
+      sign by itself refers to the package in which it occurs.  The variables
+      in a package thus have names like $PackName.VarName.
+
+(2d)  Exporting a name from a package
+      A package name may be exported to top-level (so you do not need to use
+      the package prefix to access the value).  An export operation exports
+      a **reference** to the package variable -- so if the value (of the package
+      variable) changes then this change is also seen via the top-level name.
+      If the top-level name is already in use an error/warning is issued
+      (perhaps depends on whether the top-level name is protected?).
+      [see also a comment in (2a) about problems with reloading a package]
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 4 June 2010}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(1) A way to avoid closures and GC.
+
+    John proposed a simple and efficient technique for deciding whether a
+    local variable still exists.  The basic idea is that each stack-frame
+    is given its own (essentially unique) 64-bit numerical ID.  In addition
+    to the stack there is a std::vector whose i-th entry contains the ID of
+    the i-th (active) stack frame -- since we have decided to limit a priori
+    the maximum nesting depth of stack-frames we can fix initially the size
+    of the std::vector.  If there is no i-th stack-frame the i-th vector is
+    either undefined or can be set to an invalid ID (e.g. 0).
+
+    A reference to a local variable is then a triple:
+      (i, StackFrameID, ptr)
+    We can check whether the local variable referred to still exists as follows:
+      (a) check that there are at least i active stack frames (if not, error);
+      (b) check that the ID of the i-th stack frame is StackFrameID (if not, error);
+      (c) follow ptr to get the value.
+    JAA believes that these checks are fast enough not to incur significant overhead.
+
+    There is the question of what type to use for StackFrameID.  JAA proposes
+    long.  There is some risk on a 32-bit machine that the IDs could wrap around
+    [after about 4 000 million calls].  In such cases we risk failing to recognize
+    the non-existence of a local variable only if the same StackFrameID appears
+    in the same position in the std::vector of IDs.
+
+    Using 64-bits for the ID seems pretty safe: at a rate of 2^32 new stack frames
+    per second, wrapping of the IDs will occur only after about 100 years of
+    computation!
+
+    NOTE: the idea could be extended with some difficulty to multi-threading.
+
+    NOTE: the existence checks produce an error only if there is an actual attempt
+    to access a variable which no longer exists (no error is produced if you call
+    function which does not happen to attempt to access a non-existent variable on
+    that particular invocation).
+      Define MakeFn()
+        LocalN := 1;
+        Define F(X)
+          ImportByRef LocalN;
+          If X >= 0 Then Return 0; Else Return LocalN; EndIf;
+        EndDefine;
+        Return F;
+      EndDefine;
+      G := MakeFn();
+      G(1);  --> does not produce an error
+      G(-1); --> will produce an error
+
+
+(2) Related to the topic in (1): scope/lifetime of loop variables.
+
+    The possible loop types are:
+      For I := 1 To 10 Do ... EndFor;
+      Foreach I In L Do ....; EndForeach;
+      [ ... | I In L]; // and variants
+
+    The main question is whether entering a loop creates a new stack-frame in
+    which the loop variable lives.  We don't like the idea of creating a new
+    stack-frame because it seems it could lead to unnecessary run-time overhead,
+    and it could easily "consume" a large number of stack-frame IDs.
+
+    (2a) Proposal for how to implement without using stack-frames while
+      producing behaviour that looks as though stack-frames are being used.
+
+      The main point is that we disallow loops to use a variable which is already
+      in scope (e.g. nested loops must have different variable names, and a loop
+      variable must have a name different from a local or imported variable).
+      Recall that a function name is implicitly imported into scope.  The checks
+      for valid loop variables can be effected at parse time (since the Var(..)
+      function has been banished).
+
+      These rules allow the implementation to treat the loop variables as
+      normal local variables (i.e. the lifetime is the whole function call)
+      which live in the current stack-frame.  The variables are in scope
+      only inside the loops which introduce them.
+
+      For extra clarity, we emphasise that unnested loops may use the same
+      variable (but nested ones must not).
+
+      Hmmm, while direct access to loop variables outside the loop is not
+      possible (since they're out of scope), indirect access can be achieved
+      via nested functions.  Here is an example:
+
+      Define F()
+        For N:=1 To 1 Do
+          DefineLocal GetValueOfN();
+            ImportByRef N;
+            return N;
+          enddefinelocal;
+        endfor;
+        PrintLn "Value of N is ", GetValueOfN(); // ??error??
+        // XYZ
+      EndDefine;
+
+      What happens if the commented XYZ is replaced by the following??
+        For N:=2 To 3 Do PrintLn "N=",GetValueOfN(); EndFor;
+
+      JAA sees two ways of handling this situation:
+        (i) set a loop variable to "void" upon exiting the loop;
+        (ii) each local variable has a flag saying whether it is in scope.
+      JAA prefers the first solution.
+      Note that the definition of GetValueOfN (inside the loop) is independent
+      of the value of N; but JAA thinks the defn cannot be moved outside the
+      loop because N is not in scope there (and so cannot be imported -- right?)
+
+
+(3)  There was a brief discussion about keywords and semantics for importing.
+     GL proposed the keywords  ImportConstant  &  ImportVariable.
+     The general idea was that names were imported from the first outer scope
+     containing them.
+     AMB recalled the suggestion that there be an explicit way of importing
+     names from the top level (be careful about package variables?).
+     AMB suggested  ImportRef  instead of  ImportVariable.
+     AMB suggested also  TopLevel (read only access), TopLevelWrite (rw-access),
+     and OuterRef, OuterCopy (import the value frozen at time of importing).
+     JAA recalled the suggestion that top level names can be imported only by
+     reference.  JAA recalls that fn-proc names which are implicitly imported
+     must be imported by reference (to allow (mutual) recursion).
+
+     JAA thinks there is still more to discuss about this matter.  We should
+     work on a joint document (which will become a section in some documentation?)
+
+-----------------------------------------------------------------------------
+Put this at the DIMA entrance?
+  http://xkcd.com/562/
+-----------------------------------------------------------------------------
+% Che vergogna: l'ho fatto girare in CoCoA-4... chiedo scusa!
+Define Pranzo(N)
+  If N = 0 Then
+    Return "Bliss";
+  Else
+    Return "Baretto";
+  EndIf;
+EndDefine;
+Pranzo(Rand(0,1));
+-----------------------------------------------------------------------------
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 2 July 2010}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(1) xkcd
+
+(2) Discussion about Giovanni's description of the "Name Splitting Algorithm";
+    mostly about implicit importing
+
+(2a) Clarification of behaviour in the following situation:
+     a name is used both as the head in a fn-call and as an l-value or r-value (i.e. not as a fn-call head),
+     and the name is imported implicitly then a WARNING IS ISSUED for the use as an r-value
+     (which is not a fn-call head).
+
+     Motivation:  consider the following fn-defn
+      Define F(L)
+        PrintLn GCD(L[1],2);
+        Return MapOverList(GCD,L);
+      EndDefine;
+     If no warning were given then the act of removing the "innocuous" print statement would
+     transform the definition into an invalid one [--> nasty surprise].  The warning can be
+     avoided by using an explicit import command, in which case removing the print statement
+     still leaves the validity and semantics intact.
+
+     The solution is not 100% satisfactory because some simple transformations of programs
+     can suddenly require the use of an explicit import command [--> too bad, we cannot do better]
+     Compare the two following "equivalent" function definitions:
+      Define F(L)
+        N := 0;
+        Foreach El In L Do N := GCD(N,El); EndForeach;
+        Return N;
+      EndDefine;
+
+      Define Fnew(L)
+        ImportTopLevelByRef GCD; -- must now use an explicit import command.
+        Return MapOverList(GCD,L);
+      EndDefine;
+
+
+(2b) Clarification of implicit importing (II):
+     II is triggered only when a name is used as the head in fn-call (and is not otherwise defined);
+     II imports TOP-LEVEL names (by reference);
+     II GIVES A WARNING if some intermediate scope contains a local variable of the same name
+     (the warning can be eliminated by using an explicit import statement which disambiguates,
+      or changing the name of the local variable in an intermediate scope).
+
+     One reason for restricting II to top-level names (by ref) is so that a lambda-expr (without
+     any explicit import commands) can but cut-and-pasted from one context to another without
+     changing its semantics -- though it is possible that the new context will trigger a
+     warning by the rule given above.
+
+
+(2c)  Clarification: we issue a warning if a loop variable SHADOWS/HIDES AN IMPLICITLY IMPORTED NAME
+      (i.e. the same as for all other names).
+
+
+(3)  We must define the technical terms which will help us describe clearly the grammar of
+     the new CoCoA5 language.  Here are some concepts which JAA thinks we will need:
+     (a) we need a single name for function-or-procedure
+         [but it will be helpful to distinguish sometimes between fns and procs]
+     (b) we need a name for the "head" of a fn-proc call
+         [this will often be an identifier but could be an expression]
+     (c) we need a name for a fn-proc definition, and probably names for certain
+         important parts of it (e.g. the formal parameters)
+     (d) we need the concepts l-value and r-value; it may be useful to have a
+         name for an r-value which is not used as the "head" for a fn-proc call.
+
+
+(4)  Here's are 2 examples to illustrate that at the very start of a loop command
+     the values defining the loop range are copied (lazily):
+       L := [1,2,3];
+       Foreach X In L Do
+         Append(ref L,X);
+       EndForeach;
+       PrintLn L;  --> prints [1,2,3,1,2,3]
+
+       N := 10;
+       For I := 1 To N Do N := N+1; EndFor;
+       PrintLn N; --> 20
+
+
+(5)  Protection, & super-protection.
+
+     This topic arose at the very end of the meeting.
+     Doubts were expressed about exact what "protection" does (i.e. what is
+     allowed and what is not).
+
+     One doubt is whether a protected variable may be passed by ref in a fn-proc call.
+     Does the extra protection on a loop variable change what uses are permitted?
+
+     John mentioned the following example:
+       LL := [[1], [2], [3]];
+       Foreach L In LL Do
+         L[1] := 99;
+       EndForeach;
+     It now seems (to JAA) that the assignment in the loop body should give an error,
+     perhaps even at parse time!
+
+     The reappearance of these doubts highlights the urgent need to start producing
+     a single document which sets out clearly all aspects of the language which have
+     been decided (and probably also mentions outstanding questions and doubts).
+     The details are probably already buried in the email archives of discussions
+     about CoCoA5 but the lack of proper organization makes it difficult to find
+     them when needed.
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting 15 July 2010}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(1) Brief discussion about input (both interactive & reading a whole file)
+
+ (1a) Files can be read as text (with autoconversion of newlines), or as
+      binary (with no conversions at all).  We must decide whether C5
+      offers both ways of reading a file, or just "as text".  If both ways
+      are to be offered then we must devise syntaxes for the two methods.
+      Presumably "Print..On" will also offer two ways of sending its output
+      to the file (or maybe the binary output will be via a command with a
+      different name?)
+
+ (1aa) The mechanism for reading a whole file as a string is simply a
+       function call with argument the name of the file to read -- it can
+       give error if the read fails.
+
+ (1b) JAA thinks that there should be a way of allowing interactive input
+      to span more than one line (e.g. if the last char before the newline
+      was a backslash then the next line is read and concatenated onto the
+      previous input (effectively replacing the final backslash character).
+
+ (1c) Interactive input could be of two types: just a string (e.g. "yes" or
+      "no") or a polynomial/ratfn/ringelem (e.g. x+1, (x^11-1)/(x-1), 1/x).
+      JAA suggests that input should always be in the form of a string, and
+      there should be a function which "evaluates" a string inside a given
+      ring.  GL wonders whether calls to top-level functions could be
+      allowed in the string during evaluation -- JAA does not like this
+      because the interpretation of the string depends on the top-level fns
+      (and it could be very costly to call them).  In conclusion, we think
+      it simplest to implement just plain ring expressions for the first
+      implementation, and perhaps later think about allowing more general
+      expressions (or even programs?).
+\end{verbatim}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(2) Multi-line string literals (MLSL)
+
+ (2a) The pressing need to have MLSL has been much alleviated by the
+      possibility of reading a file into a string -- this would enable us
+      to easily implement the CoCoA online documentation.
+
+ (2b) The only difference between a MLSL and normal string literal is that
+      newlines may appear in a MLSL -- all special characters must be
+      inserted using the appropriate escape sequence.  An unescaped " in a
+      MLSL will trigger a parse error.
+
+ (2c) The delimiters for a MLSL are """ (opening) and """ (closing) -- this
+      choice was inspired by the python language.  But beware: a CoCoA MLSL
+      is valid as a python MLSL, but not vice versa.
+
+ (2d) For both sorts of string literal we will add the escape sequence \x
+      followed by (exactly) two hexadecimal digits (case is ignored): this
+      encodes the byte whose value is given by the hex digits.
+
+ (2e) We recall that a parse error will be triggered if in a literal the
+      escape character (backslash) is followed by a character other than
+      those specified in the table of valid escape codes.
+\end{verbatim}
+
+Not Included: %\refandpage{}.
+\begin{verbatim}
+(3) Indexing into string values
+
+    CoCoA 4 allows the individual chars of a string value to be accessed
+    using the indexing operator (e.g. Str[2] will give the 2nd char of Str;
+    the type of the result is STRING).  Note that Str[2] cannot be used as
+    an l-value (in CoCoA4).  Note that Str[N] should give the N-th char of
+    the string, and not just the N-th byte -- these will be different if
+    unicode strings are used!
+
+ (3a) We shall experiment with using std::wstring (& wchar_t) instead of
+    the old standards std::string (& char); if all goes well then the
+    parser/interpreter and the library will prefer the "wide" versions.
+    Note that use of the wide versions may lead to significantly increased
+    RAM occupancy if many strings are resident.
+
+
+(4) A brief discussion about implementing polynomials in the current CoCoA5
+    prototype.  Including polynomials is now quite urgent.  The main
+    conclusion was to look through our archives to see what earlier
+    discussions about the "Use" command said -- they may need tp be
+    reawakened in the light of more recent experience and thinking.
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Meeting  22 July 2010}
+
+Included: \refandpage{postponed}
+\begin{verbatim}
+(1) Unicode and wstrings (& wchar_t)
+
+  GL reports that there are many conflicting standards (for linearizing unicode
+  strings into byte streams, e.g. files), and moreover that the definition of
+  wstring & wchar_t is platform dependent.  In view of these uncertainties, and
+  of the complete lack of experience with unicode within our group, he proposed
+  sticking with normal byte strings FOR THE TIME BEING -- this allows us to
+  concentrate on more urgent matters.
+
+  The proposal was APPROVED BY ALL!
+\end{verbatim}
+
+Not Included: %\refandpage{}
+\begin{verbatim}
+(2) Tagged values [long discussion]
+
+  The tag in a tagged value serves 3 purposes:
+   (a) to permit argument type checking in a function;
+   (b) to specify the special printing function (if any);
+   (c) to specify the special "describing" function (if any).
+
+  In CoCoA4 there are 3 functions which work with tags or tagged objects:
+  * Tag  -- returns the tag string of an object
+  * Tagged -- tag an object for pretty printing
+  * Untagged -- untag an object
+
+  We recall that an object can have at most one tag: in CoCoA 4 attempting to
+  tag an object which is already tagged simply produces a copy of the untagged
+  value with the new tag.  The proposal was that in CoCoA 5 attempting to tag
+  an already tagged object will produce an error (or at least a warning).
+
+  (2a)
+  JAA's proposal for associating a print function to a tag:
+   there is a top-level variable (called "PrintFunction"?) whose value
+   is a record which maps the tag name into the corresponding print function.
+   The print function must accept two args: the first being the "ostream" on
+   which to print, and the second being the UNTAGGED value.
+
+  (2aa)
+  Counter argument to JAA's proposal:
+   In general, when a package is loaded it "undoes" any settings made by the
+   previous version of that same package, and introduces its own settings.
+   However if reading a package sets some fields in a global record (as
+   proposed by JAA) then it is not so clear how one can easily (& semantically
+   cleanly) undo that effect.
+
+  (2b)
+  Anna's proposal for associating a print function to a tag:
+   a tag actually comprises two components, one being the string given
+   explicitly, the other being an indication of the package -- the package
+   is that which contains the fn-proc which was being executed when the tag
+   was attached to the object.  There is a special "toplevel" package which
+   is used if the fn-proc belonged to no package (or if the object was
+   tagged directly at top level).
+
+   The function "Tagged" invisibly inserts the package ID (as indicated
+   above) when tagging an object.  The function "Tag" returns just the
+   specified string IF it is called from inside the same package to which the
+   tag belongs, otherwise it returns a string being the concatenation:
+   PkgName() + "." + TagName.  Recall that a package name begins with a
+   dollar sign.
+
+   The specific printing function is specified by setting a field in the
+   record whose value lies in the package local variable "PrintTagged".  The
+   field name should be the same as the tag name.  The record entry is as in
+   JAA's suggestion above (i.e. a function taking two args, etc).
+   Presumably a similar record might exist for specific "Describe" functions
+   as well.
+
+  (2c)
+   JAA observes that the CoCoA4 "Describe" command handles the special cases of
+   certain built-in types by using a switch statement in the C source:
+   [[ see line 517 in 4.7/cocoa/object.c, function "object_description" ]]
+\end{verbatim}
+
+Included: \refandpage{postponed}
+\begin{verbatim}
+(3) Records and maps
+
+  We recall that in CoCoA4 the name of a field in a Record is restricted to
+  being a valid CoCoA4 identifier -- particular exclusions are the empty
+  string and all CoCoA4 keywords!  The proposal is to adopt the analogous
+  rule for Records in CoCoA5.  The advantage of the restriction is that it
+  makes the standard printed form of a Record into a valid input form
+  (yielding an equivalent value) -- allowing arbitrary strings as field names
+  would make it difficult to achieve this.  Moreover if we wish to extend the
+  capability of using a Record as a map, it is probably better simply to
+  introduce a new data structure implementing a map [e.g. like a C++
+  std::map] in full generality (i.e. one which can map from any object to any
+  other object).
+
+  It was decided that adding maps is of low priority for the moment, so further
+  discussion is deferred to some future time (e.g. CoCoA-19 :-)
+\end{verbatim}
+
+Included: \refandpage{command:use}
+\begin{verbatim}
+(4) Romantic lunchtime discussion... about rings...
+
+  ...actually about polynomial rings!
+
+ (4a)
+  At top level the "Use" command sets various top-level variables so that the
+  indets of the chosen ring can be accessed in an easy and natural manner
+  [note: a special value has to be used for indets with indices].  We recall
+  that the "Use" command checks whether all the relevant top level variables
+  are writable before setting any of them -- naturally, it also "unsets" any
+  top-level variables set by the previous "Use" command (the unsetting happens
+  only after the writability check has passed).
+
+  The indets of the current ring can be accessed from inside a function by
+  using a "top-level import" command [proposed name: TopLevel] (or perhaps a
+  special "top-level indeterminate import" command?).  There is no such
+  short-cut for accessing the indeterminates of any other ring (including any
+  ring which may have been passed as a parameter); the indets must instead be
+  obtained by calling an indet accessor function e.g. indet(P, 2).
+
+ (4b)
+  For simple polynomial rings, CoCoA5 will accept the syntax used in CoCoA4
+  (only in certain contexts, e.g. after the special ring assignment "::=").
+  More complicated rings must be constructed stepwise, i.e. by calling
+  "pseudo-ctor" functions whose syntax closely resembles that used for
+  constructing rings in CoCoALib.
+\end{verbatim}
+
+Included: \refandpage{command:package}
+\begin{verbatim}
+-- added by G.Lagorio
+We briefly talked about name lookup rules for package bodies.
+In C4 you have to use the prefix "$." to call a fn-proc of the same 
+package, while it seems more natural to consider a package declaration 
+as a scope and allow to directly access package members (C4 restricts 
+package members to be functions only, C5 will not have such a restriction).
+This is what happens at top-level (fn-proc F may call top-level fn-proc 
+G with G()) and would simplify moving code from top-level to a package 
+and vice versa.
+Unfortunately, this is not what happens with function scopes:
+Define Whatever()
+    F := Lambda () .... EndLambda;
+    G := Lambda() ... cannot call F() without explicitly importing it
+Nevertheless, [GL: if I remember correctly] we think it is better to 
+allow to use the names inside the packages without any (mandatory) 
+prefix. Warnings might be emitted for "suspicious" situations (for 
+instance, a fn-proc name hides a top-level name)
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\printindex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

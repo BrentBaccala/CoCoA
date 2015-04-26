@@ -1,0 +1,417 @@
+Package $NotBuiltin -- some more CoCoA-4 function
+
+//Export NewList; // BI  8 mar 2011
+Export incr;
+Export decr;
+Export compts;
+Export DF;
+Export diff;
+Export tail;
+//Export Last; // BI  8 mar 2011
+Export cyclotomic;
+//Export CoeffListWRT; // BI 2012-12-20
+Export indent;
+Export PrintHCIndex;
+Export PrintHGIndices;
+Export intersection;
+Export IntersectList;
+Export interreduce;
+Export interreduced;
+Export MinGensGeneral;
+Export minimalize;
+Export Bool01;
+Export AsINT;
+Export AsRAT;
+Export ReducedGBasis;
+Export CpuTimeFrom;
+Export res;
+Export BettiDiagram;
+Export BettiMatrix;
+Export PrintBettiDiagram;
+Export PrintBettiMatrix;
+Export PrintRes;
+Export TimeFrom;
+----------------------------------------------------------------------
+
+Define incr(ref N)
+  If type(N) <> INT Then error("value must be integer"); EndIf;
+  N := N+1;
+EndDefine; -- incr
+  
+Define decr(ref N)
+  If type(N) <> INT Then error("value must be integer"); EndIf;
+  N := N-1;
+EndDefine; -- decr
+  
+Define compts(v)
+  If type(v) <> MODULEELEM Then error("Expected a MODULEELEM"); EndIf;
+  Return [v[i] | i In 1..NumCompts(v)];
+EndDefine; -- compts
+
+
+Define Bool01(b)
+  If type(b) <> BOOL Then error("Arg must be a boolean"); EndIf;
+  If b Then Return 1; Else Return 0; EndIf;
+EndDefine; -- Bool01
+
+
+Define DF(G)
+  If IsZero(G) Then Return G; EndIf;
+  If GradingDim(RingOf(G))=0 Then Return G; EndIf;
+  Return LF(G);
+EndDefine; -- DF
+
+
+Define AsINT(r)
+  If type(r) = INT Then Return r; EndIf;
+  If type(r) = RAT Then
+    If den(r)=1 Then Return num(r);
+    Else error("Cannot convert to INT");
+    EndIf
+  EndIf;
+  If type(r) <> RINGELEM Then error("Arg must be INT, RAT or RINGELEM"); EndIf;
+
+  If not(IsInteger(ref N, r)) Then error("Cannot convert to INT"); EndIf;
+  Return N;
+EndDefine; -- AsINT
+
+
+Define AsRAT(r)
+  TopLevel ZZ;
+  If type(r) = INT Then discard := IsRational(ref q, r*one(ZZ)); Return q; EndIf;
+  If type(r) = RAT Then Return r; EndIf;
+  If type(r) <> RINGELEM Then error("Arg must be INT, RAT or RINGELEM"); EndIf;
+
+  If not(IsRational(ref q, r)) Then error("Cannot convert to RAT"); EndIf;
+  Return q;
+EndDefine; -- AsRAT
+
+
+Define indent(L, Opt level)
+  If type(L)=STRING Then PrintLn L; Return; EndIf;
+  If not(IsDefined(level)) Then level := 1; EndIf;
+  IndentRec(L, level, "", "", "\n");
+EndDefine; -- indent
+
+
+Define IndentRec(L, level, spaces, before, after)
+  If level>0 Then 
+    If type(L) = IDEAL Then
+      L := gens(L);
+      If L=[] Then Print spaces, before, "ideal()", after;
+      Else
+	PrintLn spaces, before, "ideal(";
+	For I := 1 To len(L)-1 Do
+	  IndentRec(L[I], level-1, spaces+"  ", "", ",\n");
+	EndFor;
+	IndentRec(last(L), level-1, spaces+"  ", "", "\n");
+	Print spaces, ")", after;
+      EndIf;
+      Return;
+    Elif type(L) = MODULE Then
+      L := gens(L);
+      If L=[] Then Print spaces, before, "module()", after;
+      Else
+	PrintLn spaces, before, "SubmoduleRows(F, matrix([";
+	For I := 1 To len(L)-1 Do
+	  IndentRec(L[I], level-1, spaces+"  ", "", ",\n");
+	EndFor;
+	IndentRec(last(L), level-1, spaces+"  ", "", "\n");
+	Print spaces, "]))", after;
+      EndIf;
+      Return;
+    Elif type(L) = LIST Then
+      If L=[] Then Print spaces, before, "[]", after;
+      Else
+	PrintLn spaces, before, "[";
+	For I := 1 To len(L)-1 Do
+	  IndentRec(L[I], level-1, spaces+"  ", "", ",\n");
+	EndFor;
+	IndentRec(last(L), level-1, spaces+"  ", "", "\n");
+	Print spaces, "]", after;
+      EndIf;
+      Return;
+    Elif type(L) = RECORD Then
+      F := fields(L);
+      If F=[] Then Print spaces, before, "Record[]", after;
+      Else
+	PrintLn spaces, before, "Record[";
+	For I := 1 To len(F)-1 Do
+	  IndentRec(L[F[I]], level-1, spaces+"  ", F[I]+" := ", ",\n");
+	EndFor;
+	IndentRec(L[last(F)], level-1, spaces+"  ", F[len(F)]+" := ", "\n");
+	Print spaces, "]", after;
+      EndIf;
+      Return;
+    EndIf;
+  EndIf;
+  Print spaces, before;
+  If type(L)=STRING Then Print "\"",L,"\""; Else Print L; EndIf;
+  Print after;
+EndDefine; -- indent
+
+
+
+Define diff(L1, L2)
+  If type(L1) <> LIST Or type(L2) <> LIST Then
+    error("diff: arguments must be lists");
+  EndIf;
+  Return [ X In L1 | not(X IsIn L2) ];
+EndDefine; -- diff
+  
+Define tail(L)  Return last(L, len(L)-1); EndDefine;
+
+Define intersection(A, B)
+  if type(A) = LIST then return [ X in A | X IsIn B ]; endif;
+  if type(B) = LIST then return [ X in B | X IsIn A ]; endif;
+  return intersect(A,B); -- IDEAL
+EndDefine; -- IntersectList
+
+Define IntersectList(...)
+  If len(ARGV) = 0 Then error("at least 1 arg"); EndIf;
+  If len(ARGV) > 1 Then L := ARGV; Else L := ARGV[1]; EndIf;
+  ans := L[1];
+  For i := 2 To len(L) Do
+    ans := intersection(ans, L[i]);
+  EndFor;
+  Return ans;
+EndDefine; -- IntersectList
+
+Define interreduced(L)
+  TmpL := diff(L, [0]);
+  If TmpL=[] Then Return TmpL; EndIf;
+  While True Do
+    SortBy(ref TmpL, Func(f,g) Return LT(f)<LT(g); EndFunc);
+    NewL := [];
+    For I := 1 To len(TmpL) Do
+      R := NR(TmpL[I], NewL);
+      If R <> 0 Then append(ref NewL, R); EndIf;
+    EndFor;
+    If EqSet(TmpL, NewL) Then Return NewL; EndIf;
+    TmpL := NewL;
+  EndWhile;
+EndDefine; -- interreduced
+
+Define interreduce(ref L)  L := interreduced(L); EndDefine;
+
+Define MinGensGeneral(X)
+  L := gens(X);
+  If type(X)=IDEAL Then 
+    For I := 1 To len(L) Do
+      J := ideal(WithoutNth(L,I));
+      If L[I] IsIn J Then L[I] := 0*L[I]; EndIf; -- removes redundant generator
+    EndFor;
+  EndIf;
+  If type(X)=MODULE Then 
+    For I := 1 To len(L) Do
+      J := submodule(ModuleOf(X), WithoutNth(L,I));
+      If L[I] IsIn J Then L[I] := 0*L[I]; EndIf; -- removes redundant generator
+    EndFor;
+  EndIf;
+  Return [V In L | not(IsZero(V))];
+EndDefine;
+
+
+Define minimalize(ref I)
+  I := minimalized(I);
+EndDefine; -- minimalize
+
+  
+Define cyclotomic(K, x)
+  If shape([K, x]) <> [INT, RINGELEM] Then
+    error("Args must be an INT and an indeterminate");
+  EndIf;
+  If not(IsIndet(x)) Then
+    error("Second arg must be an indeterminate");
+  EndIf;
+  If K = 1 Then Return x-1; EndIf;                        -- K is 1
+  L := divisors(K);
+  If L = [1] Then Return sum([x^I| I In 0..(K-1)]); EndIf;-- K is prime
+  M := MaxDiv(L);
+  If len(M) = 1 Then Return (x^K-1)/(x^M[1]-1); EndIf;    -- K is prime power
+  Return GCDList([ (x^K-1)/(x^D-1) | D In M ]);               -- general case
+EndDefine; -- cyclotomic
+
+
+Define divisors(K)
+  Return [ I In 1..(K-1) | mod(K, I) = 0 ];
+EndDefine; -- divisors
+
+Define MaxDiv(L)
+  LenL := len(L);
+  Return [ L[I] | I In 1..LenL   And
+	  [ X In last(L, LenL-I) | mod(X, L[I])=0]=[] ];
+EndDefine; -- MaxDiv
+
+
+Define PrintHGIndices(L)
+  SortBy(Ref L, Func(A,B) Return A.C>B.C; EndFunc);
+  indent(first([X In L | X.T <> ""], 3));
+  PrintLn "..... -> total citations: ", sum([X.C | X In L]);
+  PrintLn "H-index: ", max([ I In 1..len(L) | L[I].C >= I]);
+  PrintLn "G-index: ",
+  max([ I In 1..len(L) | sum([X.C | X In [L[A]|A In 1..I]]) >= I^2 ]);
+EndDefine; -- PrintIndices
+
+
+Define PrintHCIndex(L,YYYY)
+  LL := L;
+  For i:=1 To len(LL) Do
+    LL[i].S := (4/(YYYY-LL[i].Y+1))*LL[i].C;
+  EndFor;
+  SortBy(Ref LL, Func(A,B) Return A.S>B.S; EndFunc);
+  indent(first([X In LL | X.T <> ""], 3));
+  PrintLn "..... -> total citations/age: ",
+  DecimalStr(sum([X.C | X In LL]/(YYYY-1900-min([X.Y|X In LL]))));
+  PrintLn "HC-index: ", max([ I In 1..len(LL) | LL[I].S >= I]);
+EndDefine; -- PrintHCIndex
+
+
+Define ReducedGBasis(I)
+  Return [monic(F) | F In interreduced(GBasis(I))];
+EndDefine; -- ReducedGBasis
+
+
+Define LinKer(M)
+  K := RingOf(M);
+  If not(IsField(K)) Then error("NYI: Not yet implemented"); EndIf;
+  IndetNames := [ Record[head := "x", indices := [N]] | N In 1..NumCols(M) ];
+  Kx := NewPolyRing(K, IndetNames);
+  Sys := apply(CanonicalHom(K,Kx), M) * ColMat(indets(Kx));
+  I := ideal(GetCol(Sys,1));
+  Params := diff(indets(Kx), LT(I));
+  Basis := [];
+  Foreach X In Params Do
+    J := I + ideal(Kx,diff(Params,[X])) + ideal(X-1);
+    append(ref Basis, [NF(indet(Kx,N), J) | N In 1..NumIndets(Kx)]);
+  EndForeach;
+  LC0 := Func(F) If F=0 Then Return zero(K); Else Return LC(F); EndIf; EndFunc;
+  Return [[ LC0(F) | F In Vec] | Vec In Basis];
+EndDefine; -- LinKer
+
+
+Define CpuTimeFrom(T) return CpuTime()-T;                EndDefine;
+Define TimeFrom(T)    return DecimalStr(CpuTimeFrom(T)); EndDefine;
+
+Define res(X)
+  If type(X)=RING Then
+    If IsQuotientRing(X) Then Return Concat([X],Res(DefiningIdeal(X))); EndIf;
+    Return [X];
+  EndIf;
+  M := minimalized(X);
+  res := [];
+  repeat
+    append(ref res, M);
+    M := minimalized(SyzOfGens(M));
+  until IsZero(M);
+  Return res;
+EndDefine; -- Res
+
+Define BettiTmp(X) -- wdeg of resolutions
+  If type(X) IsIn [RING, IDEAL, MODULE] then RES := Res(X); Else RES:=X; EndIf;
+  If GradingDim(RingOf(Last(RES)))<>1 Then error("GradingDim must be 1"); EndIf;
+  GENS:=
+  Func(M) If Type(M)=RING Then Return[];Else Return gens(M);EndIf;EndFunc;
+  Return [ [ wdeg(v) | v In GENS(M) ] | M In RES ];
+EndDefine; -- BettiTmp
+
+Define BettiMatrix(X)
+  T := BettiTmp(X);
+  MaxShift := Max(flatten(T));
+  BettiMat := ZeroMat(RingZZ(), MaxShift, Len(T));
+  For I := 1 To Len(T) Do
+    For J := 1 To Len(T[I]) Do
+      BettiMat[ T[I,J,1], I] := 1+BettiMat[ T[I,J,1], I];
+    EndFor;
+  EndFor;
+  Return BettiMat;
+EndDefine; -- BettiMatrix
+
+Define BettiDiagram(X)
+  T := BettiTmp(X);
+  If T[1] = [] Then T[1] := [[0]]; EndIf;
+  PrimoShift := T[1,1,1];
+  UltimoShift := Max([T[I,Len(T[I]),1]-PrimoShift-I+2 | I In 1..Len(T)]);
+  BettiMat := ZeroMat(RingZZ(), UltimoShift, Len(T));
+  For I := 1 To Len(T) Do
+    For J := 1 To Len(T[I]) Do
+      BettiMat[ T[I,J,1]-PrimoShift-I+2, I] := 1+BettiMat[ T[I,J,1]-PrimoShift-I+2, I];
+    EndFor;
+  EndFor;
+  Return record[ FirstShift:=PrimoShift, Diagram:=BettiMat ];
+EndDefine; -- BettiDiagram
+
+define BettiDiagramToBettiMatrix(BD)
+  FirstShift := BD.FirstShift;
+  Diagram := BD.Diagram;
+  MaxShift := FirstShift-1 + NumCols(Diagram)-1 + NumRows(Diagram);
+  BettiMat := ZeroMat(RingZZ(), MaxShift, NumCols(Diagram));
+  for i := 1 to NumRows(Diagram) do
+    for j := 1 to NumCols(Diagram) do    
+      BettiMat[i+FirstShift-1+j-1, j] := Diagram[i,j];
+    endfor;
+  endfor;
+  return BettiMat;
+enddefine; -- BettiDiagramToBettiMatrix
+  
+Define PrintBettiDiagram(BD)
+  if type(BD) <> RECORD then BD := BettiDiagram(BD); endif;
+  PrimoShift := BD.FirstShift;
+  D := BD.Diagram;
+  RigaTot := [ Sum([D[i,j] | i In 1..NumRows(D)]) | j In 1..NumCols(D)];
+  LenRiga := NumCols(D);
+  Print "    ";
+  For I := 1 To LenRiga Do  Print Format(I-1, 5); EndFor;
+  PrintLn;
+  dashes := Sum([ "-----" | I In 0..Len(RigaTot)]);
+  PrintLn dashes; --------------------------------------
+  For J := 1 To NumRows(D) Do
+    Print Format(J+PrimoShift-1, 3), ":";
+    For I := 1 To LenRiga Do
+      If D[J,I] = 0 Then Print Format("-", 5);
+      Else Print Format(D[J,I], 5);
+      EndIf;
+    EndFor;
+    PrintLn;
+  EndFor;
+  PrintLn dashes; --------------------------------------
+  Print "Tot:";
+  For I := 1 To LenRiga Do  Print Format(RigaTot[I], 5);  EndFor;
+EndDefine; -- Print_BettiDiagram
+
+Define PrintBettiMatrix(M)
+  if type(M) <> MAT then M := BettiMatrix(M); endif;
+  NC := NumCols(M);
+  dashes := "--  "+Sum([ " --> " | I In 2..NC], "  --");
+  PrintLn dashes; --------------------------------------
+  For i := 1 To NumRows(M) Do
+    For j := NC To 1 Step -1 Do
+      Print Format(M[i,j], 5);
+    EndFor;
+    PrintLn;
+  EndFor;
+  PrintLn dashes; --------------------------------------
+EndDefine; -- PrintBettiMatrix
+
+Define PrintRes(M)
+  if type(M) = RECORD then PrintRes(BettiDiagramToBettiMatrix(M));return; endif;
+  if type(M) <> MAT then M := BettiMatrix(M); endif;
+  Print 0;
+  For j := NumCols(M) To 1 Step -1 Do
+    Print " --> ";
+    If IsZeroCol(M,j) Then Print "R"; Break; EndIf;
+    AfterFirst := false;
+    For i := 1 To NumRows(M) Do
+      If M[i,j]<>0 Then
+	If AfterFirst Then Print "(+)"; EndIf;
+	Print "R(", -i, ")";
+	If M[i,j]<>1 Then Print "^", M[i,j]; EndIf;
+	AfterFirst:=True;
+      EndIf;
+    EndFor;
+  EndFor;
+  PrintLn;
+EndDefine; -- PrintRes
+
+  
+EndPackage;

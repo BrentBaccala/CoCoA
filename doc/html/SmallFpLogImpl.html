@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      SmallFpLogImpl</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      SmallFpLogImpl</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2011,2013 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for SmallFpLogImpl</A>
+    <LI><A HREF="#toc2">Maintainer documentation for SmallFpLogImpl</A>
+    <LI><A HREF="#toc3">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for SmallFpLogImpl</H2>
+<P>
+The class <CODE>SmallFpLogImpl</CODE> is a very low level implementation class for fast
+arithmetic in a small, prime finite field.  It is <B>not intended</B> for use
+by casual CoCoALib users, who should instead see the documentation in
+<A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A> (in particular the function <CODE>NewZZmod</CODE>), or possibly the
+documentation in <A HREF="RingFp.html"><CODE>RingFp</CODE></A>, <A HREF="RingFpLog.html"><CODE>RingFpLog</CODE></A>, and <A HREF="RingFpDouble.html"><CODE>RingFpDouble</CODE></A>.
+</P>
+<P>
+Compared to <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A> the only difference is an implementation
+detail: multiplication and division are achieved using discrete log
+tables -- this may be fractionally faster on some processors.
+</P>
+<P>
+Note that the cost of construction of a <CODE>SmallFpLogImpl(p)</CODE> object for
+larger primes may be quite considerable (linear in <CODE>p</CODE>), and the resulting
+object may occupy quite a lot of space (<I>e.g.</I> probably about 6*p bytes).
+</P>
+<P>
+<B>All operations</B> on values must be effected by calling member functions
+of the <CODE>SmallFpLogImpl</CODE> class.  Here is a brief summary.
+</P>
+<PRE>
+    SmallFpLogImpl::IsGoodCtorArg(p);   // true iff ctor SmallFpLogImpl(p) will succeed
+    SmallFpLogImpl::ourMaxModulus();    // largest permitted modulus
+    SmallFpLogImpl ModP(p, convention); // create SmallFpLogImpl object
+    long n;
+    BigInt N;
+    BigRat q;
+    SmallFpImpl::value_t a, b, c;
+  
+    ModP.myModulus();         // value of p (as a long)
+  
+    ModP.myReduce(n);         // reduce mod p
+    ModP.myReduce(N);         // reduce mod p
+    ModP.myReduce(q);         // reduce mod p
+  
+    ModP.myExport(a);         // returns a preimage (of type long) according to symm/non-neg convention.
+  
+    ModP.myNegate(a);         // -a mod p
+    ModP.myAdd(a, b);         // (a+b)%p;
+    ModP.mySub(a, b);         // (a-b)%p;
+    ModP.myMul(a, b);         // (a*b)%p;
+    ModP.myDiv(a, b);         // (a*inv(b))%p;  where inv(b) is inverse of b
+    ModP.myPower(a, n);       // (a^n)%p;  where ^ means "to the power of"
+    ModP.myIsZeroAddMul(a,b,c) // a = (a+b*c)%p; result is (a==0)
+  
+</PRE>
+<P>
+For <CODE>myExport</CODE> the choice between least non-negative and symmetric
+residues is determined by the convention specified when constructing
+the <CODE>SmallFpLogImpl</CODE> object.  This convention may be either
+<CODE>GlobalSettings::SymmResidues</CODE> or
+<CODE>GlobalSettings::NonNegResidues</CODE>.
+</P>
+<A NAME="toc2"></A>
+<H2>Maintainer documentation for SmallFpLogImpl</H2>
+<P>
+The only clever bit is the <I>economical</I> construction of the log/exp
+tables in the constructor where we exploit the fact that <CODE>myRoot</CODE> to
+the power (p-1)/2 must be equal to -1.
+</P>
+<P>
+This implementation uses discrete log/exp tables to effect multiplication
+and division quickly.  Note that the residues themselves (<I>i.e.</I> the values
+of the ring elements) are held as machine integers whose value is the
+least non-negative representative of the residue class (<I>i.e.</I> in the range
+0 to p-1).  In particular, although log tables are used, we do NOT use a
+<I>logarithmic representation</I> for the field elements.
+</P>
+<P>
+The log/exp tables are stored in C++ vectors: aside from their
+construction during the <CODE>RingFpLogImpl</CODE> constructor, these vectors are
+never modified, and are used only for table look-up.  The C++ vectors
+are resized in the body of the constructor to avoid large memory
+requests when overly large characteristics are supplied as argument.
+</P>
+<P>
+Besides these tables <CODE>SmallFpLogImpl</CODE> also remembers the characteristic in
+<CODE>myModulus</CODE>; <CODE>myRoot</CODE> is the primitive root used to generate the log/exp
+tables.
+</P>
+<P>
+The members <CODE>myResidueUPBValue</CODE> and <CODE>myIterLimit</CODE> and <CODE>myHalfNormalize</CODE>
+may be used for delayed normalization in loops: see the inner product example
+in <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A>.
+</P>
+<P>
+As the code currently stands, the modulus must also be small enough that it
+can fit into an <CODE>FpTableElem</CODE> (an <CODE>unsigned short</CODE>), and that its
+square can fit into a <CODE>value_t</CODE>.  Using <CODE>short</CODE>s in the tables gave
+slightly better run-time performance in our tests.  Furthermore, to permit
+use of unnormalized products in some algorithms, twice the square of the
+characteristic must fit into a <CODE>value_t</CODE> (<I>i.e.</I> <CODE>myIterLimit</CODE> must
+be greater than zero).  The constructor for a <CODE>RingFpLogImpl</CODE> checks the
+size restrictions on the characteristic.
+</P>
+<P>
+Note that the log table has a slot with index 0 which is never written
+to nor read from.  The exp table is double size so that multiplication
+can be achieved more easily: the highest slot which could ever be used
+is that with index 2p-3 (in division), but the constructor fills two
+extra slots (as this makes the code simpler/neater).
+</P>
+<P>
+The only slick part of the implementation is the filling of the tables in
+the constructor, where some effort is made to avoid doing more reductions
+modulo p than necessary.  Note that the primitive root is always calculated
+(potentially costly!); there is no memorized global table of primitive roots
+anywhere.
+</P>
+<A NAME="toc3"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+It is not as fast as I hoped -- perhaps cache effects?
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/SmallFpLogImpl.html -i txt/SmallFpLogImpl.txt -->
+</BODY></HTML>

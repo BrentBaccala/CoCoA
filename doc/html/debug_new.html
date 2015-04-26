@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      debug_new</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      debug_new</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc2">Finding memory leaks</A>
+      <LI><A HREF="#toc3">Example</A>
+      </UL>
+    <LI><A HREF="#toc4">Maintainer documentation</A>
+    <LI><A HREF="#toc5">Shortcomings, bugs, etc</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation</H2>
+<P>
+<CODE>debug_new.C</CODE> is distributed with CoCoALib, but is not really part of the
+library proper.  Together with the standalone program <A HREF="leak_checker.html"><CODE>leak_checker</CODE></A>
+it can help identify incorrect memory use (<I>e.g.</I> leaks).
+If you want to use <CODE>debug_new</CODE> to find a memory use problem, you may find it
+enough simply to see the section <B>Example</B> below.
+</P>
+<P>
+The purpose of <CODE>debug_new</CODE> is to assist in tracking down memory use problems:
+most particularly leaks and writing just outside the block allocated; it is
+<B>not currently able</B> to help in detecting writes to deleted blocks.  It works
+by intercepting all calls to global <CODE>new/delete</CODE>.  Memory blocks are given
+small <I>margins</I> (invisible to the user) which are used to help detect
+writes just outside the legitimately allocated block.
+</P>
+<P>
+<CODE>debug_new</CODE> works by printing out a log message for every memory allocation and
+deallocation.  Error messages are printed whenever something awry has been
+found.  The output can easily become enormous, so it is best to send the
+output to a file.  All log messages start with the string
+</P>
+<PRE>
+      [debug_new]
+</PRE>
+<P>
+and error messages start with the string
+</P>
+<PRE>
+      [debug_new] ERROR
+</PRE>
+<P>
+so they can be found easily.  Most messages include a brief summary of the
+amount of memory currently in use, the total amount allocated and deallocated,
+and the maximum amount of memory in use up to that point.
+</P>
+<A NAME="toc2"></A>
+<H3>Finding memory leaks</H3>
+<P>
+To use <CODE>debug_new</CODE> to help track down memory leaks, you must employ the
+program called <CODE>leak_checker</CODE> (included in this distribution) to process
+the output produced by your program linked with <CODE>debug_new.o</CODE>.  See
+<A HREF="leak_checker.html"><CODE>leak_checker</CODE></A> for full details.  Your program output should be put in
+a file, say called <I>memchk</I>.  Then executing <CODE>leak_checker memchk</CODE> will
+print out a summary of how many <CODE>alloc/free</CODE> messages were found, and how
+many unpaired ones were found.  The file <I>memchk</I> is modified if
+unpaired alloc/free messages were found: an exclamation mark is placed
+immediately after the word <CODE>ALLOC</CODE> (where previously there was a space),
+thus a search for <CODE>ALLOC!</CODE> will find all unpaired allocation messages.
+</P>
+<P>
+Each call to <CODE>new/delete</CODE> is given a sequence number (printed as <CODE>seq=...</CODE>).
+This information can be used when debugging.  Suppose, for instance, that
+<CODE>leak_checker</CODE> discovers that the 500th call to <CODE>new</CODE> never had a matching
+<CODE>delete</CODE>.  At the start of your program (<I>e.g.</I> I suggest immediately after you
+created the <CODE>debug_new::PrintTrace</CODE> object) insert a call to
+</P>
+<PRE>
+          debug_new::InterceptNew(500);
+</PRE>
+<P></P>
+<P>
+Now use the debugger to set a breakpoint in <CODE>debug_new::intercepted</CODE> and start
+your program.  The breakpoint will be reached during the 500th call to <CODE>new</CODE>.
+Examining the running program's stack should fairly quickly identify
+precisely who requested the memory that was never returned.  Obviously it is
+necessary to compile your program as well as <CODE>debug_new.C</CODE> with the debugger
+option set before using the debugger!
+</P>
+<P>
+Analogously there is a function <CODE>debug_new::InterceptDelete(N)</CODE>
+which calls <CODE>debug_new::intercepted</CODE> during the Nth call to <CODE>operator delete</CODE>.
+</P>
+<A NAME="toc3"></A>
+<H3>Example</H3>
+<P>
+Try detecting the (obvious) memory problems in this program.
+</P>
+<PRE>
+  #include &lt;iostream&gt;
+  #include "CoCoA/debug_new.H"
+  
+  int main()
+  {
+    debug_new::PrintTrace TraceNewAndDelete; // merely activates logging of new/delete
+    std::cout &lt;&lt; "Starting main" &lt;&lt; std::endl;
+    int* pi1 = new int(1);
+    int* pi2 = new int(2);
+    pi1[4] = 17;
+    pi1 = pi2;
+    delete pi2;
+    delete pi1;
+    std::cout &lt;&lt; "Ending main" &lt;&lt; std::endl;
+    return 0;
+  }
+</PRE>
+<P>
+Make sure that <CODE>debug_new.o</CODE> exists (<I>i.e.</I> the <CODE>debug_new</CODE> program has been
+compiled).  Compile this program, and link with <CODE>debug_new.o</CODE>.  For instance,
+if the program is in the file <CODE>prog.C</CODE> then a command like this should suffice:
+</P>
+<PRE>
+    g++ -g -ICoCoALib/include prog.C -o prog debug_new.o
+</PRE>
+<P></P>
+<P>
+Now run <CODE>./prog &gt;&amp; memchk</CODE> and see the debugging messages printed out into
+<I>memchk</I>; note that the debugging messages are printed on <CODE>cerr/stderr</CODE> (hence
+the use of <CODE>&gt;&amp;</CODE> to redirect the output).  In this case the output is
+relatively brief, but it can be huge, so it is best to send it to a file.
+Now look at the messages printed in <I>memchk</I>.
+</P>
+<P>
+The <I>probable double delete</I> is easily detected: it happens in the second call
+to <CODE>delete</CODE> (<CODE>seq=2</CODE>).  We locate the troublesome call to delete by adding a line
+in main immediately after the declaration of the <CODE>TraceNewAndDelete</CODE> local variable
+</P>
+<PRE>
+    debug_new::InterceptDelete(2); // intercept 2nd call to delete
+</PRE>
+<P></P>
+<P>
+Now recompile, and use the debugger to trap execution in the function
+<CODE>debug_new::intercepted</CODE>, then start the program running under the debugger.
+When the trap springs, we can walk up the call stack and quickly learn that
+<CODE>delete pi1;</CODE> is the culprit.  We can also see that the value of <CODE>pi1</CODE> at the
+time it was deleted is equal the value originally assigned to <CODE>pi2</CODE>.
+</P>
+<P>
+Let's pretend that it is not obvious why <CODE>delete pi1;</CODE> should cause
+trouble.  So we must investigate further to find the cause.  Here is what
+we can do.  Comment out the troublesome delete (<I>i.e.</I> <CODE>delete pi1;</CODE>), and
+also the call to <CODE>InterceptDelete</CODE>.  Recompile and run again, sending all the
+output into the file <I>memchk</I> (the previous contents are now old hat).  Now
+run the <A HREF="leak_checker.html"><CODE>leak_checker</CODE></A> program on the file <I>memchk</I> using this command:
+(make sure <CODE>leak_checker</CODE> has been compiled: <CODE>g++ leak_checker.C -o leak_checker</CODE>)
+</P>
+<PRE>
+   ./leak_checker memchk
+</PRE>
+<P></P>
+<P>
+It will print out a short summary of the <CODE>new/delete</CODE> logs it has found, including
+a message that some unmatched calls exist.  By following the instructions in
+<A HREF="leak_checker.html"><CODE>leak_checker</CODE></A> we discover that the unfreed block is the one allocated in the
+line <CODE>... pi1 = new ...</CODE>.  Combining this information with the <I>double delete</I>
+error for the line <CODE>delete pi1</CODE> we can conclude that the pointer <CODE>pi1</CODE> has been
+overwritten with the value of <CODE>pi2</CODE> somewhere.  At this point <CODE>debug_new</CODE> and
+<CODE>leak_checker</CODE> can give no further help, and you must use other means to locate
+where the value gets overwritten (e.g. the <I>watch</I> facility of gdb; try it!).
+</P>
+<P>
+<B>WARNING</B> <CODE>debug_new</CODE> handles <B>all</B> <CODE>new/delete</CODE> requests including those arising
+from the initialization of static variables within functions (and also
+those arising from within the system libraries).  The <A HREF="leak_checker.html"><CODE>leak_checker</CODE></A> program
+will mark these as unfreed blocks because they are freed only after main
+has exited (and so cannot be tracked by <CODE>debug_new</CODE>).
+</P>
+<A NAME="toc4"></A>
+<H2>Maintainer documentation</H2>
+<P>
+This file redefines the C++ global operators <CODE>new</CODE> and <CODE>delete</CODE>.  All
+requests to allocate or deallocate memory pass through these functions
+which perform some sanity checks, pass the actual request for memory
+management to <CODE>malloc/free</CODE>, and print out a message.
+</P>
+<P>
+Each block requested is increased in size by placing <I>margins</I> both before
+and after the block of memory the user will be given.  The size of these
+margins is determined by the compile-time (positive, even) integer constant
+<CODE>debug_new::MARGIN</CODE>; note that the number of bytes in a margin is this value
+multiplied by <CODE>sizeof(int)</CODE>.  A margin is placed both before and after each
+allocated block handed to the user; the margins are invisible to the user.
+Indeed the user's block size is rounded up to the next multiple of
+<CODE>sizeof(int)</CODE> for convenience.
+</P>
+<P>
+The block+margins obtained from the system is viewed as an integer array,
+and the sizes for the margins and user block are such that the boundaries
+are aligned with the boundaries between integers in the array -- this
+simplifies the code a bit (could have used <CODE>chars</CODE>?).  Each block immediately
+prior to being handed to the user is filled with certain values: currently
+<CODE>1234567890</CODE> is placed in each margin integer and <CODE>-999999999</CODE> is placed in
+each integer inside the user's block.  Upon freeing, the code checks that
+the values in the margins are unchanged, thus probably detecting any
+accidental writes just outside the allocated block.  Should any value be
+incorrect an error message is printed.  The freed block is then
+overwritten with other values to help detect accidental "posthumous" read
+accesses to data that used to be in the block before it was freed.
+</P>
+<P>
+For our use, the size of the block (the size in bytes as requested by the
+user) is stored in the very first integer in the array.  A simplistic
+sanity check is made of the value found there when the block is freed.  The
+aim is not to be immune to a hostile user, but merely to help track down
+common memory usage errors (with high probability, and at tolerable run-time
+cost).  This method for storing the block size requires that the margins be
+at least as large as a machine integer (probably ought to use <CODE>size_t</CODE>).
+</P>
+<P>
+Note the many checks for when to call <CODE>debug_new::intercepted</CODE>; maybe
+the code should be restructured to reduce the number of these
+checks and calls?
+</P>
+<A NAME="toc5"></A>
+<H2>Shortcomings, bugs, etc</H2>
+<P>
+<B>WARNING</B> <CODE>debug_new</CODE> handles calls only to plain <CODE>new</CODE> and plain <CODE>delete</CODE>; it
+does not handle calls to <CODE>new(nothrow)</CODE> nor to <CODE>delete(nothrow)</CODE>, nor to
+any of the array versions.
+</P>
+<P>
+Have to recompile to use the <CODE>debug_new::PrintTrace</CODE> to turn on printing.
+Maybe the first few messages could be buffered up and printed only when
+the buffer is full; this might buy enough time to bypass the set up
+phase of <CODE>cerr</CODE>?
+</P>
+<P>
+Big trouble will probably occur if a user should overwrite the block
+size held in the margin of an allocated block.  It seems extremely hard
+to protect against such corruption.
+</P>
+<P>
+When a corrupted margin is found a printed memory map could be nice
+(compare with what <A HREF="MemPool.html"><CODE>MemPool</CODE></A> does).
+</P>
+<P>
+An allocated block may be slightly enlarged so that its size is a whole
+multiple of <CODE>sizeof(int)</CODE>.  If the block is enlarged then any write
+outside the requested block size but within the enlarged block is not
+detected.  This could be fixed by using a <CODE>char</CODE> as the basic chunk of
+memory rather than an <CODE>int</CODE>.  It is rather unclear why <CODE>int</CODE> was chosen,
+perhaps for reasons of speed?  Or to avoid alignment problems?
+</P>
+<P>
+Could there be problems on machines where pointers are larger than
+<CODE>int</CODE>s (esp. if the margin size is set to 1)?  There could also be
+alignment problems if the margin size is not a multiple of the
+size of the type which has the most restrictive alignment criteria.
+</P>
+<P>
+Is it right that the debugging output and error messages are printed
+on <CODE>cerr</CODE>?  Can/Should we allow the user to choose?  Using <CODE>cout</CODE> has
+given some trouble since it may call <CODE>new</CODE> internally for buffering:
+this seemed to yield an infinite loop, and anyway it is a nasty thought
+using the <CODE>cout</CODE> object to print while it was trying to increase an
+internal buffer.
+</P>
+<P>
+The code does not enable one to detect easily writes to freed memory.
+This could be enabled by never freeing memory, and instead filling the
+freed blocks with known values and then monitoring for changes to these
+values in freed blocks.  This could readily become very costly.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/debug_new.html -i txt/debug_new.txt -->
+</BODY></HTML>

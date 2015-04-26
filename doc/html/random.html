@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      random</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      random</H1>
+<FONT SIZE="4">
+<I>      &copy;  2011-2013 John Abbott, Anna M. Bigatti; code by John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#constructors">Constructors</A>
+        <UL>
+        <LI><A HREF="#toc4">RandomSource</A>
+        <LI><A HREF="#toc5">RandomSeqXXXX</A>
+        </UL>
+      <LI><A HREF="#RandomSourceOperations">RandomSource Operations</A>
+      <LI><A HREF="#RandomSeqXXXXOperations">RandomSeqXXXX Operations</A>
+      </UL>
+    <LI><A HREF="#toc8">Maintainer documentation</A>
+        <UL>
+        <LI><A HREF="#toc9">RandomSource</A>
+        <LI><A HREF="#toc10">RandomSeqLong  and  RandomSeqBigInt</A>
+        <LI><A HREF="#toc11">RandomSeqBool</A>
+        </UL>
+    <LI><A HREF="#toc12">Bugs, shortcomings and other ideas</A>
+      <UL>
+      <LI><A HREF="#toc13">Doubts common to RandomSeqBigInt, RandomSeqBool, RandomSeqLong</A>
+      </UL>
+    <LI><A HREF="#toc14">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RandomSource1.C">ex-RandomSource1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RandomSource2.C">ex-RandomSource2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RandomLong1.C">ex-RandomLong1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RandomBool1.C">ex-RandomBool1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RandomBigInt1.C">ex-RandomBigInt1.C</A>
+</UL>
+
+<P></P>
+<P>
+Here is a typical example of how to use a <CODE>RandomSeqLong</CODE>; note that
+we create the generator <B>before</B> entering the loop, then <B>inside</B> the
+loop we use the function <CODE>NextValue</CODE> to get 100 successive random values
+(between -9 and 9) from the generator:
+</P>
+<PRE>
+    RandomSeqLong rnd(-9,9);
+    for (int i=0; i &lt; 100; ++i)
+      cout &lt;&lt; NextValue(rnd) &lt;&lt; endl;
+</PRE>
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+Below, in <A HREF="random.html#RandomSourceOperations"><CODE>random</CODE> RandomSourceOperations</A> we list these handy
+functions for generating random values:
+</P>
+<TABLE ALIGN="center" CELLPADDING="4">
+<TR>
+<TD><CODE>RandomBool()</CODE>, <CODE>RandomLong(lo, hi)</CODE>, <CODE>RandomBigInt(lo, hi)</CODE></TD>
+</TR>
+</TABLE>
+
+<P>
+they are probably just what you want in a simple program,
+<B>but using them will make your code thread-unsafe</B>
+(which is quite acceptable in a small program for personal use).
+</P>
+<P>
+For a <B>thread-safe</B> solution you should create your own 
+<I>random generator</I>.
+If you just want to generate many random values of the
+same type, you should consider using one of the three specialized
+random sequence generators (which are faster than the more general <CODE>RandomSource</CODE>):
+</P>
+<UL>
+<LI>The class <CODE>RandomSeqLong</CODE> is for representing generators of
+  (independent) uniformly distributed random integers (<CODE>long</CODE>)
+  in a given range; the range is specified when creating the generator
+  (and cannot later be changed).
+<P></P>
+<LI>The class <CODE>RandomSeqBigInt</CODE> is for representing generators of
+  (independent) uniformly distributed random integers (<A HREF="BigInt.html"><CODE>BigInt</CODE></A>) in
+  a given range; the range is specified when creating the generator
+  (and cannot later be changed).
+<P></P>
+<LI>The class <CODE>RandomSeqBool</CODE> models a binary random variable (with
+  independent <CODE>bool</CODE> samples, each having 50% probability of being
+  <I>true</I> and 50% of being <I>false</I>).
+<P></P>
+<LI>The class <CODE>RandomSource</CODE> is for representing general sources of
+  (pseudo-)randomness: you can use it to produce random <CODE>bool</CODE>, 
+  <CODE>long</CODE>, and <CODE>BigInt</CODE> values.
+<P></P>
+</UL>
+
+<P></P>
+<A NAME="constructors"></A>
+<H3>Constructors</H3>
+<P>
+All constructors have an optional argument which is the initial
+<I>seed</I> -- it determines the initial state of the generator.  If you
+do not give a seed, the default is <CODE>0</CODE>.
+</P>
+<P>
+If you create several random sequence generators of the same kind and with the same
+seed, they will each produce exactly the <B>same sequence of values</B>.
+If you want to obtain different results each time a program is run,
+you can seed the generator with the system time (<I>e.g.</I> by supplying
+as argument <CODE>time(0)</CODE>); this is likely desirable unless you're
+trying to debug a randomized algorithm.
+</P>
+<P>
+For <CODE>RandomSource</CODE> see also the <CODE>reseed</CODE> function documented
+below in <I>RandomSource Operations</I>.
+</P>
+<A NAME="toc4"></A>
+<H4>RandomSource</H4>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>RandomSource()</CODE></TD>
+<TD>seeded with <CODE>0</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSource(n)</CODE></TD>
+<TD>seeded with <CODE>n</CODE></TD>
+</TR>
+</TABLE>
+
+<P>
+For convenience, there is a global <CODE>RandomSource</CODE> object (belonging to
+<A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>); you can get a reference to it by calling
+<CODE>GlobalRandomSource()</CODE>, <B>but using it will make your code thread-unsafe</B>.
+</P>
+<A NAME="toc5"></A>
+<H4>RandomSeqXXXX</H4>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>RandomSeqBigInt(lo,hi)</CODE></TD>
+<TD>seeded with <CODE>0</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSeqLong(lo,hi)</CODE></TD>
+<TD>seeded with <CODE>0</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSeqBool()</CODE></TD>
+<TD>seeded with <CODE>0</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSeqBigInt(lo,hi, n)</CODE></TD>
+<TD>seeded with <CODE>abs(n)</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSeqLong(lo,hi, n)</CODE></TD>
+<TD>seeded with <CODE>abs(n)</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>RandomSeqBool(n)</CODE></TD>
+<TD>seeded with <CODE>abs(n)</CODE></TD>
+</TR>
+</TABLE>
+
+<P>
+Each <CODE>RandomSeqBigInt</CODE> (or <CODE>RandomSeqLong</CODE>) will produce (pseudo)
+random values uniformly distributed in the range from <CODE>lo</CODE> to <CODE>hi</CODE>
+(with both extremes included).  An <CODE>ERR::BadArg</CODE> exception is thrown
+if <CODE>lo &gt; hi</CODE>; the case <CODE>lo == hi</CODE> is allowed.
+</P>
+<A NAME="RandomSourceOperations"></A>
+<H3>RandomSource Operations</H3>
+<P>
+These are the most convenient functions for generating random values;
+but they use <CODE>GlobalRandomSource</CODE>, so they are <B>thread-unsafe</B>:
+</P>
+<UL>
+<LI><CODE>RandomBool()</CODE> -- returns <CODE>true</CODE> with probability 50%
+<LI><CODE>RandomBiasedBool(P)</CODE> -- returns <CODE>true</CODE> with probability <CODE>P</CODE>
+<LI><CODE>RandomLong(lo, hi)</CODE> -- in range <CODE>lo</CODE>..<CODE>hi</CODE> (both ends included)
+<LI><CODE>RandomBigInt(lo, hi)</CODE> -- in range <CODE>lo</CODE>..<CODE>hi</CODE> (both ends included)
+</UL>
+
+<P></P>
+<P>
+A cleaner way is to pass as an argument the specific <CODE>RandomSource</CODE>
+object to be used (in these examples we call it <CODE>RndSrc</CODE>):
+</P>
+<UL>
+<LI><CODE>RandomBool(RndSrc)</CODE>
+<LI><CODE>RandomLong(RndSrc, lo, hi)</CODE> -- in range <CODE>lo</CODE>..<CODE>hi</CODE> (both ends included)
+<LI><CODE>RandomBigInt(RndSrc, lo, hi)</CODE> -- in range <CODE>lo</CODE>..<CODE>hi</CODE> (both ends included)
+</UL>
+
+<P></P>
+<P>
+A <CODE>RandomSource</CODE> object may be reseeded at any time; immediately after reseeding
+it will generate the same random sequence as a newly created <CODE>RandomSource</CODE>
+initialized with that same seed.  The seed must be an integer value.
+</P>
+<UL>
+<LI><CODE>reseed(RndSrc, seed)</CODE>
+</UL>
+
+<P></P>
+<P>
+<B>Note about thread-safety:</B> the various operations on a fixed
+<CODE>RandomSource</CODE> object are not thread-safe; to achieve thread safety, you
+should use <I>different objects in different threads</I>.  In particular, it is
+best not to use <CODE>GlobalRandomSource()</CODE> in a multi-threaded environment.
+</P>
+<A NAME="RandomSeqXXXXOperations"></A>
+<H3>RandomSeqXXXX Operations</H3>
+<P>
+Once you have created a <CODE>RandomSeqXXXX</CODE> you may perform the following
+operations on it:
+</P>
+<UL>
+<LI><CODE>*rnd</CODE>             -- get the current value of rnd (as a boolean).
+<LI><CODE>++rnd</CODE>            -- advance to next value of rnd.
+<LI><CODE>rnd++</CODE>            -- advance to next value of rnd <B>INEFFICIENTLY</B>.
+<LI><CODE>NextValue(rnd)</CODE>   -- advance and then return new value; same as *++rnd
+<LI><CODE>out &lt;&lt; rnd</CODE>       -- print some information about rnd.
+<LI><CODE>rnd.myIndex()</CODE>    -- number of times rnd has been advanced,
+                          (same as the number of random bools generated).
+<P></P>
+Note that a <CODE>RandomSeqXXXX</CODE> supports input iterator syntax.
+<P></P>
+Moreover, for <CODE>RandomSeqBool</CODE> there is a special function
+<LI><CODE>NextBiasedBool(RndBool, P)</CODE> --  use several samples from <CODE>RndBool</CODE> to produce a boolean with probability <CODE>P</CODE> of being
+                       true; may consume many values from <CODE>RndBool</CODE> but on average consumes less than 2 values per call.
+</UL>
+
+<P></P>
+<P>
+You may assign or create copies of <CODE>RandomSeqXXXX</CODE> objects; the copies
+acquire the complete state of the original, so will go on to produce exactly
+the same sequence of values as the original will produce.
+</P>
+<A NAME="toc8"></A>
+<H2>Maintainer documentation</H2>
+<A NAME="toc9"></A>
+<H4>RandomSource</H4>
+<P>
+The impl is mostly quite straightforward since almost all the work is
+done by GMP.
+</P>
+<P>
+<CODE>RandomLong(RndSrc, lo, hi)</CODE> is a bit messy for two reasons:
+</P>
+<OL>
+<LI>CoCoALib uses signed longs while GMP uses unsigned longs;
+<LI>the case when (<CODE>lo,hi</CODE>) specify the whole range of representable
+      longs requires special handling.
+</OL>
+
+<P></P>
+<A NAME="toc10"></A>
+<H4>RandomSeqLong  and  RandomSeqBigInt</H4>
+<P>
+The idea is very simple: use the pseudo-random number generator of GMP
+to generate a random machine integer in the range 0 to <CODE>myRange-1</CODE>
+(where <CODE>myRange</CODE> was set in the ctor to be <CODE>1+myUpb-myLwb</CODE>) and
+then add that to <CODE>myLwb</CODE>.  The result is stored in the data member
+<CODE>myValue</CODE> so that input iterator syntax can be supported.
+</P>
+<P>
+There are two <I>non essential</I> data members: <CODE>mySeed</CODE> and <CODE>myCounter</CODE>.
+I put these in to help any poor blighter who has to debug a randomized
+algorithm, and who may want to <I>fast forward</I> the random sequence to
+the right place.
+</P>
+<P>
+The data member <CODE>myState</CODE> holds all the state information used by the GMP
+generator.  Its presence makes the ctors, dtor and assignment messier than
+they would have been otherwise.
+</P>
+<P>
+The advancing and reading member functions (<I>i.e.</I> <CODE>operator++</CODE> and <CODE>operator*</CODE>)
+are inline for efficiency, as is the <CODE>NextValue</CODE> function.
+</P>
+<P>
+<CODE>myGetValue</CODE> is a little messy because the value generated by the GMP function
+<CODE>gmp_urandomm_ui</CODE> cannot generate the full range of <CODE>unsigned long</CODE> values.
+Instead I have to call <CODE>gmp_urandomb_ui</CODE> if the full range is needed.
+</P>
+<P>
+The data members <CODE>myLwb</CODE>, <CODE>myUpb</CODE> and <CODE>myRange</CODE> are morally constant,
+but I cannot make them <CODE>const</CODE> because I wanted to allow assignment of
+<CODE>RandomSeqLong</CODE> objects.
+</P>
+<A NAME="toc11"></A>
+<H4>RandomSeqBool</H4>
+<P>
+The idea is very simple: use the pseudo-random number generator of GMP
+to generate a random integer, and then give out the bits of this
+integer one at at time; when the last bit has been given out, get a
+new random integer from the GMP generator.  The random integer is kept
+in the data member <CODE>myBuffer</CODE>, and <CODE>myBitIndex</CODE> is used to read
+the bits one at a time.
+</P>
+<P>
+The condition for refilling <CODE>myBuffer</CODE> is when the index goes beyond
+the number of bits held in <CODE>myBuffer</CODE>.
+</P>
+<P>
+<CODE>myFillBuffer</CODE> also sets the data member <CODE>myBitIndex</CODE> to zero; it
+seemed most sensible to do this here.
+</P>
+<P>
+The function <CODE>prob</CODE> is nifty; if you think about it for a moment, it
+is obviously right (and economical on random bits).  It would be
+niftier still if the probability were specified as an <CODE>unsigned long</CODE>
+-- on a 64-bit machine this ought to be sufficient for almost
+all purposes.  If the requested probability is of the form N/2^k for
+some odd integer N, then the average number of bits consumed by
+<CODE>prob</CODE> is 2-2^(1-k), which always lies between 1 and 2.  If the
+requested probability is 0 or 1, no bits are consumed.
+</P>
+<A NAME="toc12"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+The printing function gives only partial information; <I>e.g.</I> two <CODE>RandomSource</CODE> objects
+with different internal states might be printed out identically.
+</P>
+<P>
+The implementation simply calls the GMP pseudo-random generator; this generator
+is deterministic (so always produces the same sequence), but if you change
+versions of GMP, the sequence of generated values may change.  You will have
+to read the GMP documentation to know more.
+</P>
+<P>
+<B>Discarded idea:</B> have a ctor which takes a ref to a <A HREF="RandomSource.html"><CODE>RandomSource</CODE></A>,
+and which uses that to obtain randomness.  I discarded the idea because of
+the risks of an <B>invisible external reference</B> (<I>e.g.</I> a dangling reference,
+or problems in multithreaded code).  Instead of passing a reference to a
+<A HREF="RandomSource.html"><CODE>RandomSource</CODE></A> to the ctor, you can use the <A HREF="RandomSource.html"><CODE>RandomSource</CODE></A> to create an initial
+seed which is handed to the ctor -- this gives better separation.
+</P>
+<P>
+Why can <CODE>RandomSource</CODE> be seeded with a <CODE>BigInt</CODE> but the others not?
+Does anyone really care?
+</P>
+<A NAME="toc13"></A>
+<H3>Doubts common to RandomSeqBigInt, RandomSeqBool, RandomSeqLong</H3>
+<P>
+It might be neater to put <CODE>++myCounter</CODE> inside <CODE>myGenValue</CODE>, though
+this would mean that <CODE>myCounter</CODE> gets incremented inside the ctor.
+</P>
+<P>
+Should <CODE>NextValue</CODE> advance <B>before</B> or <B>after</B> getting the value?
+</P>
+<P>
+Is the information printed by <CODE>myOutputSelf</CODE> adequate?  Time will tell.
+</P>
+<P>
+Is there a better way of writing the four ctors (for <CODE>RandomSeqBigInt</CODE>)
+without repeating many lines of essentially identical source code?
+</P>
+<P>
+Are there too many inline fns?  Is run-time speed so important here?  How
+many algorithms really consume millions of random bits/numbers?  Surely the
+computations on the random values should exceed the cost of generating
+them, shouldn't they?
+</P>
+<A NAME="toc14"></A>
+<H2>Main changes</H2>
+<UL>
+<LI><B>December 2012 (v0.9953)</B>
+ <UL>
+ <LI>major rewriting: now all classes are defined in one single file
+   <CODE>random.[HC]</CODE>
+ <LI>some classes and functions have been renamed:
+   <CODE>RandomXXXXSource</CODE> to <CODE>RandomSeqXXXX</CODE>, and <CODE>sample</CODE> to <CODE>NextValue</CODE>
+ <LI>documentation is unified in <CODE>random.txt</CODE>
+ </UL>
+<LI><B>October 2012 (v0.9952)</B>
+ <UL>
+ <LI>clarified doc; added comments about thread-safety.
+ </UL>
+<LI><B>February 2011 (v0.9949)</B>
+ <UL>
+ <LI>removed <CODE>RandomLong(src)</CODE> (<I>i.e.</I> with no range)
+ <LI>added <CODE>RandomBool()</CODE>, <CODE>RandomLong(lo,hi)</CODE>, <CODE>RandomBigInt(lo,hi)</CODE>
+          (<I>i.e.</I> with no <CODE>RandomSource</CODE>)
+ </UL>
+<LI><B>April 2011 (v0.9943)</B> first release
+</UL>
+
+<P></P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/random.html -i txt/random.txt -->
+</BODY></HTML>

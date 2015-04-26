@@ -1,0 +1,120 @@
+//   Copyright (c)  2007-2009  John Abbott
+
+//   This file is part of the source of CoCoALib, the CoCoA Library.
+
+//   CoCoALib is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+
+//   CoCoALib is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with CoCoALib.  If not, see <http://www.gnu.org/licenses/>.
+
+
+#include "CoCoA/MachineInt.H"
+
+#include <iostream>
+
+namespace CoCoA
+{
+
+  std::ostream& operator<<(std::ostream& out, const MachineInt& n)
+  {
+    using std::operator<<; // need this to avoid infinite recursion as current fn hides std::operator<<
+    if (IsNegative(n))
+      return out << AsSignedLong(n);
+    return out << AsUnsignedLong(n);
+  }
+
+
+  // Checks that  lwb <= val <= upb
+  bool IsInRange(const MachineInt& lwb, const MachineInt& val, const MachineInt& upb)
+  {
+    if (IsNegative(val))
+    {
+      if (!IsNegative(lwb)) return false;
+      const signed long VAL = AsSignedLong(val);
+      if (AsSignedLong(lwb) > VAL) return false;
+      if (!IsNegative(upb)) return true;
+      return VAL <= AsSignedLong(upb);
+    }
+    // Here we know that val >= 0.
+    if (IsNegative(upb)) return false;
+    const unsigned long VAL = AsUnsignedLong(val);
+    if (AsUnsignedLong(upb) < VAL) return false;
+    if (IsNegative(lwb)) return true;
+    return AsUnsignedLong(lwb) <= VAL;
+  }
+
+} // end of namespace CoCoA
+
+
+// RCS header/log in the next few lines
+// $Header: /Volumes/Home_1/cocoa/cvs-repository/CoCoALib-0.99/src/AlgebraicCore/MachineInt.C,v 1.3 2013/02/15 16:31:19 abbott Exp $
+// $Log: MachineInt.C,v $
+// Revision 1.3  2013/02/15 16:31:19  abbott
+// Moved IsInRange here from "convert".
+//
+// Revision 1.2  2012/05/28 09:18:21  abbott
+// Created IntOperations which gathers together all operations on
+// integers (both big and small).  Many consequential changes.
+//
+// Revision 1.1  2011/11/09 14:06:12  bigatti
+// -- renamed MachineInteger --> MachineInt
+//
+// Revision 1.9  2011/08/27 21:49:48  abbott
+// Added two file local fns called "cmp" (just for 2 longs or 2 unsigned longs).
+// Slightly simplified defn of "cmp" for MachineInt.
+//
+// Revision 1.8  2011/08/23 16:17:37  abbott
+// Corrected & simplified defn of RoundDiv; added comment about rounding halves.
+//
+// Revision 1.7  2010/03/05 18:39:49  abbott
+// Added SmallPower function -- currently undefined behaviour if overflow occurs!!
+//
+// Revision 1.6  2009/12/23 18:53:52  abbott
+// Major change to conversion functions:
+//   convert(..) is now a procedure instead of a function
+//   IsConvertible(..) replaces the former convert(..) function
+//   Added new NumericCast conversion function (placeholder for BOOST feature)
+//   Consequent changes in code which uses these features.
+//
+// Revision 1.5  2009/10/08 13:39:47  abbott
+// Renamed "round" into "RoundDiv".
+// Added some new versions of "RoundDiv".
+// Added a test for "RoundDiv".
+//
+// Revision 1.4  2009/06/05 12:14:55  abbott
+// Major change:
+//   created new files NumTheory.H/C  which contain basic number theory operations
+//   removed several basic number theory operations from ZZ.H/C
+//   removed gcd from MachineInt.H/C
+//   changed names of some basic fns:
+//      IsPPrime -> IsProbPrime
+//      invmod -> InvMod    (changed signature too)
+//      powermod -> PowerMod  (changed signature too)
+//   added new fns
+//      NextProbPrime & PrevProbPrime
+//   consequent changes to other code and tests and examples
+//
+// Revision 1.3  2008/12/11 10:47:36  abbott
+// Fixed bug in IsZero (it appeared only when CoCoA_DEBUG was set).
+// Some cleaning.
+//
+// Revision 1.2  2007/10/30 17:14:08  abbott
+// Changed licence from GPL-2 only to GPL-3 or later.
+// New version for such an important change.
+//
+// Revision 1.1  2007/05/21 12:57:28  abbott
+// New class for passing machine integers as args; includes some simple
+// operations on machine integers (cmp, gcd, IsNegative,...).  Operations
+// between ZZ and machine integers modified to use the new class.  Inexact
+// integer division (of a ZZ) by a negative value now triggers an error;
+// new error for reporting inexact integer division by a negative value.
+//
+//

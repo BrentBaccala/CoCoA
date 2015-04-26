@@ -1,0 +1,106 @@
+package $ApproxSolve;
+
+export ApproxSolve;
+
+----------------------------------------------------------------------
+
+define ApproxSolve(I)
+  If type(I) = LIST then
+    $RationalPoints.RationalSolveArgCheck(I, "ApproxSolve");
+    return ApproxSolve(ideal(I));
+  endif;
+  P := RingOf(I);
+  if not(IsQQ(CoeffRing(P))) then error("CoeffRing must be QQ"); endif;
+  ListX := $RationalPoints.FindIndets(gens(I));
+  if len(ListX) <> NumIndets(P) then
+    if EqSet(ListX, first(indets(P), len(ListX))) then
+      R := NewPolyRing(CoeffRing(P), SymbolRange("x",1,len(ListX)));
+      phi := PolyAlgebraHom(P,R,concat(indets(R),NewList(NumIndets(P)-len(ListX), zero(R))));
+      return ApproxSolve(apply(phi, gens(I)));
+    endif;
+  endif;
+  LTI := LT(I);
+  if not(IsZeroDim(LTI)) then error("not zero dimensional"); endif;
+  return ConcatLists([ApproxSolve0DimRad(I,L) | L In RecComponents(I,[],NumIndets(P))]) ;
+enddefine; -- ApproxSolve
+  
+----------------------------------------------------------------------
+
+-- last n polynomials in output are univariate in x[n]..x[1] and irreducible
+define RecComponents(I,L,n)
+  if n=0 then return [L]; endif;  
+  Fs := factor(UnivariatePoly(I+ideal(RingOf(I),L), n)).factors;
+  return ConcatLists([ RecComponents(I, concat([f],L), n-1) | f in Fs and RealRoots(f)<>[]]);
+enddefine; -- RecComponents
+  
+  
+define ApproxSolve0DimRad(I, UniPolys)
+  P := RingOf(I);
+  RadI := I + ideal(UniPolys);
+  NumSols := multiplicity(P/LT(RadI));
+  for n := NumIndets(P) to 1 step -1 do
+    if deg(UniPolys[n]) = NumSols then
+      return NormalPositionSolve(RadI, n);
+    endif;
+  endfor;
+  N := NumIndets(P);
+  while true do
+    LinPoly := sum([random(-3,3)*x | x in first(indets(P), N-1)]);
+    NewI := Subst(RadI, [[last(indets(P)), last(indets(P))-LinPoly]]);
+    if deg(UnivariatePoly(NewI, N)) = NumSols then
+      Pts := NormalPositionSolve(NewI, N);
+      return [ concat(first(Pt, N-1), [Pt[N]-AsRAT(Eval(LinPoly, Pt))])
+		   | Pt In Pts ];
+    endif;
+  endwhile;
+enddefine; -- ApproxSolve0DimRad
+  
+-- Define SquareFree(F)  --> function definition: no type declarations
+--   Facs := SqFreeFactor(F);
+--   Return Product(Facs.factors);
+-- EndDefine; -- SquareFree
+
+-- Define USquareFree(F)
+--   Idx := UnivariateIndetIndex(F);
+--   If Idx=0 Then Error("USquareFree: input must be univariate"); EndIf;
+--   Return F / GCD(F, Der(F, Indet(RingOf(F), Idx)));
+-- EndDefine; -- USquareFree
+
+Define UnivariatePoly(J, N)
+  P := RingOf(J);
+  inds := WithoutNth(indets(P), N);
+  Gs := gens(elim(inds, J));
+  If len(Gs) > 1 Then interreduce(Gs); EndIf;
+  Return monic(Gs[1]);
+EndDefine; -- UnivariatePoly
+
+define NormalPositionSolve(I, n)
+  P := RingOf(I);
+  N := NumIndets(P);
+  QQ := RingQQ();
+  QQx ::= QQ[x[1..N]], lex;
+  X := indets(QQx);
+  if n = N then
+    phi := PolyAlgebraHom(P, QQx, X);
+    return ShapeLemma(ideal(QQx, apply(phi, gens(I))));
+  endif;
+  swap(ref X[n], ref X[N]);
+  phi := PolyAlgebraHom(P, QQx, X);
+  Pts := ShapeLemma(ideal(QQx, apply(phi, gens(I))));
+  for i := 1 to len(Pts) do swap(ref Pts[i,n], ref Pts[i,N]); endfor;
+  return Pts;
+enddefine; -- NormalPositionSolve
+
+
+define ShapeLemma(ILex)
+  x := indets(RingOf(ILex));
+  n1 := len(x)-1;
+  RGB := ReducedGBasis(ILex);
+  L := SortedBy(RGB, func(A,B) return LT(A)>LT(B); endfunc);
+  Zvalues := RealRootsApprox(last(L), 10^(-50));
+  WithZ := func(L,Z) return concat(L,[Z]); endfunc;
+  return [ WithZ([AsRAT(-eval(L[i],WithZ([0,0],z))) | i in 1..n1], z) | z In Zvalues];
+enddefine; -- ShapeLemma
+  
+----------------------------------------------------------------------
+endpackage;

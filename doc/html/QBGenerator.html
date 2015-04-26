@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      QBGenerator</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      QBGenerator</H1>
+<FONT SIZE="4">
+<I>      &copy;  2006,2012 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for QBGenerator</A>
+        <UL>
+        <LI><A HREF="#theory">Background theory</A>
+        </UL>
+    <LI><A HREF="#constructors">Constructors and Pseudo-constructors</A>
+      <UL>
+      <LI><A HREF="#operations">Operations on QBGenerator</A>
+      </UL>
+    <LI><A HREF="#toc5">Maintainer documentation for QBGenerator</A>
+    <LI><A HREF="#toc6">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for QBGenerator</H2>
+<P>
+The name <CODE>QBGenerator</CODE> derives from its intended use as a (monomial)
+<I>quotient basis generator</I>, that is a way of generating a factor closed
+(vector space) basis of power products for the quotient of a
+polynomial ring by a zero-dimensional ideal.  It is used in the
+implementation of the <B>FGLM</B> and the <B>Buchberger-Moeller algorithms</B> -- in
+fact these are really the same algorithm (for computing a Groebner
+basis of an intersection of one or more zero-dimensional ideals).
+</P>
+<A NAME="theory"></A>
+<H4>Background theory</H4>
+<P>
+Let <CODE>P</CODE> denote a polynomial <A HREF="ring.html"><CODE>ring</CODE></A> (with coefficients in a field
+<CODE>k</CODE>), and let <CODE>I</CODE> be a zero-dimensional <A HREF="ideal.html"><CODE>ideal</CODE></A> in <CODE>P</CODE>.  Then
+mathematically the quotient <CODE>P/I</CODE> is a finite dimensional vector space
+over <CODE>k</CODE>.  We seek a basis <CODE>QB</CODE> for <CODE>P/I</CODE> which is a <B>factor closed</B>
+set of power products; <I>i.e.</I> if the power product <CODE>t</CODE> is in <CODE>QB</CODE> then any
+factor of <CODE>t</CODE> is in <CODE>QB</CODE> too.  Groebner basis theory guarantees that such
+bases exist; actually it was first proved by Macaulay (a person, not a
+computer algebra system).
+</P>
+<P>
+The elements of <CODE>QB</CODE> are determined one at a time, obviously
+starting with the trivial power product, 1.  Moreover, at every stage
+the set of elements in the partially formed <CODE>QB</CODE> is factor closed,
+and this implies that only certain PPs are candidates for being
+adjoined to the <CODE>QB</CODE> (we call these <B>corners</B>).  When a new
+element is adjoined to the <CODE>QB</CODE> new elements may appear in the
+<I>corner set</I>, these newly adjoined elements form the <B>new corner set</B>
+(this is always a subset of the <I>corner set</I>, and may be empty).
+</P>
+<P>
+During the determination of the <CODE>QB</CODE>, some power products will be
+discovered which cannot be in the <CODE>QB</CODE> (usually based on the failure of a linear
+independence criterion).  Such PPs form the <B>avoid set</B>: the
+<CODE>QBGenerator</CODE> will exclude all multiples of all elements of the
+<I>avoid set</I> from subsequent consideration.
+</P>
+<A NAME="constructors"></A>
+<H3>Constructors and Pseudo-constructors</H3>
+<UL>
+<LI><CODE>QBGenerator(PPM)</CODE> where <CODE>PPM</CODE> is the <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A> in which we shall
+calculate; initially the <I>quotient basis</I> is empty, and the <I>corner set</I> contains
+just <CODE>1</CODE>.
+</UL>
+
+<A NAME="operations"></A>
+<H3>Operations on QBGenerator</H3>
+<P>
+There are 3 accessor functions, and 2 true operations:
+</P>
+<UL>
+<LI><CODE>QBG.myQB()</CODE> gives the current elements of the <I>quotient basis</I> (as a
+<CODE>vector</CODE>) in the order they were added;
+<LI><CODE>QBG.myCorners()</CODE> gives the current elements of the <I>corner set</I> (as a <CODE>list</CODE>);
+<LI><CODE>QBG.myNewCorners()</CODE> gives the newly added elements to the <I>corner set</I>
+(as a <CODE>list</CODE>);
+<LI><CODE>QBG.myCornerPPIntoQB(pp)</CODE> move the element <CODE>pp</CODE> of the <I>corner set</I>
+into the <I>quotient basis</I> (this updates both the <I>corner set</I> and the <I>new corner set</I>);
+<LI><CODE>QBG.myCornerIntoAvoidSet(pp)</CODE>  move the element <CODE>pp</CODE> of the <I>corner set</I>
+into the <I>avoid set</I> (all multiples of <CODE>pp</CODE> will skipped hereafter).
+</UL>
+
+<A NAME="toc5"></A>
+<H2>Maintainer documentation for QBGenerator</H2>
+<P>
+The tricky part was designing a good interface.  The implementations themselves
+are relatvely straightforward (and actually contain some useful comments!)
+</P>
+<P>
+The function <CODE>QBGenerator::myCornerPPIntoQB</CODE> makes local copies of some
+fields to permit full exception safety.  This may adversely affect execution
+speed, but I believe that in the context of FGLM &amp; Buchberger-Moeller the
+slow-down will be negligible <I>(but I have not actually tested my guess)</I>.
+</P>
+<A NAME="toc6"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+Class <CODE>QBGenerator</CODE> could offer a ctor which accepts a (good)
+estimate of the dimension of the quotient, <I>i.e.</I> final number of
+elements in the QB.  It could use this value to <CODE>reserve</CODE> space for
+<CODE>myQBList</CODE>.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/QBGenerator.html -i txt/QBGenerator.txt -->
+</BODY></HTML>

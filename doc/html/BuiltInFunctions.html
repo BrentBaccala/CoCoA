@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>    BuiltInFunctions</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>    BuiltInFunctions</H1>
+<FONT SIZE="4">
+<I>      &copy;  2013 Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc3">1 one-liner: DECLARE_COCOALIB_FUNCTION</A>
+      <LI><A HREF="#toc4">2 one-liner: DECLARE_COCOALIBFORC5_FUNCTION</A>
+      <LI><A HREF="#toc5">3 overloading</A>
+      <LI><A HREF="#toc6">4 variable number of arguments</A>
+      <LI><A HREF="#toc7">5 other</A>
+      </UL>
+    <LI><A HREF="#toc8">Maintainer documentation</A>
+    <LI><A HREF="#toc9">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc10">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><CODE>BuiltInFunctions.C</CODE> and  <CODE>BuiltInOneLiners.C</CODE> ;-)
+</UL>
+
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+(Very rough set of notes about adding new functions to CoCoA-5)
+</P>
+<P>
+Typical situation: I have a function <CODE>FooFunc</CODE> implemented in CoCoALib
+and want to make it a CoCoA-5 function (called <CODE>FooFunc</CODE>).
+There are these possible scenarios I might want in CoCoA-5:
+</P>
+<OL>
+<LI>a <B>simple</B> function (not overloaded) with CoCoA-5 data types
+<LI>a <B>simple</B> function (not overloaded) with <I>almost</I> CoCoA-5 data types
+<LI>an <B>overloaded</B> function (same name, works on different types)
+<LI>a function with <B>variable number</B> of arguments
+<LI>full flexibility
+</OL>
+
+<P>
+Examples:
+</P>
+<OL>
+<LI><CODE>IsInvertible</CODE> (takes a <CODE>RINGELEM</CODE> returns a <CODE>BOOL</CODE>),
+<CODE>LinSolve</CODE> (takes two <CODE>MAT</CODE> returns a <CODE>MAT</CODE>).
+<LI><CODE>CoeffOfTerm</CODE> (takes two <CODE>RINGELEM</CODE> returns a <CODE>RINGELEM</CODE>, but in CoCoALib takes a <A HREF="PPMonoidElem.html"><CODE>PPMonoidElem</CODE></A> and a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>),
+<CODE>RingQQt</CODE> (takes an <CODE>INT</CODE> -- a <CODE>BigInt</CODE> for CoCoALib -- but in CoCoALib takes a <CODE>long</CODE>).
+<LI><CODE>GBasis</CODE> (takes an <CODE>IDEAL</CODE> or <CODE>MODULE</CODE>)
+<LI><CODE>indets</CODE> (takes a <CODE>RING</CODE> or a <CODE>RING</CODE> and a <CODE>STRING</CODE>)
+<LI><CODE>VersionInfo</CODE> (returns a <CODE>RECORD</CODE>)
+</OL>
+
+<A NAME="toc3"></A>
+<H3>1 one-liner: DECLARE_COCOALIB_FUNCTION</H3>
+<P>
+This is the easiest case: the porting is implemented in just one line
+specifying:
+</P>
+<UL>
+<LI>number of arguments
+<LI>name of the function
+<LI>input types
+</UL>
+
+<P></P>
+<P>
+the return type is deduced by the omonymous CoCoALib function
+</P>
+<P>
+Example: from <CODE>BuiltInOneLiners.C</CODE>
+</P>
+<PRE>
+  DECLARE_COCOALIB_FUNCTION1(IsInvertible, RINGELEM)
+  DECLARE_COCOALIB_FUNCTION2(LinSolve, MAT, MAT)
+</PRE>
+<P></P>
+<A NAME="toc4"></A>
+<H3>2 one-liner: DECLARE_COCOALIBFORC5_FUNCTION</H3>
+<P>
+CoCoA-5 has a simpler (less structured) hierarchy of types, so, for example,
+<A HREF="PPMonoidElem.html"><CODE>PPMonoidElem</CODE></A>s are represented by <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s, and machine integers
+(like <CODE>long</CODE>) are represented by <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+</P>
+<P>
+So a function taking a non-existing type in CoCoA-5 has a intermediate
+implementation, <CODE>FooFunc_forC5</CODE>, in <CODE>CoCoALibSupplement.C</CODE> with the
+CoCoA-5 datatypes.
+This should also mean that there is a <I>good reason</I> not to have such
+implementation available in CoCoALib itself
+(<I>e.g.</I> not mathematically clean, or inefficient).
+</P>
+<P>
+Example: from <CODE>BuiltInOneLiners.C</CODE>
+</P>
+<PRE>
+  DECLARE_COCOALIBFORC5_FUNCTION1(RingQQt, INT)
+  DECLARE_COCOALIBFORC5_FUNCTION2(CoeffOfTerm, RINGELEM, RINGELEM)
+</PRE>
+<P></P>
+<A NAME="toc5"></A>
+<H3>3 overloading</H3>
+<P>
+Allowing different types in input (with fixed number of arguments)
+</P>
+<P>
+Example: from <CODE>BuiltInFunctions.C</CODE>  (NB: <CODE>END_STD_BUILTIN_FUNCTION</CODE>)
+</P>
+<P>
+In CoCoA-5 <CODE>GBasis</CODE> takes an <CODE>IDEAL</CODE> or a <CODE>MODULE</CODE>
+</P>
+<PRE>
+  DECLARE_STD_BUILTIN_FUNCTION(GBasis, 1) {
+    int which;
+    intrusive_ptr&lt;RightValue&gt; x = runtimeEnv-&gt;evalArgAsT1orT2&lt;IDEAL, MODULE&gt;(ARG(0), which);
+    switch (which) {
+    case 1: return Value::from(GBasis(RefTo&lt;ideal&gt;(x)));
+    default:return Value::from(TidyGens(RefTo&lt;module&gt;(x)));
+    }
+  }
+  END_STD_BUILTIN_FUNCTION
+</PRE>
+<P>
+In CoCoA-5 <CODE>LT</CODE> takes an <CODE>IDEAL</CODE>, a <CODE>MODULE</CODE>, a <CODE>RINGELEM</CODE>, or a <CODE>MODULEELEM</CODE>
+</P>
+<PRE>
+  DECLARE_STD_BUILTIN_FUNCTION(LT, 1) { // AMB
+    int which;
+    intrusive_ptr&lt;RightValue&gt; v = runtimeEnv-&gt;evalArgAsT1orT2orT3orT4&lt;RINGELEM,
+                                                                      MODULEELEM,
+                                                                      IDEAL,
+                                                                      MODULE&gt;
+                                                                  (ARG(0), which);
+    switch (which) {
+    case 1: return Value::from(LT_forC5(RefTo&lt;RingElem&gt;(v)));
+    case 2: return Value::from(LT_forC5(RefTo&lt;ModuleElem&gt;(v)));
+    case 3: return Value::from(LT(RefTo&lt;ideal&gt;(v)));
+    case 4: return Value::from(LT(RefTo&lt;module&gt;(v)));
+    default: throw RuntimeException(ERRORMissingCode(v),invocationExpression);
+    }
+  }
+  END_STD_BUILTIN_FUNCTION
+</PRE>
+<P></P>
+<A NAME="toc6"></A>
+<H3>4 variable number of arguments</H3>
+<P>
+Example: from <CODE>BuiltInFunctions.C</CODE> (NB: without <CODE>END_STD_BUILTIN_FUNCTION</CODE>)
+</P>
+<PRE>
+  // variable number of args
+  DECLARE_ARITYCHECK_FUNCTION(indets) { return (1&lt;=nArg) &amp;&amp; (nArg&lt;=2); }
+  DECLARE_BUILTIN_FUNCTION(indets) { // AMB+JAA
+    invocationExpression-&gt;checkNumberOfArgs(1,2);
+    intrusive_ptr&lt;RING&gt; R = runtimeEnv-&gt;evalArgAs&lt;RING&gt;(ARG(0));
+    if (invocationExpression-&gt;args.size()==1)
+      return Value::from(indets((runtimeEnv-&gt;evalArgAs&lt;RING&gt;(ARG(0)))-&gt;theRing));
+    return Value::from(indets((runtimeEnv-&gt;evalArgAs&lt;RING&gt;(ARG(0)))-&gt;theRing,
+                              runtimeEnv-&gt;evalArgAs&lt;STRING&gt;(ARG(1))-&gt;theString));
+  }
+</PRE>
+<P></P>
+<A NAME="toc7"></A>
+<H3>5 other</H3>
+<P>
+<CODE>VersionInfo</CODE> (returns a <CODE>RECORD</CODE>)
+</P>
+<P>
+Let <CODE>TTTT</CODE> (<CODE>T1</CODE>, <CODE>T2</CODE>, ..)
+be a CoCoA-5 type with corresponding CoCoALib type <CODE>tttt</CODE>.
+</P>
+<UL>
+<LI><CODE>runtimeEnv-&gt;evalArgAs&lt;TTTT&gt;(ARG(0));</CODE>
+returns a pointer <CODE>intrusive_ptr&lt;TTTT&gt;</CODE>
+which will be accessed as <CODE>x-&gt;theTttt</CODE> of CoCoALib type <CODE>tttt</CODE>.
+<P></P>
+<LI><CODE>runtimeEnv-&gt;evalArgAsListOf&lt;TTTT&gt;(ARG(1));</CODE> -- all elements must be of type <CODE>TTTT</CODE> and returns <CODE>vector&lt;tttt&gt;</CODE>
+<P></P>
+<LI><CODE>runtimeEnv-&gt;evalArgAsListOfRingElem(ARG(2), R-&gt;theRing);</CODE> -- all elements must be in the same <A HREF="ring.html"><CODE>ring</CODE></A> (accepts also <CODE>INT</CODE> and <CODE>RAT</CODE>).
+<LI><CODE>runtimeEnv-&gt;evalArgAsListOfRingElem(ARG(0));</CODE> -- guesses the ring
+<LI><CODE>runtimeEnv-&gt;evalArgAsT1orT2&lt;T1,T2&gt;(ARG(0), n)</CODE> or
+  <UL>
+  <LI><CODE>runtimeEnv-&gt;evalArgAsT1orT2orT3&lt;T1,T2,T3&gt;(ARG(0), n)</CODE>
+  <LI>... or ...
+  <LI><CODE>runtimeEnv-&gt;evalArgAsT1orT2orT3orT4orT5orT6orT7&lt;T1,T2,T3,T4,T5,T6,T7&gt;(ARG(0), n)</CODE>
+returns a pointer <CODE>intrusive_ptr&lt;RightValue&gt;</CODE> and puts in <CODE>n</CODE> the
+index of the type found.
+Throws a meaningful error is the type found is not in the list.
+  </UL>
+</UL>
+
+<UL>
+<LI><CODE>RefTo&lt;tttt&gt;(v)</CODE> where <CODE>v</CODE> is a <CODE>intrusive_ptr&lt;RightValue&gt;</CODE>
+(generic right value): casts the pointer to specific type and call the
+reference <CODE>-&gt;theTttt</CODE> of CoCoALib type <CODE>tttt</CODE>.
+(Defined in <CODE>BuiltinFunctions.H</CODE>)
+<P></P>
+<PRE>
+  DECLARE_STD_BUILTIN_FUNCTION(IsOne, 1) {
+    int which;
+    intrusive_ptr&lt;RightValue&gt; v = runtimeEnv-&gt;evalArgAsT1orT2orT3&lt;INT,
+                                                                  RAT,
+                                                                  RINGELEM&gt;
+                                                               (ARG(0), which);
+    switch (which) {
+    case 1: return Value::from(IsOne(RefTo&lt;BigInt&gt;(v)));
+    case 2: return Value::from(IsOne(RefTo&lt;BigRat&gt;(v)));
+    case 3: return Value::from(IsOne(RefTo&lt;RingElem&gt;(v)));
+    default: throw RuntimeException(ERRORMissingCode(v),invocationExpression);
+    }
+  }
+  END_STD_BUILTIN_FUNCTION
+</PRE>
+</UL>
+
+<A NAME="toc8"></A>
+<H2>Maintainer documentation</H2>
+<P>
+*For overloaded functions explicitely*:
+Explicitely define all cases and make an extra default case
+for safety (gives protection in development when one type has been forgotten)
+</P>
+<PRE>
+  DECLARE_STD_BUILTIN_FUNCTION(LT, 1) {
+    int which;
+    intrusive_ptr&lt;RightValue&gt; v = runtimeEnv-&gt;evalArgAsT1orT2orT3orT4&lt;.....&gt;
+                                                                  (ARG(0), which);
+    switch (which) {
+    case 1: ...
+    case 2: ...
+    case 3: ...
+    case 4: ...
+    default: throw RuntimeException(ERRORMissingCode(v),invocationExpression);
+    }
+  }
+  END_STD_BUILTIN_FUNCTION
+</PRE>
+<P></P>
+<A NAME="toc9"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<UL>
+<LI>Can we make it even simpler?
+<LI>Should <CODE>RefTo&lt;tttt&gt;</CODE> work also for <CODE>intrusive_ptr&lt;TTTT&gt;</CODE>?
+</UL>
+
+<P></P>
+<A NAME="toc10"></A>
+<H2>Main changes</H2>
+<P>
+<B>2014</B>
+</P>
+<UL>
+<LI>July (before ICMS in Seoul)
+  <UL>
+  <LI>Type names have been changed from <CODE>TtttValue</CODE> to <CODE>TTTT</CODE>
+    (e.g. <CODE>IdealValue</CODE> to <CODE>IDEAL</CODE>).
+  <LI>For overloaded functions: <CODE>PtrCastTttt</CODE> has been changed into
+    <CODE>RefTo&lt;tttt&gt;</CODE>
+    (e.g. <CODE>PtrCastBigInt</CODE> to <CODE>RefTo&lt;BigInt&gt;</CODE>,
+     and  <CODE>PtrCastIdeal</CODE>  to <CODE>RefTo&lt;ideal&gt;</CODE>).
+  <LI>member field <CODE>theInteger/theRational</CODE> have been changed into
+    <CODE>theBigInt/theBigRat</CODE>
+  <P></P>
+  </UL>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/BuiltInFunctions.html -i txt/BuiltInFunctions.txt -->
+</BODY></HTML>

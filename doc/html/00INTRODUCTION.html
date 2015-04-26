@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      INTRODUCTION</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      INTRODUCTION</H1>
+<FONT SIZE="4">
+<I>      &copy;  2010,2013 John Abbott, Anna Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Quick Summary: CoCoALib and CoCoA-5</A>
+    <LI><A HREF="#toc2">Getting Started</A>
+      <UL>
+      <LI><A HREF="#toc3">Using CoCoALib</A>
+        <UL>
+        <LI><A HREF="#toc4">Writing Your Own Programs</A>
+        <LI><A HREF="#toc5">Debugging with CoCoALib</A>
+        </UL>
+      <LI><A HREF="#toc6">Various Forms of Documentation</A>
+      </UL>
+    <LI><A HREF="#toc7">Sundry Important Points</A>
+        <UL>
+        <LI><A HREF="#toc8">Powering and Exponentiation</A>
+        <LI><A HREF="#toc9">Integers and Rationals</A>
+        </UL>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Quick Summary: CoCoALib and CoCoA-5</H2>
+<P>
+<B>CoCoA-5</B> is an easy-to-use interactive system for computations in
+commutative algebra; it contains an on-line manual accessible via the
+<CODE>?</CODE> command.
+</P>
+<P>
+<B>CoCoALib</B> is a C++ <I>library</I> of functions for computations in
+commutative algebra.
+</P>
+<P>
+This introduction is part of the documentation for <I>CoCoALib</I>;
+to use the library you will need some <I>basic knowledge</I> of the C++
+programming language.
+</P>
+<A NAME="toc2"></A>
+<H2>Getting Started</H2>
+<P>
+The first step is to compile the software: see <A HREF="INSTALL.html"><CODE>INSTALL</CODE></A>
+</P>
+<A NAME="toc3"></A>
+<H3>Using CoCoALib</H3>
+<P>
+As we know that no one likes to read documentation, the best place to
+start is by looking at the <A HREF="../../examples/index.html">examples/</A>
+directory full of sample code using CoCoALib.
+</P>
+<A NAME="toc4"></A>
+<H4>Writing Your Own Programs</H4>
+<P>
+The simplest approach is to copy the example program <CODE>ex-empty.C</CODE>
+and modify that (see <A HREF="../../examples/index.html">guide</A>).
+</P>
+<P>
+If you want to experiment with CoCoALib using a different directory,
+just copy <CODE>examples/Makefile</CODE> into your directory and change the line
+</P>
+<PRE>
+  COCOA_ROOT=...
+</PRE>
+<P>
+so that it specifies the full path of <CODE>CoCoALib-XX</CODE>, for instance
+</P>
+<PRE>
+  COCOA_ROOT=/Users/bigatti/CoCoALib-0.99
+</PRE>
+<P>
+In any case, it is best to start with a copy of <CODE>ex-empty.C</CODE>.
+</P>
+<A NAME="toc5"></A>
+<H4>Debugging with CoCoALib</H4>
+<P>
+CoCoALib does offer some help in tracking down bugs in programs which
+use it.  If the preprocessor symbol <CODE>CoCoA_DEBUG</CODE> is set then various
+run-time assertions are enabled which perform extra checks in various
+functions.  If you use the compiler  <CODE>g++</CODE>  then the simplest way to
+activate debugging is to modify two lines in the file
+<CODE>configuration/autoconf.mk</CODE> -- the file contains comments to guide you.
+You may like to read [assert.html] to learn about <CODE>CoCoA_ASSERT</CODE>.
+</P>
+<A NAME="toc6"></A>
+<H3>Various Forms of Documentation</H3>
+<P>
+CoCoALib comes with a collection of hand-written descriptions of its
+capabilities as well as a collection of example programs showing how
+to use many of the features of the library.  The hope is that the example
+programs (plus perhaps a little intelligent guesswork) will suffice to
+answer most questions about CoCoALib.  The hand-written documentation is
+intended to be more thorough: so less guesswork is needed, but you may
+have to plough through lots of tedious text to find the detail you're
+looking for.
+</P>
+<P>
+The hand-written documentation is split into many files: generally there is
+one file of documentation for each implementation file in the source code.
+Furthermore, each file comprises three sections:
+</P>
+<UL>
+<LI><B>User Documentation</B>  gives the information a normal user of
+  the library may need to know, principally the function interfaces
+  offered
+<LI><B>Maintainer Documentation</B> contains notes and details about how
+  the various functions are implemented in the library, essentially
+  all information that might be needed to comprehend and maintain the
+  code in the future
+<LI><B>Shortcomings, etc</B> contains sundry notes about the implementation,
+  for instance ideas on how the implementation might be improved in the
+  future, doubts about certain design choices, and generally any thoughts
+  to be taken into consideration for future versions.
+</UL>
+
+<P></P>
+<P>
+This documentation is in the CoCoALib directory <CODE>doc/txt/</CODE>, and
+converted into html (<CODE>doc/html/</CODE>) and LaTeX (<CODE>doc/tex/</CODE>) using
+<A HREF="http://txt2tags.sourceforge.net/"><CODE>txt2tags</CODE></A>.
+</P>
+<P>
+A template file fo adding to this documentation and some basic
+instructions for <A HREF="http://txt2tags.sourceforge.net/"><CODE>txt2tags</CODE></A> are
+in the file <A HREF="empty.html">doc/txt/empty.txt</A>.
+</P>
+<P>
+There is also some automatically generated DOXYGEN documentation in
+[../doxygen/index.html]
+</P>
+<P>
+We believe that many simple questions are probably best answered by looking
+at the example programs (and perhaps applying a little intelligent guesswork).
+The hand-written documentation in the directory doc/ is supposed to be
+exhaustive (and is doubtless also rather exhausting).  The Doxygen files
+will most likely be of use to those already experienced in using CoCoALib.
+</P>
+<A NAME="toc7"></A>
+<H2>Sundry Important Points</H2>
+<P>
+We have tried to give CoCoALib a <I>natural</I> interface, but this has not always
+been possible.  Here are the main problem areas:
+</P>
+<A NAME="toc8"></A>
+<H4>Powering and Exponentiation</H4>
+<P>
+The use of the hat symbol (^) to denote exponentiation is very widespread.
+<B>CoCoALib does not allow this</B> you must use the function <CODE>power</CODE> instead.
+</P>
+<P>
+Why not?  Because it would be too easy to write misleading code, <I>i.e.</I>
+valid code which does not compute what you would expect.  Here is a simple
+example: <CODE>3*x^2</CODE> is interpreted by the compiler as <CODE>(3*x)^2</CODE>.  Unfortunately
+there is no way to make the C++ compiler use the expected interpretation.
+</P>
+<A NAME="toc9"></A>
+<H4>Integers and Rationals</H4>
+<P>
+The C++ language is not designed to compute directly with unlimited
+integers or with exact rational numbers; special types (namely <A HREF="BigInt.html"><CODE>BigInt</CODE></A> and
+<A HREF="BigRat.html"><CODE>BigRat</CODE></A>) to handle these sorts of values have been added as part of CoCoALib
+(with the real work being done by the GMP library).  Nevertheless the user
+has to be wary of several pitfalls where code which looks correct at first
+glance does not produce the right answer.
+</P>
+<UL>
+<LI>rationals must be constructed explicitly, <I>e.g.</I> the expression
+  <CODE>2/3</CODE> is valid C++ but is interpreted as an integer division
+  giving result <CODE>0</CODE>; instead the rational must be constructed like
+  this <CODE>BigRat(2,3)</CODE>.
+<P></P>
+<LI>large integer constants must be converted from a string
+  representation, <I>e.g.</I> <CODE>n = 99...99;</CODE> (with 99 nines) will
+  probably not even compile because of an error about "integer
+  constant too big"; instead such a large value must be handled
+  directly by CoCoALib in a call like <CODE>convert(n, "99...99");</CODE> where
+  the variable <CODE>n</CODE> has already been declared to be of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A> or
+  <A HREF="BigRat.html"><CODE>BigRat</CODE></A>.
+<P></P>
+<LI>the compiler believes it knows how to perform arithmetic between
+  machine integers, but the spectre of overflow continues to haunt
+  such computations.  Overflow cannot occur with values of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+  but the computations will be much slower than with machine integers.
+  If you are quite sure that large values can never occur then it is
+  fine to use machine integers; otherwise use unlimited integers.
+<P></P>
+<LI>(AMB: add examples from talk in Kassel)
+</UL>
+
+<P></P>
+<P>
+=== Reporting CoCoALib Bugs and other problems ==
+</P>
+<P>
+Please let us know if you find any bugs in CoCoALib.  Ideally your bug report should include a <B>small</B> program
+which exhibits the bad behaviour with a clear indication of what you think the
+program should do, and where it apparently goes wrong.  The best way to inform
+us of the problem is to report an <I>issue</I> on
+</P>
+<PRE>
+    http://cocoa.dima.unige.it/redmine/
+</PRE>
+<P></P>
+<P>
+If you'd rather not use redmine Forum, you can send email to:
+</P>
+<PRE>
+   cocoa@dima.unige.it
+</PRE>
+<P></P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/00INTRODUCTION.html -i txt/00INTRODUCTION.txt -->
+</BODY></HTML>

@@ -1,0 +1,22 @@
+Define F(X)
+	PrintLn "F";
+	qua := True;
+	L := ["Qui", "Quo", qua, Record[X:=1, Y:=4/3], 42=21*2];
+	return X/0;
+EndDefine
+
+Define G()
+	// bi bu ba
+	PrintLn "G";
+	dontCare := F(43);
+	PrintLn "EndG";
+EndDefine
+
+Define Foo()
+	PrintLn "Foo";
+	G();
+	PrintLn "EndFoo";
+EndDefine
+
+Foo();
+

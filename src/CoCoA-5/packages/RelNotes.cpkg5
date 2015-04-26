@@ -1,0 +1,77 @@
+Package $relnotes
+
+Export RelNotes;
+  
+Define RelNotes()
+  PrintLn "==================================================================";
+  PrintLn "==  Here is an excerpt from the release notes of version 5.1.0  ==";
+  PrintLn "==================================================================";
+  PrintLn "==  A few new functions have been added  ==";
+  PrintLn "-- ContentFreeFactor";
+  PrintLn "-- GetCol, GetCols, GetRow, GetRows of a MAT";
+  PrintLn "-- InitialIdeal, TgCone, PrimaryPoincare";
+  PrintLn "-- IsConstant";
+  PrintLn "-- IsQuotientRing, DefiningIdeal";
+  PrintLn "-- IsZeroCol, IsZeroRow";
+  PrintLn "-- MantissaAndExponent2, MantissaAndExponent10";
+  PrintLn "-- NumPartitions";
+  PrintLn "-- PrimitiveRoot";
+  PrintLn "-- PrintBettiMatrix, PrintBettiMatrix, PrintRes";
+  PrintLn "-- PrintRes, PrintBettiDiagram, PrintBettiMatrix";
+  PrintLn "-- ScientificStr";
+  PrintLn "-- SqFreeFactor (also for finite characteristic)";
+  PrintLn "-- TimeFrom";
+  PrintLn "-- ceil, floor, round";
+  PrintLn "-- cyclotomic";
+  PrintLn "-- incr, decr of an INT";
+  PrintLn "-- swap";
+  PrintLn "-- valuation";
+  PrintLn "";
+  PrintLn "==  Changes to existing functions ==";
+  PrintLn "-- field names in a factorization have changed;";
+  PrintLn "-- several functions are now implemented in C++;";
+  PrintLn "-- some fns are obsolescent (e.g. List, Comp, Mod2Rat, Functions)";
+  PrintLn "";
+  PrintLn "==  Changes to the syntax  ==";
+  PrintLn "-- Not(...) is now a function to avoid ambiguities: use parentheses";
+  PrintLn "-- anonymous functions are now placed in  Func(..) ... EndFunc";
+  PrintLn "";
+  PrintLn "== Online Manual ==";
+  PrintLn "-- Many entries in the manual have been significantly improved.";
+  PrintLn "";
+  PrintLn "Several minor bugs have been fixed in the code and in the manual";
+  PrintLn "==================================================================";
+  PrintLn "==  Here is an excerpt from the release notes of version 5.1.1  ==";
+  PrintLn "==================================================================";
+  PrintLn "==  A few new functions have been added  ==";
+  PrintLn "-- ApproxSolve, RationalSolve of a polynomial system";
+  PrintLn "-- BettiDiagram, BettiMatrix";
+  PrintLn "-- CheckArgTypes";
+  PrintLn "-- GradingMat (grading of a polynomial RING)";
+  PrintLn "-- ID of a RING";
+  PrintLn "-- IsInjective, IsSurjective, ker, PreImage of a RINGHOM";
+  PrintLn "-- MayerVietorisTreeN1";
+  PrintLn "-- NmzDiagInvariants, NmzEhrhartRing, NmzFiniteDiagInvariants";
+  PrintLn "--   NmzIntersectionValRings, NmzTorusInvariants";
+  PrintLn "-- ReadExpr (read RINGELEM from a STRING)";
+  PrintLn "-- SetRow, SwapRows (in a MAT)";
+  PrintLn "-- gin of a polynomial IDEAL";
+  PrintLn "-- implicit (implicitization)";
+  PrintLn "-- packages";
+  PrintLn "";
+  PrintLn "==  Changes to existing functions ==";
+  PrintLn "-- \"Source\" may now be called within loops";
+  PrintLn "-- suggestions for misprints have been improved";
+  PrintLn "";
+  PrintLn "== Online Manual ==";
+  PrintLn "-- Obsolete and obsolescent functions are now clearly indicated";
+  PrintLn "-- New sections for";
+  PrintLn "--     Migrating from CoCoA-4 and keeping up-to-date";
+  PrintLn "--     Recent changes in the CoCoA-5 language";
+  PrintLn "-- Many entries in the manual have been significantly improved.";
+  PrintLn;
+  PrintLn "Several minor bugs have been fixed in the code and in the manual";
+  PrintLn "================================================================";
+EndDefine; -- RelNotes
+
+EndPackage; -- $relnotes

@@ -1,0 +1,6 @@
+-- init.cocoa5 --
+
+Use R;
+-- PrintLn "-- from init.cocoa5";
+-- PrintLn "-- CurrentRing  is  R ::= ", CoeffRing(R), indets(R);
+

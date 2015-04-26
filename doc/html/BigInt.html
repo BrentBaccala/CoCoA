@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      BigInt</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      BigInt</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2007,2010,2011 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc3">Generalities</A>
+      <LI><A HREF="#toc4">The Functions Available For Use</A>
+        <UL>
+        <LI><A HREF="#toc5">Constructors</A>
+        <LI><A HREF="#operations">Operations</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer Documentation</A>
+    <LI><A HREF="#toc8">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc9">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-BigInt1.C">ex-BigInt1.C</A>
+<LI><A HREF="../../examples/index.html#ex-BigInt2.C">ex-BigInt2.C</A>
+<LI><A HREF="../../examples/index.html#ex-BigInt3.C">ex-BigInt3.C</A>
+<LI><A HREF="../../examples/index.html#ex-GMPAllocator1.C">ex-GMPAllocator1.C</A>
+<LI><A HREF="../../examples/index.html#ex-GMPAllocator2.C">ex-GMPAllocator2.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+<B>NOTE:</B> for operations on values of type <CODE>BigInt</CODE> see <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A> and <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>
+</P>
+<A NAME="toc3"></A>
+<H3>Generalities</H3>
+<P>
+The class <CODE>BigInt</CODE> is intended to represent integers of practically
+unlimited range.  CoCoALib relies on an external library for handling big
+integers: currently it is based on the the GMP <I>multiple precision</I>
+library.  This CoCoALib code simply forms the interface to the underlying
+big integer library.
+</P>
+<P>
+Computations with <CODE>BigInt</CODE> values do not suffer from overflow, but
+they are significantly slower than with machine integers.  All
+<CODE>BigInt</CODE> values are stored on the heap.
+</P>
+<P>
+It is important not to confuse values of type <CODE>BigInt</CODE> with values of type
+<A HREF="RingElem.html"><CODE>RingElem</CODE></A> which happen to belong to the ring <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>.  In summary, the
+operations available for <A HREF="RingElem.html"><CODE>RingElem</CODE></A> are those applicable to elements of
+any ordered commutative ring, whereas the range of operations on <CODE>BigInt</CODE>
+values is wider (since we have explicit knowledge of the type).
+</P>
+<P>
+See <A HREF="BigRat.html"><CODE>BigRat</CODE></A> for representing and handling rational numbers.
+</P>
+<A NAME="toc4"></A>
+<H3>The Functions Available For Use</H3>
+<A NAME="toc5"></A>
+<H4>Constructors</H4>
+<P>
+ A value of type <CODE>BigInt</CODE> may be created from:
+</P>
+<UL>
+<LI>nothing, in which case the value is zero
+<LI>another value of type <CODE>BigInt</CODE> (its value is copied)
+<LI>a machine integer
+<LI>a string containing the decimal digits (optionally preceded by a minus sign)
+<LI>a GMP <CODE>mpz_t</CODE> value
+</UL>
+
+<P>
+Note: No direct constructor for creating a <CODE>BigInt</CODE> from a <CODE>char*</CODE> is
+provided because it introduces an ambiguity in <CODE>BigInt(0)</CODE> -- since
+<CODE>0</CODE> is valid as a <CODE>char*</CODE>.  However C++ will automatically convert
+a <CODE>char*</CODE> into a <CODE>std::string</CODE>, so you can still use a C-string if
+you want.
+</P>
+<A NAME="operations"></A>
+<H4>Operations</H4>
+<P>
+<B>NOTE:</B> for operations on values of type <CODE>BigInt</CODE> see <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A>
+</P>
+<OL>
+<LI>Functions violating encapsulation
+  <UL>
+  <LI><CODE>mpzref(n)</CODE>  -- this gives a (const) reference to the <CODE>mpz_t</CODE>
+                      value inside a <CODE>BigInt</CODE> object.
+                      You should use this accessor very sparingly (but
+                      it is handy for calling GMP functions directly).
+  </UL>
+</OL>
+
+<A NAME="toc7"></A>
+<H2>Maintainer Documentation</H2>
+<P>
+The implementation is structurally very simple, just rather long and
+tedious.  The value of a <CODE>BigInt</CODE> object is represented as an <CODE>mpz_t</CODE>;
+this is a private data member, but to facilitate interfacing with code
+which uses <CODE>mpz_t</CODE> values directly I have supplied the two functions
+called <CODE>mpzref</CODE> which allow access to this data member.
+</P>
+<P>
+The output function turned out to be trickier than one might guess.
+Part of the problem was wanting to respect the <CODE>ostream</CODE> settings.
+</P>
+<P>
+Of course, input is a mess.  Nothing clever here.
+</P>
+<P>
+Check also the documentation for <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A> to understand how
+that class is used.
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+Currently functions which return <CODE>BigInt</CODE> values will copy the result (upon
+each return) -- an attempt to avoid the waste with proxy classes caused a
+problem see <A HREF="../../src/tests/test-bug4.C">test-bug4.C</A>  Move semantics in C++11 should solve this.
+</P>
+<P>
+The official GMP interface (<CODE>mpz_class</CODE>) is certainly more efficient;
+should CoCoALib eventually switch to using <CODE>mpz_class</CODE>?
+It seems most unlikely that GMP will be displaced from its
+position as the foremost library for big integer arithmetic, so
+such explicit dependence on it should not matter.
+</P>
+<P>
+No bit operations: bit setting and checking, and/or/xor/not.
+</P>
+<P>
+The code is long, tedious and unilluminating.  Are there any volunteers
+to improve it?
+</P>
+<A NAME="toc9"></A>
+<H2>Main changes</H2>
+<P>
+<B>2012</B>
+</P>
+<UL>
+<LI>May (v0.9951):
+ <UL>
+ <LI>moved common operations on <A HREF="BigInt.html"><CODE>BigInt</CODE></A> and <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A>
+   together into <CODE>IntOperations</CODE>
+-
+ <P></P>
+<B>2011</B>
+ </UL>
+<LI>August (v0.9950):
+ <UL>
+ <LI>class <CODE>ZZ</CODE> renamed into <CODE>BigInt</CODE>:
+   avoid confusion with <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A> and its name in CoCoA system
+ <LI><CODE>random</CODE> has changed (was <CODE>random(lo,hi)</CODE>):
+   see <A HREF="RandomZZStream.html"><CODE>RandomZZStream</CODE></A>, <A HREF="RandomLongStream.html"><CODE>RandomLongStream</CODE></A>
+ </UL>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/BigInt.html -i txt/BigInt.txt -->
+</BODY></HTML>

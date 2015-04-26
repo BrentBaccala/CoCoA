@@ -1,0 +1,52 @@
+-------------------------------------------------------
+-- (2014-05-02) sort had a slippery bug making it give wrong answers
+length := 33;
+For j:=1 To 1000 do
+  l1 := [random(0,100) | i In 1..length];
+  l2 := sorted(l1);
+  For i:=1 To len(l2)-1 Do
+    If l2[i] > l2[i+1] Then
+      PrintLn "l1=",l1,"   and l2=",l2;
+    EndIf;
+  EndFor;
+EndFor;
+
+-- There was no bug for lists shorter than 33, but here's a quick test anyway
+length := 9;
+For j:=1 To 1000 do
+  l1 := [random(0,100) | i In 1..length];
+  l2 := sorted(l1);
+  For i:=1 To len(l2)-1 Do
+    If l2[i] > l2[i+1] Then
+      PrintLn "l1=",l1,"   and l2=",l2;
+    EndIf;
+  EndFor;
+EndFor;
+
+-----------------------------------------------------------------------------
+-- Bug in IsHomog(LIST) did not check first element!
+
+Use QQ[x];
+If IsHomog([x+1]) Then error("IsHomog([x+1]) gave wrong answer!"); EndIf;
+
+-----------------------------------------------------------------------------
+-- Oldish bug in elim (failed to check for zero ideal, see Redmine #447)
+
+Use R::=QQ[x,y,z,t];
+I := ideal(zero(R));
+Lista := [x,y];
+NoPrint := elim(Lista,I);
+
+-----------------------------------------------------------------------------
+-- Dangling reference bug in (some) RingHoms: see Redmine #190
+
+R := NewPolyRing(QQ, ["x"]);
+phi := CoeffEmbeddingHom(R);
+R := "delete ring";
+phi(123);
+
+For I := 1 To 9 Do
+  Print I;
+  P ::= QQ[x,y,z];
+  phi := CoeffEmbeddingHom(P);
+EndFor;

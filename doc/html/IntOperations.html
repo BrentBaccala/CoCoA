@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      IntOperations</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      IntOperations</H1>
+<FONT SIZE="4">
+<I>      &copy;  2012,2014 John Abbott and Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation</A>
+      <UL>
+      <LI><A HREF="#queries">Queries</A>
+      <LI><A HREF="#operations">Operations</A>
+        <UL>
+        <LI><A HREF="#toc5">Infix operators</A>
+        <LI><A HREF="#toc6">cmp</A>
+        <LI><A HREF="#toc7">Sundry standard functions</A>
+        <LI><A HREF="#toc8">Conversion functions</A>
+        <LI><A HREF="#toc9">Miscellany</A>
+        <LI><A HREF="#toc10">Procedures for arithmetic</A>
+        </UL>
+      <LI><A HREF="#toc11">Error Conditions and Exceptions</A>
+      </UL>
+    <LI><A HREF="#toc12">Maintainer Documentation</A>
+    <LI><A HREF="#toc13">Bugs, shortcomings and other ideas</A>
+    <LI><A HREF="#toc14">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-BigInt1.C">ex-BigInt1.C</A>
+<LI><A HREF="../../examples/index.html#ex-BigInt2.C">ex-BigInt2.C</A>
+<LI><A HREF="../../examples/index.html#ex-BigInt3.C">ex-BigInt3.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation</H2>
+<P>
+Here is a collection of basic operations available for integer values;
+see also the more advanced functions in <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>.
+</P>
+<P>
+CoCoALib functions which expect integer values will accept either
+machine integer values or <A HREF="BigInt.html"><CODE>BigInt</CODE></A> values -- they may be mixed.  The
+return type is usually <A HREF="BigInt.html"><CODE>BigInt</CODE></A>; the few cases where the return type
+is <CODE>long</CODE> are clearly indicated.  Remember that basic arithmetic
+operations between two machine integers are handled directly by C++
+(with its rules and restrictions <I>e.g.</I> overflow).
+</P>
+<P>
+If you want to write new functions which accept machine integers as
+arguments, take a look at the class <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A> which is designed
+for this purpose (handling both signed and unsigned machine integers
+safely).
+</P>
+<A NAME="queries"></A>
+<H3>Queries</H3>
+<UL>
+<LI><CODE>IsEven(n)</CODE>     -- true iff <CODE>n</CODE> is even
+<LI><CODE>IsOdd(n)</CODE>      -- true iff <CODE>n</CODE> is odd
+<LI><CODE>IsPowerOf2(n)</CODE> -- true iff <CODE>n</CODE> is a (positive) power of 2
+<LI><CODE>IsDivisible(n,d)</CODE> -- true iff <CODE>n</CODE> is divisible by <CODE>d</CODE> (throws <CODE>ERR::DivByZero</CODE> if <CODE>d</CODE> is zero)
+<LI><CODE>IsSquare(n)</CODE>   -- true iff <CODE>n</CODE> is a perfect square
+<LI><CODE>IsPower(n)</CODE>    -- true iff <CODE>n</CODE> is a perfect k-th power for some k &gt; 1
+<LI><CODE>IsExactIroot(X,n,r)</CODE> -- true iff <CODE>n</CODE> is a perfect <CODE>r</CODE>-th power, assigns <CODE>iroot(N,r)</CODE> to <CODE>X</CODE>
+</UL>
+
+<P></P>
+<P>
+Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+</P>
+<UL>
+<LI><CODE>IsZero(N)</CODE>     -- true iff <CODE>N</CODE> is zero
+<LI><CODE>IsOne(N)</CODE>      -- true iff <CODE>N</CODE> is 1
+<LI><CODE>IsMinusOne(N)</CODE> -- true iff <CODE>N</CODE> is -1
+</UL>
+
+<P></P>
+<A NAME="operations"></A>
+<H3>Operations</H3>
+<A NAME="toc5"></A>
+<H4>Infix operators</H4>
+<OL>
+<LI>normal arithmetic (potentially inefficient because of temporaries)
+ <UL>
+ <LI><CODE>=</CODE>    assignment
+ <LI><CODE>+</CODE>    the sum
+ <LI><CODE>-</CODE>    the difference
+ <LI><CODE>*</CODE>    the product
+ <LI><CODE>/</CODE>    integer quotient (<B>truncated</B> "towards zero")
+ <LI><CODE>%</CODE>    remainder, satisfies a = b*(a/b)+(a%b); see also <CODE>LeastNNegRemainder</CODE> and <CODE>SymmRemainder</CODE>
+ </UL>
+</OL>
+
+<P>
+<B>NOTE:</B>  <B>you cannot use</B> <CODE>^</CODE> <B>for exponentiation</B>; you must use the function <CODE>power</CODE> instead.  We decided this
+because it is too easy to write misleading code: for instance,
+<CODE>a*b^2</CODE> is interpreted by the compiler as <CODE>(a*b)^2</CODE>.  There is no
+way to make the C++ compiler use the expected interpretation.
+</P>
+<OL>
+<LI>arithmetic and assignment
+ <UL>
+ <LI><CODE>+=</CODE>, <CODE>-=</CODE>, <CODE>*=</CODE>, <CODE>/=</CODE>, <CODE>%=</CODE> 
+   --  definitions as expected; if RHS is a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> LHS must be <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+ <P></P>
+ </UL>
+<LI>arithmetic ordering
+ <UL>
+ <LI><CODE>==</CODE>, <CODE>!=</CODE>
+ <LI><CODE>&lt;</CODE>, <CODE>&lt;=</CODE>, <CODE>&gt;</CODE>, <CODE>&gt;=</CODE>
+     -- comparison (using the normal arithmetic ordering)
+     -- see also the <CODE>cmp</CODE> function below.
+ <P></P>
+ </UL>
+<LI>increment/decrement
+ <UL>
+ <LI><CODE>++</CODE>, <CODE>--</CODE> (prefix, <I>e.g.</I> <CODE>++a</CODE>)   use these if you can
+ <LI><CODE>++</CODE>, <CODE>--</CODE> (postfix, <I>e.g.</I> <CODE>a++</CODE>)  avoid these if you can, as they create temporaries
+ </UL>
+</OL>
+
+<A NAME="toc6"></A>
+<H4>cmp</H4>
+<P>
+(three way comparison)
+</P>
+<UL>
+<LI><CODE>cmp(a, b)</CODE> -- returns an <CODE>int</CODE> which is
+                      <CODE>&lt; 0</CODE>,   <CODE>== 0</CODE>, or   <CODE>&gt; 0</CODE> if
+                    <CODE>a &lt; b</CODE>, <CODE>a == b</CODE>, or <CODE>a &gt; b</CODE> respectively
+<LI><CODE>CmpAbs(a,b)</CODE> -- same as <CODE>cmp(abs(a),abs(b))</CODE> but might be faster.
+</UL>
+
+<P></P>
+<A NAME="toc7"></A>
+<H4>Sundry standard functions</H4>
+<P>
+(Several basic number theoretical operations are defined in <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>)
+Let <CODE>n</CODE> be an integer,
+</P>
+<UL>
+<LI><CODE>abs(n)</CODE>         -- the absolute value of <CODE>n</CODE>
+<LI><CODE>sign(n)</CODE>        -- (returns <CODE>int</CODE>) returns
+                         -1 if <CODE>n&lt;0</CODE>, 0 if <CODE>n==0</CODE>, and +1 if <CODE>n&gt;0</CODE>
+<LI><CODE>LeastNNegRemainder(x,m)</CODE>  -- least non-negative remainder; throws <CODE>ERR::DivByZero</CODE> if <CODE>m==0</CODE>
+<LI><CODE>SymmRemainder(x,m)</CODE>  -- symmetric remainder; throws <CODE>ERR::DivByZero</CODE> if <CODE>m==0</CODE>
+<LI><CODE>log(n)</CODE>         -- natural logarithm of the absolute value of <CODE>n</CODE> (as a <CODE>double</CODE>)
+<LI><CODE>RoundDiv(n,d)</CODE>-- rounded division of <CODE>n</CODE> by <CODE>d</CODE>, (currently halves round away from 0)
+<LI><CODE>isqrt(n)</CODE>     -- the (truncated) integer part of the square root of <CODE>n</CODE>
+<LI><CODE>ILogBase(n,b)</CODE>-- (returns <CODE>long</CODE>) the integer part of <CODE>log(abs(n))/log(b)</CODE>;
+                      error if <CODE>n=0</CODE> or <CODE>b&lt;2</CODE>
+</UL>
+
+<P></P>
+<P>
+These functions return <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+</P>
+<UL>
+<LI><CODE>power(a, b)</CODE> -- returns <CODE>a</CODE> to the power <CODE>b</CODE> (error if <CODE>b&lt;0</CODE>); <CODE>power(0,0)</CODE> gives 1
+<LI><CODE>SmallPower(a, b)</CODE> -- (returns <CODE>long</CODE>) returns <CODE>a</CODE> to the power <CODE>b</CODE> (error if <CODE>b&lt;0</CODE>; <B>no check for overflow</B>) 
+<LI><CODE>factorial(n)</CODE>   -- factorial for non-negative <CODE>n</CODE>
+<LI><CODE>LogFactorial(n)</CODE>   -- approx natural log of <CODE>factorial(n)</CODE> (abs.err. &lt; 5*10^(-8))
+<LI><CODE>RangeFactorial(lo,hi)</CODE> -- <CODE>lo*(lo+1)*(lo+2)*...*hi</CODE>
+<LI><CODE>binomial(n, r)</CODE> -- binomial coefficient
+<LI><CODE>fibonacci(n)</CODE>   -- <CODE>n</CODE>-th Fibonacci number
+<LI><CODE>iroot(N,r)</CODE>     -- the (truncated) integer part of the <CODE>r</CODE>-th root of <CODE>N</CODE> (error if <CODE>r&lt;2</CODE> or even root of negative); see also <CODE>IsExactIroot</CODE>
+<LI><CODE>RandomBigInt(lo, hi)</CODE> -- a uniform random integer <CODE>N</CODE> s.t. <CODE>lo &lt;= N &lt;=  hi</CODE> (see <A HREF="random.html"><CODE>random</CODE></A> for details).
+</UL>
+
+<P></P>
+<A NAME="toc8"></A>
+<H4>Conversion functions</H4>
+<P>
+Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+</P>
+<UL>
+<LI><CODE>mantissa(N)</CODE> -- <CODE>N</CODE> represented as a floating-point number.
+  	    If <CODE>N</CODE> is zero, produces 0.0.
+            If <CODE>N&gt;0</CODE>, produces a value between 0.5 and 0.999...;
+            otherwise (when <CODE>N&lt;0</CODE>) a value between -0.5 and -0.999...
+            The bits of the floating point result are the topmost
+            bits of the binary representation of <CODE>N</CODE>.
+<LI><CODE>exponent(N)</CODE> -- result is a <CODE>long</CODE> whose value is the least integer e such that
+              2^e &gt; abs(n).  If <CODE>N</CODE> is zero, result is zero.
+</UL>
+
+<P></P>
+<A NAME="toc9"></A>
+<H4>Miscellany</H4>
+<P>
+Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
+</P>
+<UL>
+<LI><CODE>NumDigits(N, b)</CODE> -- (returns <CODE>long</CODE>) the number of digits <CODE>N</CODE> has
+                         when written in base <CODE>b</CODE>
+                         (the result may sometimes to be too large by 1)
+</UL>
+
+<P></P>
+<A NAME="toc10"></A>
+<H4>Procedures for arithmetic</H4>
+<P>
+These procedures are ugly but may give a slight gain in speed.
+Use them only if you really must; it is probably better to use
+GMP directly if speed is so very important.
+</P>
+<P>
+We expect these procedures (except <CODE>quorem</CODE>) to <B>become obsolete</B>
+when CoCoALib upgrades to the C++11 standard.
+</P>
+<P>
+Assignment is always to leftmost argument(s) <CODE>a</CODE>, a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+Second and/or third argument of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+</P>
+<UL>
+<LI><CODE>add(a, b, c)</CODE>   --  a = b+c
+<LI><CODE>sub(a, b, c)</CODE>   --  a = b-c
+<LI><CODE>mul(a, b, c)</CODE>   --  a = b*c
+<LI><CODE>div(a, b, c)</CODE>   --  a = b/c  (truncated integer quotient)
+<LI><CODE>mod(a, b, c)</CODE>   --  a = b%c  (remainder s.t. b = quot*c + rem)
+<LI><CODE>quorem(a, b, c, d)</CODE> --  same as a = c/d, b = c%d
+<LI><CODE>divexact(a, b, c)</CODE> --  a = b/c  (fast, but division must be exact)
+<LI><CODE>power(a, b, c)</CODE> --  a = b^c, where 0^0 gives 1
+<LI><CODE>neg(a, b)</CODE>      --  a = -b
+<LI><CODE>abs(a, b)</CODE>      --  a = abs(b)
+</UL>
+
+<P></P>
+<A NAME="toc11"></A>
+<H3>Error Conditions and Exceptions</H3>
+<P>
+Error conditions are signalled by exceptions.  Examples of error conditions
+are impossible arithmetic operations such as division by zero, overly large
+arguments (<I>e.g.</I> second argument to binomial must fit into a machine
+<CODE>long</CODE>), and exhaustion of resources.
+</P>
+<P>
+Currently the exception structure is very simplistic:
+</P>
+<UL>
+<LI>exceptions indicating exhaustion of resources are those from the
+    system, this library does not catch them;
+<LI>all other errors produce a <CODE>CoCoA::ErrorInfo</CODE> exception; for instance
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>ERR::ArgTooBig</CODE></TD>
+<TD>value supplied is too large for the answer to be computed</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::BadArg</CODE></TD>
+<TD>unsuitable arg(s) supplied (or input number too large)</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::BadNumBase</CODE></TD>
+<TD>the base must be between 2 and 36</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::BadPwrZero</CODE></TD>
+<TD>attempt to raise 0 to negative power</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::DivByZero</CODE></TD>
+<TD>division by zero</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::ExpTooBig</CODE></TD>
+<TD>exponent is too large</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::IntDivByNeg</CODE></TD>
+<TD>inexact integer division by a negative divisor</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::NegExp</CODE></TD>
+<TD>negative exponent</TD>
+</TR>
+<TR>
+<TD><CODE>ERR::ZeroModulus</CODE></TD>
+<TD>the modulus specified is zero</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc12"></A>
+<H2>Maintainer Documentation</H2>
+<P>
+The implementation of <CODE>cmp</CODE> is more convoluted than I'd like; it must
+avoid internal overflow.
+</P>
+<P>
+The implementation of <CODE>RoundDiv</CODE> was more difficult than I had expected.
+Part of the problem was making sure that needless overflow would never
+occur: this was especially relevant in the auxiliary functions
+<CODE>uround_half_up</CODE> and <CODE>uround_half_down</CODE>.  It would be nice if a
+neater implementation could be achieved -- it seems strange that the
+C/C++ standard libraries do not already offer such a function.  The
+standard C functions <CODE>lround</CODE> almost achieves what is needed here, but
+there are two significant shortcomings: rounding is always away from zero
+(rather than towards +infinity), and there could be loss of accuracy if
+the quotient exceeds 1/epsilon.  There is also a standard function <CODE>ldiv</CODE>
+which computes quotient and remainder, but it seems to be faster to compute
+the two values explicitly.
+</P>
+<P>
+NOTE: if you change rounding of halves, you must change TWO fns (<CODE>RoundDiv</CODE>
+for machine ints and <CODE>RoundDiv</CODE> for big ints).
+</P>
+<A NAME="toc13"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+The power functions could allow high powers of -1,0,1 (without complaining about
+the exponent being too big).  But is it worth it?
+</P>
+<P>
+Only partial access to all the various division functions offered by the
+C interface to GMP.  Many other GMP functions are not directly accessible.
+</P>
+<P>
+<CODE>IsExactIroot</CODE> has rather a lot of signatures.
+</P>
+<A NAME="toc14"></A>
+<H2>Main changes</H2>
+<P>
+<B>2014</B>
+</P>
+<UL>
+<LI>March
+ <UL>
+ <LI>clarified that 0^0 gives 1
+ <P></P>
+<B>2012</B>
+ </UL>
+<LI>May (v0.9951):
+ <UL>
+ <LI>moved common operations on <A HREF="BigInt.html"><CODE>BigInt</CODE></A> and <A HREF="MachineInt.html"><CODE>MachineInt</CODE></A>
+   together into <CODE>IntOperations</CODE>
+-
+ </UL>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/IntOperations.html -i txt/IntOperations.txt -->
+</BODY></HTML>

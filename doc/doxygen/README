@@ -1,0 +1,19 @@
+This is the README file for the directory CoCoALib/doc/doxygen/
+
+Date: 3 May 2005
+
+A copy of the doxygen-generated documentation is available online
+for browsing or downloading; the URL is
+
+http://cocoa.dima.unige.it/cocoalib/doc
+
+
+To produce the doxygen-generated documentation:
+- you need doxygen!  (see http://www.doxygen.org/)
+- it will take some time and the directories are quite big!
+
+make userdoc        generates documentation intended for a user
+make developerdoc   generates documentation intended for a developer
+make                generates both
+
+[make publish    generates both, and copies them into the web site]

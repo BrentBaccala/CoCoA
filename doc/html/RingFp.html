@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingFp</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingFp</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2010-2011 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for the class RingFpImpl</A>
+        <UL>
+        <LI><A HREF="#toc2">NewZZmod or NewRingFp?</A>
+        </UL>
+    <LI><A HREF="#toc3">Examples</A>
+    <LI><A HREF="#toc4">Maintainer documentation for the class RingFpImpl</A>
+    <LI><A HREF="#toc5">Bugs, shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for the class RingFpImpl</H2>
+<P>
+The usual way to perform arithmetic in a (small, prime) finite field
+is to create the appropriate ring via the pseudo-constructors
+<CODE>NewZZmod</CODE> (or <CODE>NewQuotientRing</CODE> if you prefer) which are
+documented in <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>.  These functions will automatically
+choose a suitable underlying implementation, and you should normally
+use them.
+</P>
+<P>
+In some special circumstances, you may wish to choose explicitly the
+underlying implementation.  CoCoALib offers three distinct
+implementations of small prime finite fields: <CODE>RingFp</CODE> (described
+here), and <A HREF="RingFpLog.html"><CODE>RingFpLog</CODE></A> and <A HREF="RingFpDouble.html"><CODE>RingFpDouble</CODE></A>.  Of these <CODE>RingFp</CODE> is
+probably simplest and fastest implementation -- this file describes
+how to create a <CODE>RingFp</CODE> implementation.
+</P>
+<P>
+To create a <A HREF="ring.html"><CODE>ring</CODE></A> of this specific type use one of the pseudo-constructors:
+</P>
+<PRE>
+    NewRingFp(p) -- p a machine integer or BigInt
+    NewRingFp(I) -- I an ideal of RingZZ
+    NewRingFp(p, res) -- p a machine integer, res is either ``GlobalSettings::SymmResidues`` or ``GlobalSettings::NonNegResidues``
+</PRE>
+<P>
+These pseudo-constructors are for creating small prime finite fields; they
+will fail if the characteristic is not prime or is too large: the error
+signalled by throwing a <CODE>CoCoA::ErrorInfo</CODE> whose <I>code</I> is
+<CODE>CoCoA::ERR::BadSmallFpChar</CODE>.  You can test whether an argument is
+suitable by calling <CODE>IsGoodForRingFp</CODE>.
+</P>
+<P>
+The default convention for printing residues is specified when you create
+the <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>; you can also specify explicitly which convention to
+use by giving a second argument to the pseudo-ctor <CODE>NewRingFp</CODE>.  Note
+that the <B>internal representation</B> is always least non-negative
+regardless of the output convention chosen.
+</P>
+<P>
+If you seek a means for fast arithmetic in small finite fields consult
+the documentation about <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A>, <A HREF="SmallFpLogImpl.html"><CODE>SmallFpLogImpl</CODE></A>, and
+<A HREF="SmallFpDoubleImpl.html"><CODE>SmallFpDoubleImpl</CODE></A>.  All arithmetic on elements of a <CODE>RingFp</CODE>
+is actually carried out by a <CODE>SmallFpImpl</CODE> object.
+</P>
+<A NAME="toc2"></A>
+<H4>NewZZmod or NewRingFp?</H4>
+<P>
+If <CODE>n</CODE> is a small prime then <CODE>NewZZmod(n)</CODE> produces the same result as
+<CODE>NewRingFp(n)</CODE> (or perhaps <CODE>NewRingFpDouble(n)</CODE>).  If <CODE>n</CODE> is not a
+small prime then <CODE>NewRingFp(n)</CODE> throws an exception whereas <CODE>NewZZmod(n)</CODE>
+will produce a working quotient ring.
+</P>
+<A NAME="toc3"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp2.C">ex-RingFp2.C</A>
+</UL>
+
+<A NAME="toc4"></A>
+<H2>Maintainer documentation for the class RingFpImpl</H2>
+<P>
+The class <CODE>RingFpImpl</CODE> is a low-level implementation of (small
+prime) finite fields; it is not intended for direct use by casual CoCoA
+library users.
+</P>
+<P>
+The class <CODE>RingFpImpl</CODE> is intended to implement small, prime finite
+fields.  The constructor is more complicated than one might expect,
+this is because the <CODE>RingFpImpl</CODE> object must store a little extra
+information to fulfil its role as a <CODE>QuotientRingBase</CODE>.  Currently,
+the characteristic must be prime (otherwise it wouldn't be a field)
+and must also be small enough that its square fits into a
+<CODE>SmallFpElem_t</CODE> (probably <CODE>unsigned long</CODE>, see the file config.H);
+if not, an error is signalled.
+</P>
+<P>
+Extreme efficiency is NOT one of the main features of this version;
+contrast this with <CODE>SmallFpImpl</CODE>.
+</P>
+<P>
+The class <CODE>RingFpImpl</CODE> derives from <CODE>QuotientRingBase</CODE>, which in
+turn is derived from <CODE>RingBase</CODE>: see <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A> and <A HREF="ring.html"><CODE>ring</CODE></A>
+for more details.  Note that there is no <CODE>RingFp</CODE> class; a
+<CODE>RingFpImpl</CODE> object can only be accessed as a <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>.
+</P>
+<P>
+Note the use of "argument checking" static member functions in the ctor:
+this is because <CODE>const</CODE> data members must be initialized before the main
+body of the ctor is entered.
+</P>
+<P>
+A member typedef <CODE>RingFpImpl::value_t</CODE> specifies the type used for
+representing the value of an element of a <CODE>RingFpImpl</CODE>: this is a
+typedef for <CODE>SmallFpElem_t</CODE> which is defined in config.H (to facilitate
+tuning for different platforms).
+</P>
+<P>
+The data members are those of a <CODE>QuotientRingBase</CODE> (which are used only
+for answering queries about a <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>), plus the characteristic
+of the field (held as an <CODE>value_t</CODE> in <CODE>myModulus</CODE>), and an auto-pointer
+to a copy of the zero and one elements of the ring.
+</P>
+<P>
+The zero and one elements of the ring is held in an auto_ptr&lt;&gt; for
+consistency with the implementation of other rings -- in this simple
+class it is not really necessary for exception safety.
+</P>
+<P>
+This implementation is very simplistic: almost every operation is
+delegated to the class <CODE>SmallFpImpl</CODE>.  The implementation class has been
+separated so that its inline member functions can be used directly by
+some other special case code (<I>e.g.</I> polynomials with SmallFp coeffs).
+See <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A> for details.  I note that the residues are
+represented internally as the least non-negative value in the residue class
+regardless of the user's choice of type of residue.
+</P>
+<P>
+The largest permitted modulus for a <CODE>RingFpImpl</CODE> may depend on the
+platform.  On a 32-bit machine the modulus must surely be less than
+65536 -- refer to <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A> for details.  A 64-bit machine may
+allow larger characteristics.
+</P>
+<P>
+Although it may seem wasteful to use heap memory for the values of
+elements in a <CODE>RingFpImpl</CODE>, trying to make them "inline" leads to
+lots of problems.  Originally we had implemented the values as "inline",
+and the resulting problems delayed CoCoALib by almost a year.
+</P>
+<A NAME="toc5"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+Why does the class <CODE>RingFp</CODE> not exist?  Well, my current thoughts
+are that since a <CODE>RingFp</CODE> would not do anything special which a
+<A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A> cannot do, it seems needless extra complication to
+create a "useless" class.  In particular, it cannot offer better
+run-time performance.  If you want to compute quickly modulo a small
+prime you must use <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A> directly.
+</P>
+<P>
+Probably <CODE>RingFp</CODE>, <A HREF="RingFpLog.html"><CODE>RingFpLog</CODE></A> and <A HREF="RingFpDouble.html"><CODE>RingFpDouble</CODE></A> could be replaced by
+instances of a template class -- the template parameter would be
+<CODE>SmallFpImpl</CODE>, <CODE>SmallFpLogImpl</CODE> or <CODE>SmallFpDoubleImpl</CODE> accordingly.
+</P>
+<P>
+Why do all the member functions blindly forward their calls to the
+<CODE>SmallFpImpl</CODE> member functions?  This means that the error message
+for division by zero (say) will refer to <CODE>SmallFpImpl</CODE> rather than
+<CODE>RingFpImpl</CODE>.  Does this really matter that much?  Obviously the
+much same applies to <CODE>RingFpLogImpl</CODE> and <CODE>RingFpDoubleImpl</CODE>.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingFp.html -i txt/RingFp.txt -->
+</BODY></HTML>

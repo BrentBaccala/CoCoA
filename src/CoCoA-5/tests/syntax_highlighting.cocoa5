@@ -1,0 +1,10 @@
+/* comment */
+-- comment
+// comment
+Define F(ref X, Y)
+	If type(X)=INT Then
+		Return "string literal";
+	Else
+		Return 1; // int literal
+EndIf
+

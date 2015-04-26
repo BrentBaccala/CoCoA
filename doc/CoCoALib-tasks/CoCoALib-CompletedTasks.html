@@ -1,0 +1,1516 @@
+<html>
+<head>
+<title>CoCoALib Task Table</title>
+<link rel="CoCoA Home Page" href="http://cocoa.dima.unige.it"/>
+<style type="text/css">
+     body { background: #3cc; }
+     b { background: #ff6; }
+     table, a:hover, a.button:hover { background: #188; }
+     table, div {margin-bottom: 6pt; }
+     th { text-align:left; background: #dff; }
+     tr { background: #fff; }
+     a:hover { color: #fff; }
+     p { border: ridge #cdd 1pt;}
+     p:hover { background: #dfd;}
+     h1, h2 { color: red; }
+     h1 { text-align: center; }
+     div, h1, h2
+     {
+       background: white;
+       border: ridge #3cc  2pt;
+       padding: 4pt;
+     }
+
+  .completed { color: #060; font-style: italic; background: #afa; }
+  .active { color: #600; font-weight: bold; background: #faa; }
+  .class { color: #070; font-weight: bold }
+  .file { color: red; }
+  .func { color: blue; }
+  .version { color: red; font-weight: bold }
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================ -->
+<h2>All Completed Tasks 
+<a href="https://cocoa.dima.unige.it/redmine/projects/cocoalib/issues?query_id=7">new on redmine</a>
+(<a href="CoCoALib-Tasks.html">Task Table</a>)</h2>
+<!-- ============================================================ -->
+
+<div>
+
+Tasks we believe to have been completed are moved from the table to
+here.
+<br/>
+The dates are only approximate and this table is updated less often
+than it should be (too much work on CoCoALib ;-).
+
+
+<br><br>
+<!-- ============================================================ -->
+<center><a name="top"><table cellpadding="5"><tbody><tr>
+<th><a href="#2006">2006</a></th>
+<th><a href="#2007">2007</a></th>
+<th><a href="#2008">2008</a></th>
+<th><a href="#2009">2009</a></th>
+<th><a href="#2010">2010</a></th>
+<th><a href="#2011">2011</a></th>
+<th><a href="#2012">2012</a></th>
+<th><a href="#2013">2013</a></th>
+<th><a href="#2014">2014</a></th>
+</tr></tbody></table></a></center>
+<!-- ============================================================ -->
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2014>2014</a></h2>
+<div>
+
+<p>
+<i>2014-01</i>
+<b>CoCoA5 language</b>
+We shall need a new parser (and interpreter) for CoCoA 5.  Much of the
+design of the new language has already been completed, and a late prototype
+of the new lexer already exists.  The new parser and interpreter are now
+at first prototype (i.e. stage (2abc)).  This task should split into
+several more focussed smaller tasks.
+Roughly the recent news are:
+<ul>
+<li>design of the language, problems about global variables, ....
+<li>August 2010: prototype GUI/IDE with debugger, portability.
+<li>September 2010: polynomial rings
+<li>October 2010: functions returning lists
+<li>November 2010: functions on rings and RingElems
+<li>December 2010: tested and ported functions on lists from cocoa4 packages
+<li>January 2011: homomorphisms
+<li>February 2011: matrices
+</ul>
+See more at <a href="CoCoALib-functions.html">CoCoALib-functions.html</a>
+<font color="blue">Abbott, Bigatti, Lagorio (+Figari)</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2012>2012</a></h2>
+<div>
+
+<p>
+<i>2012-03-16</i>
+<b>NumTheory file names</b>
+After renaming ZZ/QQ to BigInt/BigRat (so that ZZ/QQ are reserved for the
+corresponding rings) it no longer makes sense for <code>NumTheoryQQ</code>
+to have the QQ suffix.  Find a better name for it, and perhaps for <code>NumTheory</code>
+too.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2012-02</i>
+<b>Rename "RingZ/RingQ" to "RingZZ/RingQQ"?</b>
+Since we use ZZ/QQ in CoCoA-5, it would make sense for the fns
+<code>RingZ/RingQ</code> to be called <code>RingZZ/RingQQ</code>
+as this is more coherent.  Decide and, if favourable, implement.
+Time est.: 2 days.
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2012-02</i>
+<b>Rename "ZZ/QQ" into "BigInt/BigRat"</b>
+There is a name collision between cocoalib ZZ, type name for big
+integers, and cocoa ZZ, the ring of integers; the same occurs for QQ.
+It took a long time to decide the new names, and the decision is for
+BigInt and BigRat to replace ZZ and QQ in cocoalib.  Many consequential
+changes.
+Try using GMPXX implementation for BigInt?
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2011>2011</a></h2>
+<div>
+
+<p>
+<i>2011-11</i>
+<b>Rename "MachineInteger" into "MachineInt"</b>
+Choosing BigInt as the new name for the class ZZ suggests to change all
+classes and functions with "Integer" into "Int"... hidden surprises?
+We hope not..
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-08-03</i>
+<b>DecimalStr</b>
+New fn: <code>DecimalStr</code> with slightly cleaner semantics than
+the one implemented in CoCoA-4.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-08-02</i>
+<b>Decimal conversion</b>
+New fns: <code>MantissaAndExponent</code> and <code>FloatStr</code>.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-07-26</i>
+<b>Normaliz update</b>
+Visit to Osnabrueck: developing new structure for Normaliz and updated
+integration into CoCoALib and CoCoA-5
+<font color="blue">Abbott + Bigatti + Bruns + Soeger</font>
+</p>
+
+<p>
+<i>2011-07-06</i>
+<b>DateTime</b>
+New function <code>DateTime(date, time)</code> storing the date and
+time in format yyyymmdd, hhmmss.
+<font color="blue">Abbott + Bigatti</font>
+</p>
+
+<p>
+<i>2011-05-17</i>
+<b>Task Table: conversion into XML</b>
+The HTML version of the task table was too tedious to update.
+The conversion into XML (with C++ code to create the HTML pages) 
+should encourage us to update it more frequently making the whole lot
+more meaningful.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2011-05-09</i>
+<b>Integration of C code for Toric Ideals</b>
+This implementation is NOT ROBUST and NOT THREAD-SAFE, but it works
+(needed for the CoCoASchool)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2011-05-03</i>
+<b>Renamed RandomBitStream to RandomBoolStream</b>
+New, clearer name for the class of objects which generate random booleans.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-05-03</i>
+<b>New RandomSource class</b>
+New class of objects for generating random values of 3 types
+(bool, long, and ZZ).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-05-03</i>
+<b>New Makefile target "veryclean"</b>
+All Makefiles now offer two targets for cleaning up:
+<code>clean</code> and <code>veryclean</code>.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2011-04-22</i>
+<b>Multigraded Hilbert Series</b>
+And related work for CoCoASchool.
+Still needs proper implementation with inheritance.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2011-04-10</i>
+<b>CoCoA5 manual</b>
+The manual for cocoa5 will still use the CoCoAHelp.xml file and
+structure.  The html and the latex version will use the same xsl code,
+  and the online version is treated by ad-hoc code in CoCoA-5:
+  OnlineHelp.[HC].
+  This has survived for long enough with just minor improvement and no
+obvious design holes.  So I consider it done!
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2011-03-30</i>
+<b>all machine integers to long</b>
+All all related work
+<font color="blue">Abbott + Bigatti</font>
+</p>
+
+<p>
+<i>2011-03-30</i>
+<b>ExternalLibs-GSL</b>
+for numerical computations
+<font color="blue">Simoes + Bigatti</font>
+</p>
+
+<p>
+<i>2011-01-28</i>
+<b>Printing Polynomials</b>
+First extensive testing of printing polynomials in several polynomial
+rings highlighted missing "style improvements".
+Improved, added test-output, updated documentation (in CoCoAReports)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2011-01-19</i>
+<b>lcm</b>
+Implemented <code>lcm</code> so that it exists whenever <code>gcd</code> exists.
+Ported to cocoa-5.
+<font color="blue">Abbott + Bigatti</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2010>2010</a></h2>
+<div>
+
+<p>
+<i>2010-12-15</i>
+<b>Examples and tests use cout/cerr</b>
+Example programs and tests now use the standard C++ iostreams (rather than
+GlobalOutput and so on).  This change makes the code easier to understand, and
+prepares the way for moving GlobalOutput etc into the server directory.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-11-11</i>
+<b>GlobalManager incorporates GMPMemMgr</b>
+GlobalManager significantly revised.  It now creates GMPAllocator internally
+(if told to do so).  New simpler interface for ctor of GlobalManager.
+Updated documentation accordingly.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-10-29</i>
+<b>Memory leak on test-hilbert1</b>
+After the recent improvement of GlobalManager and Reference Counting
+a sort of memory leak resulted in test-hilbert1: it was
+the global variable with precomputed powers of polynomials.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2010-10-12</i>
+<b>Integration with Normaliz</b>
+Normaliz is now designed as a C++ library.
+It is still in a transition phase, but the foundations are set!
+Fruits of a 3 week visit in Genova of Christof S&ouml;ger.
+<font color="blue">Abbott + Bigatti + S&ouml;ger</font>
+</p>
+
+<p>
+<i>2010-10-08</i>
+<b>Better Makefiles</b>
+Improved various Makefiles: they work better with "-j" flag.
+Thanks to Christof S&ouml;ger for his help.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-10-06</i>
+<b>Exception safety</b>
+Fixed subtle exception-safety bug in all ring and PPMonoid ctors.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-07-09</i>
+<b>PPMonoid homomorphisms</b>
+Implement homomorphisms for PPMonoids; first very simplistic implementation.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-06-29</i>
+<b>Generators for random ZZs</b>
+Following the style of <code>RandomLongStream</code> make a class for generators
+of random ZZs.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-22</i>
+<b>New version 0.9937</b>
+New version to signal the fixing of many minor
+bug and the embarrassing bug in subtraction of a machine integer from
+a <code>ZZ</code>.  Upgrading strongly recommended.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-22</i>
+<b>Tests and bug fixes for ZZ</b>
+Added tests for <code>ZZ</code>.  Fixed several bugs which were discovered.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-22</i>
+<b>Add iterator classes for continued fractions</b>
+Two new classes: one for producing the partial quotient, the for producing
+the convergents.  I've preferred simplicity of ultimate speed.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-18</i>
+<b>Add ctors for ZZ and QQ from a string</b>
+Done.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-18</i>
+<b>Example using <code>monomial</code></b>
+Added <a href="../examples/index.html#ex-PolyRing2.C">ex-PolyRing2.C</a>
+showing how to write a simple function to pass exponent vectors
+to the function <span class=func>monomial</span>.
+This way looks more natural than calling
+<span class=func>power</span> many times when writing complicated
+power-products.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2010-03-18</i>
+<b>Rational coeffs in <code>monomial</code>, also for principal ideals</b>
+Added new pseudo-ctors for monomials which accept rational coefficients.
+Similarly for principal ideals.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-11</i>
+<b>index.html for examples directory</b>
+Automatic generation of examples/index.html with description of examples.
+(also to be loaded on cocoalib web page 
+<a href="../examples/index.html">examples/index.html</a>)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2010-03-10</i>
+<b>Revised CoCoALib build system</b>
+The <code>configure</code> script now works better, and will get some compilation
+flags automatically from the GMP header file.  Solved a problem about
+GMP version number (on Werner's new computer).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-05</i>
+<b>New pseudo-ctors for polynomial rings</b>
+Added new pseudo-ctors for polynomial rings which accept <code>PPOrderingCtor</code>
+values; this makes it easier for the user to specify the ordering.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-03-05</i>
+<b>Multiplicative Order Modulo an Integer</b>
+Added new function to <code>NumTheory</code> for computing the
+order of an element in the multiplicative group of coprime residues
+modulo an integer.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-02-15</i>
+<b>Random machine integers</b>
+Added new class <code>RandomLongStream</code> to represent generators of
+random machine integers (in a given range).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-02-10</i>
+<b>Revised CoCoALib build system</b>
+The <code>configure</code> script now works better, and will get some compilation
+flags automatically from the GMP header file.  Also makes it relatively to specify
+a specific compiler and/or compilation flags.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-02-05</i>
+<b>New version 0.9936</b>
+New version to mark the inclusion of many special functions for monomial ideals.
+Many thanks to Eduardo and the participants at the workshop in Ortigosa/Logro&ntilde;o.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2010-01-20</i>
+<b>New version 0.9935</b>
+New version to "celebrate" finally completing the update of twin floats
+(famous last words?)
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2010-01-20</i>
+<b>RingTwinFloat theory and implementation</b>
+Updated twin float implementation in accordance with revised theoretical ideas.
+<font color="blue">Abbott</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2009>2009</a></h2>
+<div>
+
+<p>
+<i>2009-12-29</i>
+<b>ZZ max/min bug</b>
+Removed the proxy class <code>ZZ::rtn</code> which caused a SEGV bug
+(see <code>test-bug4.C</code>).  May lead to poor performance for
+arithmetic on ZZ values.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-12-23</i>
+<b>Further refinement to conversion functions: <code>NumericCast</code></b>
+Added new conversion function <code>NumericCast</code>.  This is just a
+placeholder for the corresponding feature in the BOOST library.  Also
+added two new conversions from QQ to machine integers.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-12-11</i>
+<b>New version 0.9934</b>
+New version because changes to <code>convert</code> are not backward compatible.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-12-11</i>
+<b>Rename the function <code>convert</code> into <code>IsConvertible</code></b>
+The new name gives a clearer indication of what it does.  Introduced a procedure
+called <code>convert</code> which throws in case of failure; there is a new error
+<code>ERR::BadConvert</code> for these failing cases.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-12-03</i>
+<b>Rename EFGModule into FGModule?</b>
+The emphasis on the word "effectively" seems useless here.
+When an object name suggests a property that property is effective.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-10-29</i>
+<b>New version 0.9933</b>
+A new version number because the handshaking introduced in the CoCoAServer
+is not backward compatible (with CoCoA 4.7.5 or earlier).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-10-29</i>
+<b>Implement proper handshake at end of session CoCoA4-CoCoAServer</b>
+Modified CoCoAServer and the communications part of CoCoA4 so that
+they effect a proper handshake at the end of the session.  This seems
+to solve the (intermittent) problems observed on some Linux boxes
+(where a race condition could let the socket die too early).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-10-28</i>
+<b>Convert sugar into inheritance classes</b>
+There are different kinds of sugar (StdDeg, wdeg,
+saturating,..): an abstract class representing gives
+clean code for the reduction process, and possibly also to the
+GroebnerMill.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-10-08</i>
+<b>RoundDiv function for pairs of integers</b>
+Added a new function for computing the rounded quotient of pairs of integers.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-09-28</i>
+<b>Unique implementation for div and deriv</b>
+Like for other functions, also <code>div</code> and <code>deriv</code> have
+a unique implementation in SparsePolyRing.C instead of 3 copies in the
+DistrMPolyXX.C files.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-09-22</i>
+<b>IsHomog wrt first rows of weight</b>
+Now we have IsHomogPartial and CmpWDegPartial considering the first i
+rows of weights (with i &lt= GradingDim)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-07-30</i>
+<b>Constructors for ideals</b>
+We used to have
+<tt>ideal(ring), ideal(ring, RingElem), ideal(ring, vector<RingElem>)</tt>.
+Now we have other nice constructors
+<tt>ideal(RingElem), ideal(vector<RingElem>)</tt> 
+the last returns en error when vector is empty.
+<tt>ideal(RingElem, RingElem), ...</tt>
+up to 4 RingElems
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-07-15</i>
+<b>Round, floor, ceiling</b>
+Make ordered rings offer round, floor & ceiling functions (since these cannot
+be implemented efficiently using the existing interface).  This was actually completed
+some time ago (but I forgot to update the task table).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-07-08</i>
+<b>Improved QQ</b>
+Improved the QQ implementation: added functions <code>floor</code> and <code>ceil</code>.
+Corrected the embedding of QQ values into RingTwinFloat.  Added <code>ex-QQ1</code>
+example program.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-07-02</i>
+<b>New Version</b>
+Made version <span class=version>0.9931</span>
+in recognition of the substantial changes since the previous version (see below).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-07-02</i>
+<b>New class for rationals</b>
+Added the new class <code>QQ</code> for representing rational numbers.
+There are some basic arithmetic operations too.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-07-02</i>
+<b>Improved NumTheory</b>
+Varius functions in the recent NumTheory file have been improved: <i>e.g.</i>
+better
+interface, fewer bugs, clearer documentation.  Thanks to the participants of the recent CoCoA
+School in Barcelona whose opinions help answer some philosophical design questions.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-06-05</i>
+<b>New Version</b>
+Made version <span class=version>0.9930</span>
+in recognition of the substantial changes since the previous version.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-06-05</i>
+<b>Basic Number Theory Functions</b>
+Basic number theory functions (such as <tt>gcd</tt> and <tt>lcm</tt>) have been
+put together in a new file (namely <tt>NumTheory.C</tt>); some were simply moved
+from <tt>ZZ.C</tt> while others are new.  The function signatures have been
+made more coherent, and more complete (<i>i.e.</i>allowing machine integers and
+ZZs to be used interchangeably).  The <tt>IsPrime</tt> function now works
+over a wider range.  <tt>IsPPrime</tt> has been renamed to <tt>IsProbPrime</tt>
+as the new name is more meaningful and memorable.  Added several new functions:
+<tt>EulerPhi</tt>, <tt>PrimitiveRoot</tt>, <tt>SmoothFactor</tt> and <tt>factor</tt>.
+Added a new template class <tt>factorization</tt> to hold the results of factorizations.
+The code should also work correctly on both 32 and 64 bit computers (but in fact does not, sigh).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-05-20</i>
+<b>Improved printing for residues (in quotients of Z)</b>
+There is now a global option for specifying whether elements of a
+quotient of ZZ are printed as least non-negative residues or as
+least magnitude residues.  The default is least magnitude (a change
+from the previous deault behaviour).  The residues are now always
+printed without brackets -- previously brackets were used in some
+cases and not in others.
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2009-05-20</i>
+<b>Faster Makefiles</b>
+Modified the Makefiles to use the archiver <tt>ar</tt> in a more
+economical manner; this make partial recompilation usefully faster.
+The Makefiles have been cleaned/improved as well.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2009-02-20</i>
+<b>Documentation converted to txt2tags</b>
+CoCoALib documentation is written in pure text.  Using
+txt2tags we can keep it clean/readable while allowing pretty
+formatting and linking into HTML and TeX.
+Proper polishing will take some time.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-02-13</i>
+<b>Better matrix examples</b>
+The example <span class=file>ex-matrix1.C</span> 
+has been reorganized and extended with examples
+for <span class=class>(Const)MatrixView</span>
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2009-02-11</i>
+<b><tt>configure</tt> arguments</b>
+Version <span class=version>0.9928</span>.
+(1) Configuration for optimization/debugging
+ using <code>--flags=ARG</code>.
+(2) Configuration for linking frobby
+  using <code>--with-libfrobby=ARG</code>
+and added tests (just to check the linking has been successful) in
+  cocoalib and cocoa4.
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2009-02-09</i>
+<b>New: abstract class for sugar</b>
+Version <span class=version>0.9927</span>.
+First prototype for abstract class for sugar.  Still unused, but
+makefile, dependencies and library.H had to be changed.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2009-01-30</i>
+<b>Enum instead of bool arguments in GReductor</b>
+GReductor constructor had many boolean arguments: they have been
+converted into more meaningful "enum"s.
+<font color="blue">Bigatti, Caboara</font>
+</p>
+
+<p>
+<i>2009-01-30</i>
+<b>Frobby integration</b>
+Version <span class=version>0.9926</span>.
+First check-in for Frobby files.  Configuration process not properly
+defined yet, but all code is in the right place and compilation flag
+is set.  Makefile, dependencies and library.H had to be changed.
+<font color="blue">Bigatti, Roune</font>
+</p>
+
+<p>
+<i>2009-01-14</i>
+<b>Improve configure script</b>
+Configure behaves badly when gcc exists but g++ does not.
+Fix the script so that it works gracefully in both cases.
+One or two problems still remain (e.g. 64-bit on Mac G5)
+<font color="blue">Abbott</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2008>2008</a></h2>
+<div>
+
+<p>
+<i>2008-12-17</i>
+<b>Machine integers in place of RingElems</b>
+Now using <code>MachineInteger</code> type whenever a machine integer value is
+used in place of <code>RingElem</code>.  This avoids nasty surprises when C++
+silently converts signed values into unsigned (or <i>vice versa</i>).
+New version <span class=version>0.9925</span> to signal this
+wide-ranging change. 
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-12-16</i>
+<b>Makefiles</b>
+version <span class=version>0.9924</span>.
+
+Changed all Makefiles for compatibility with Solaris make 
+which has no <code>-C</code> option:
+<code>make -C dir blah</code> now is <code>(cd dir; make blah)</code>
+[Thanks to Paul Whitener for testing on Solaris]
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2008-12-11</i>
+<b>Revised symbol</b>
+Now using <code>MachineInteger</code> type in ctors to specify the values of symbol indexes
+(but we check that the values fit into a <code>long</code>).  Corrected two bugs in
+SymbolRange (an undetected overflow and an off-by-1 error).
+This improvement needed the update to <code>MachineInteger</code> values.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-12-11</i>
+<b>Updated MachineInteger</b>
+Revised <code>MachineInteger</code>.  Fixed a bug, and added the new
+function <code>IsSignedLong</code> which simplifies use of
+<code>MachineInteger</code> values.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-11-24</i>
+<b>Reorganized SOI/NBM, server changed too</b>
+SOI/NBM now reside in their own separate file.  Implementation has been
+tidied considerably, and enjoys a better structured organization.  Each
+algorithm now offers three coherent interfaces, while the actual work is
+done by a single implementation of each underlying algorithm.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-11-24</i>
+<b>Preprocessing is now rational, server changed too</b>
+The preprocessing algorithms are now rational, so give exact results (rather
+than the rational aproximations produced when all input data were converted
+into <code>double</code>s).  The speed of computation remains essentially unchanged.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-11-18</i>
+<b>Fixed ideal inheritance code for RingWeyl</b>
+version <span class=version>0.9922</span>.
+
+The missing <span class=class>ideal</span> constructor in
+<span class=class>RingWeyl</span> caused the ideal to be generated by
+the default constructor in <span class=class>SparsePolyRing</span>
+(the code is identical).
+So the ideal did not call the specific RingWeyl::ideal operations.
+Now test-RingWeyl1 checks that 1 is in GBasis(ideal(x, dx)).
+
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2008-10-08</i>
+<b>Error Codes</b>
+version <span class=version>0.9921</span>.
+Error messages need to be expressive, but also short.
+To help non-english speakers, each error should
+produce an alphanumeric key/code which can be used to search in a manual of errors.
+We want to create an "index" of all coded errors with a more verbose
+explanation.  Possibly it should also include some information about
+the most common occurences of a given error and some suggestions for
+debugging and/or fixing it.
+See <span class=file>CoCoAErrorCodes.html</span>:
+<a href="http://cocoa.dima.unige.it/cocoalib/CoCoAErrorCodes.html">CoCoA
+  web page</a> or
+<a href="CoCoAErrorCodes.html">local link in <code>doc/</code></a>.
+<br>
+Moreover the way to check the type of error in an ErrorInfo object has
+been changed (and herein lies the backward incompatibility). The new
+way should be simpler to use.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-09-22</i>
+<b>Updated communication with CoCoA-4</b>
+version <span class=version>0.9920</span>.
+cocoa-4 and CoCoAServer communication has changed (you need the new
+cocoa5.cpkg for CoCoA-4):
+<span class=func>OperationCommunication</span> allows variable number
+of arguments and sends the information to the server. So the function
+myReadArgs in <span class=file>RegisterServerOps.C</span> now takes an
+extra argument, <code>NumArgs</code>.
+(added function linkability for the <span class=class>Frobby</span>
+library, updated code
+for <span class=file>TmpMayerVietorisTree</span>,
+added <span class=func>NBM</span>)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2008-09-22</i>
+<b>Updated communication with CoCoA-4</b>
+version <span class=version>0.9918</span>.
+<ul>                                                              
+<li>moved code for monomial ideals into <span class=file>TmpPPVector</span>
+<li>added code <span class=file>TmpMayerVietorisTree</span> for   
+  irreducible decomposition of monomial ideals (E. Saenz de Cabezon)
+<li>added stable order ideal algorithm (<span class=func>SOI</span>) 
+<li>fixed multivariate <span class=func>GCD</span>, same as CoCoA-4.7.4
+<li>exponent overflow (and underflow) should now be detected when
+  CoCoA_DEBUG is set.
+</ul>
+<font color="blue">Abbott, Bigatti</font>
+</p>
+
+<p>
+<i>2008-04-22</i>
+<b>No more IsPositive/IsNegative for ZZ</b>
+Removed these two silly little fns from ZZ.H.  In compensation, the usual infix
+comparison operators now handle specially the case when one of the args is 0.
+Note that <code>MachineInteger</code> does still have <code>IsNegative</code>!
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-04-21</i>
+<b>A few more matrix ops</b>
+The <code>adjoint</code> function now works over every ring
+(added <span class=func>AdjointByDetOfMinors</span>).
+Added some matrix norm functions (Frobenius, 1-norm, infinity-norm).
+Added <span class=func>PseudoInverse</span> for full rank matrices.
+Moved fns related to <span class=class>PPOrderings</span> into the new
+file <span class=file>MatrixForOrdering.H/C</span>.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-04-18</i>
+<b>Major revision of matrices</b>
+New version: <span class=version>0.9917</span>
+Added the concept of "matrix views".  This should offer a good compromise between
+flexibility and efficiency.  Matrices now have a coherent design principle (which
+I hope is "correct").  Minor changes may still occur as experience with the new
+design grows.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2008-02-12</i>
+<b>Improved configuration</b>
+improved GMP identification during configuration
+<font color="blue">Abbott</font>
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2007>2007</a></h2>
+<div>
+
+<p>
+<i>2007-12-06</i>
+<b>Bug in RingDenseUPolyCleanImpl ctor</b>
+A very well hidden bug has been fixed in
+<span class=class>RingDenseUPolyCleanImpl</span> ctor.
+This depends on the creation of RingElems (0, 1, x) before the
+completion of the constructor.... so, just remember this:
+<span class=func>myRefCountZero();</span> must be the last line, and
+RingElems and RingHoms must be just before it. 
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-12-05</i>
+<b>StdDeg, log, and exponent</b>
+Main changes are:
+<ul>
+<li><span class=func>log/myLog(pp, i)</span> renamed into
+  <span class=func>exponent/myExponent(pp, i)</span>
+</li>
+<li><span class=func>log/myLog(poly, i)</span> renamed into
+  <span class=func>MaxExponent/myMaxExponent(poly, i)</span>
+</li>
+<li>return type for <span class=func>StdDeg/myStdDeg</span> changed
+  from <code>size_t</code> to <code>long</code>
+</li>
+</ul>
+CoCoALib version is now <span class=version>0.9913</span>.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-11-28</i>
+<b>Fix Eval in CoCoA-4.7</b>
+The <code>Eval</code> tried to be too general and failed.
+Fixed the code and the manual -- should be mathematically cleaner too.
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2007-10-30</i>
+<b>Move to GPL-3+</b>
+All major parts of the source of CoCoALib are henceforth released under
+the GNU Public licence version 3 or later.  Previously the code was
+distributed under version 2 only.
+CoCoALib version is now <span class=version>0.9912</span>.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-10-10</i>
+<b>Hilbert-Poincare</b>
+version <span class=version>0.9911</span>.
+Another step in rewriting the Hilbert-Poincare code:
+<ul>
+<li>
+added <span class=file>TmpPoincare.[CH]</span>
+using <span class=class>DenseUPolyRing</span> instead of unipoly (the
+old C code)
+</li>
+<li>
+modified <span class=file>TmpHilbert.C</span> so that it can call the
+new code (<span class=func>HilbertNumeratorMod</span>)
+as well as the old one (<span class=func>HilbertNumeratorMod_C</span>).
+</li>
+</ul>
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-09-28</i>
+<b>CoCoA-4.7.2 Double quotes for string constants</b>
+As part of the "gentle migration" to a better language, change all
+strings in CoCoA-4 packages to be between double quotes instead of
+single quotes.  Check other places too (e.g. manual).
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-09-25</i>
+<b>CoCoAServer version handling</b>
+The contructor for <span class=class>ServerOpBase</span> requires a
+<span class=class>LibraryInfo</span>.
+This way the server can print all libraries which have been linked in
+(or the list of all available operations with the library they are
+defined in)
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-09-24</i>
+<b>Release of CoCoA-4.7.3</b>
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-06-06</i>
+<b>Resuscitate RandomBitStream</b>
+Make <span class=class>RandomBitStream</span> use GMP random number generator
+(which in turn uses the <i>Mersenne Twister</i>).  Turned out to be easier
+than expected, which probably means there's a nasty bug hidden away somewhere.
+Code still needs a little tidying.  Not sure how efficient it is either.
+Version is now <span class=version>0.9907</span>.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-06-06</i>
+<b>Check indet names properly</b>
+It should not be possible to construct rings where a symbol has an ambiguous
+interpretation.  Perhaps even the arity of a symbol should be fixed in a ring
+(<i>i.e.</i>you cannot have <code>x[1]</code> and <code>x[2,3]</code> in the
+same ring).  One version of <span class=func>NewPolyRing_DMPI</span>
+seems to check this
+correctly but other pseudo ctors do not.  Abstract a checking fn, and rectify
+the implementations.  Much the same applied to PPMonoids.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-06-01</i>
+<b>CoCoA-4.7.2 matrix facilities</b>
+Added functions <span class=func>CharPoly</span>,
+<span class=func>Eigenvectors</span>,
+and modified <span class=func>Det</span> to work better on matrices of rationals.
+Updated the manual accordingly.  (implementation subsequently updated twice)
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-05-31</i>
+<b>CoCoA-4.7.2 string constants</b>
+CoCoA4 now warns about obsolescent syntax for string constants inside
+single quotes.  The idea is to encourage all CoCoA4 users to migrate
+to double quotes in readiness for the transition to CoCoA5.  All
+CoCoA4 packages and tests have been brought up to date (easier said
+than done).  Anna has updated the CoCoA4 manual entry about strings.
+<font color="blue">Abbott+Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-31</i>
+<b>Zero to power zero gives error</b>
+Not sure what the code did before, but now any attempt to compute the
+zeroth power of zero gives error.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-05-30</i>
+<b>Snapshot releases</b>
+Bigatti has a script to create a snapshot release of CoCoALib-0.99xx.
+Then the table in the page
+<a
+href="http://cocoa.dima.unige.it/cocoalib/ChangeLog-0.99">ChangeLog-0.99</a>
+has to be manually updated with release notes.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-29</i>
+<b>CoCoA-4.7.2 matrix facilities</b>
+Added functions <code>RowMat</code>, <code>ColMat</code>,
+<code>NumRows</code>, <code>NumCols</code>.
+Updated the manual.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-23</i>
+<b>Release CoCoALib-0.99</b>
+The first public version with the new code organization.
+To be synchronous with first public release of ApCoCoALib by Dortmund.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-22</i>
+<b>PushFront/PushBack</b>
+Modify the interface to the <code>PushBack</code> family of functions
+to make it more friendly: now they all accept zero coefficients and make
+sanity checks in debugging mode.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-21</i>
+<b>CoCoALib-0.9904 in CVS</b>
+New version to "celebrate" the new <code>MachineInteger</code> class.
+Also fixed a long languishing bug in the linear system solver.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-05-21</i>
+<b>Proper handling of machine integers</b>
+Added new class <code>MachineInteger</code> in an attempt to circumvent
+undesirable automatic type conversions between C++ machine integer types.
+Class <code>ZZ</code> modified accordingly to act as a "proving ground".
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-05-03</i>
+<b>New source code organization</b>
+Implement the new code organization agreed upon Genoa.  The configuration
+and make files still need some tweaking.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-05-03</i>
+<b>CoCoAServer Mark III</b>
+Redesign the server to accommodate properly the new code organization.
+The new design must improve modularity still further, and add suitable
+safety checks.  Getting the design right is of particular importance
+here.
+<font color="blue">Bigatti+Abbott</font>
+</p>
+
+<p>
+<i>2007-05-03</i>
+<b>PPMonoidEvZZ</b>
+A new PP monoid with essentially unlimited exponent size.  It seems some
+people need it.  The code is new, and largely unchecked, but does pass a
+non-trivial test.
+<font color="blue">Abbott</font>
+</p>
+
+<p>
+<i>2007-04-04</i>
+<b>Release CoCoA-4.7</b>
+Of course, this is not strictly work on CoCoALib, but it is related.  Many
+of the new features in CoCoALib-0.98 will become accessible through the new
+CoCoA-4.7.  A modified "internal" version of CoCoA-4.6 already exists, but
+we still need to document and check everything thoroughly.
+<font color="blue">Bigatti,Abshoff</font>
+</p>
+
+<p>
+<i>2007-04-04</i>
+<b>Release CoCoALib-0.9801</b>
+Conduct all the usual pre-release checks (portability, documentation, etc).
+Release CoCoALib-0.9801 (with revised server, and some minor bug fixes).
+<font color="blue">Abbott,Bigatti,Abshoff</font>
+</p>
+
+<p>
+<i>2007-04-04</i>
+<b>Integrate Gin5 and preprocessing into C4.7</b>
+Modify server to offer Gin5 and preprocessing fns; extend C4.7 interface
+package.  Add tests for new CoCoALib fns (preprocessing and Gin5).  Update
+the C4.7 manual.
+<font color="blue">Bigatti, Abbott</font>
+</p>
+
+<p>
+<i>2007-04-04</i>
+<b>Integrate numerical routines into C4.7</b>
+Complete integration of the "numerical" routines into the C4.7-CoCoALib
+interface: minor revisions to the CoCoALib server, minor revisions to the
+C4.7 packages.  Produce a test suite for the numerical functions (NB aim is
+to verify <i>our code</i>, not the underlying floating point matrix library).
+Complete manual for the numerical fns; Abbott can help with the language
+polishing.
+<font color="blue">Abshoff, Heldt</font>
+</p>
+
+<p>
+<i>2007-03-31</i>
+<b>CoCoA4 manual XML tags</b>
+Conclude dictionary of XML tags for the CoCoA4 manual.
+<font color="blue">Bigatti, Hiddemann</font>
+</p>
+
+<p>
+<i>2007-04-04</i>
+<b>Revise CoCoAServer</b>
+CoCoAServer has been redesigned so that it is easier to add new functions.
+The new design has vastly improved modularity, and should "scale well".  It
+should make it easier for non-members of the CoCoA Team to add their
+functions.  While the new design is surely a great improvement over the
+old, evolutionary one, it cannot yet be regarded as stable.  After more
+experience has been gained, the design will be reviewed.
+<font color="blue">Bigatti</font>
+</p>
+
+<p>
+<i>2007-03-21</i>
+<b>New code management structure</b>
+After a review of existing code management structure and some
+consequent difficulties, a new management structure has been drafted
+allowing greater autonomy (and hopefully reducing "email synchronization").
+The transition to the new structure should occur immediately after Easter;
+we expect the draft to be approved shortly.
+</p>
+
+<p>
+<i>2007-03-19</i>
+<b>CoCoA Meeting in Genoa</b>
+Last week Genoa welcomed almost everyone involved in the project.
+It was the second intense week in a row: important meetings, presentations
+about the various aspects of the project, numerous mini-meetings to make
+good use of the physical proximity of collaborators, etc.
+</p>
+
+<p>
+<i>2007-03-09</i>
+<b>CoCoALib-0.98 Released</b>
+After a long week of very intensive work by Abbott, Bigatti, Abshoff
+and Heldt, the internal version of CoCoALib was brought up to a level
+which would permit public release.  Everyone learned that eight days'
+notice is definitely not enough for a full public release.  This task
+was actually completed almost on time (<i>i.e.</i> only about 7 hours late).
+</p>
+
+<p>
+<i>2007-03-08</i>
+<b>Sugar strategy in Buchberger's algorithm</b>
+The implementation of the sugar strategy was incomplete: certain
+cases could not be handled.  A stop-gap solution has been found
+and implemented; now everything works properly.  The whole structure
+will be revised at a later date.
+</p>
+
+<p>
+<i>2007-03-07</i>
+<b>Remove magic numbers from MemPool</b>
+The MemPool code contains some magic numbers (minimal loaf sizes).
+Abstracted these into named values, and improved documentation.
+</p>
+
+<p>
+<i>2007-03-07</i>
+<b>Update coding conventions</b>
+The CoCoALib Coding
+Conventions need to be improved after discussions during and after the
+minicourse in Dortmund.  Especially guidelines for when to
+use <code>inline</code> and when not.  The guidelines are now publicly
+accessible on WWW at Genova.  A further update will occur after 0.98
+has been released.
+</p>
+
+<p>
+<i>2007-03-07</i>
+<b>Improved compilation flags</b>
+Modified compilation flags (with <code>g++</code>): more stringent
+warnings, and position independent code (almost never harmful, and
+sometimes beneficial).
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Dynamic Buchberger Algm</b>
+First prototype of the Dynamic Buchberger's Algorithm. Uses a new way
+to compute the pairs, but there is still a problem with the GM
+criteria.  Added procedures for the lex comparison of Hilbert
+functions, for use in the Dynamic Buchberger's Algorithm.  Implemented
+the simplex algorithm, stage one.  This implementation uses the
+CoCoALib matrices.  This implementation uses GMP integers, and is for
+use in the Dynamic Buchberger Algorithm, NOT for huge optimization
+problems.  Max.
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Sugar and PosWDegTO</b>
+in the case of PosWDegTO orderings, Grading dim is now set to 0 and
+the sugar is now used. This is the case for most operations.  This
+fixes a bug, since we cannot (yet) use WSugar as it does not work in
+these cases.  Max.
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Interreduced non-homog GBasis</b>
+In non-homogenous case, a new final stage interreduces the resulting
+Groebner basis.  Max.
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>FacetComplex name clash</b>
+The name <code>complex</code> clashes with a name from the standard library.
+Changed our name to <code>FacetComplex</code>.  Max.
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Eliminate RingZ type</b>
+There was a special C++ ring type for the ring of integers, viz. <code>RingZ</code>.
+It did not appear to be of any great use in CoCoALib, and removing it did not
+make any existing code significantly harder to read/comprehend.  Combined with
+making RingZ a global value, the updated code actually becomes simpler and more
+natural.
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Unique ring of integers</b>
+After due deliberation we decided that Z, the ring of integers, and Q, the field of
+rationals should be unique "pre-existing" structures in the CoCoALib C++ run-time
+environment.  This will make life rather easier (and more natural) for users of the library.
+Rather than use an <i>ad hoc</i> technique for managing these global values, we designed
+and implemented a coherent scheme for managing them (see next task).
+</p>
+
+<p>
+<i>2007-03-06</i>
+<b>Management of Global Values</b>
+A consequence of deciding to make the ring of integers a global value was the need to
+manage such a global value properly.  The tricky part was ensuring the proper destruction
+of RingZ before <code>main</code> exits.  Recall that C++ normally destroys globals after
+main has completed, and that the order of destruction cannot easily be governed; destroying
+values in the wrong order can cause to the program to crash just before it terminates.
+Another advantage of forcing destruction before <code>main</code> exits is that it makes
+debugging very much simpler.  And of course it is simply good manners to clean up properly
+at the end of the program.
+</p>
+
+<p>
+<i>2007-03-05</i>
+<b>Fix test-factor1</b>
+Randomization means that <code>test-factor1</code> can appear to fail,
+though it is behaving correctly.  Fixed it so that the random effects cannot
+affect the validity.  Several other tests were cleaned up too.
+</p>
+
+<p>
+<i>2007-03-05</i>
+<b>Remove "New" Prefix for some homomorphisms</b>
+The <code>New</code> prefix on some homomorphism pseudo-constructors is not
+useful and reduces readability of code using them.  Change the names of the
+pseudo-constructors to eliminate the prefix, and ensuring that the resulting
+code will be easily readable.
+</p>
+
+<p>
+<i>2007-03-05</i>
+<b>Canonical Homomorphisms</b>
+Implement <code>CanonicalHom</code> which allows easy creation of certain
+canonical homomorphisms (and hopefully more readable code).  Document clearly
+which cases are covered by <code>CanonicalHom</code>.
+</p>
+
+<p>
+<i>2007-02-27</i>
+<b>Printing for DistrMPolyXXX objects</b>
+The three DistrMPolyXXX implementations repeat virtually identical code for
+printing out the polynomials.  This code could be moved up to SparsePolyRing
+so that there is only a single copy BUT then DistrMPoly objects would no
+longer be directly printable (for debugging).  Perhaps this would not matter if they were
+not proper objects...?
+</p>
+
+<p>
+<i>2007-02-20</i>
+<b>Index of examples</b>
+The "examples/" directory needs an index page to help find and
+remind what the various examples illustrate.  There are two levels of index:
+a brief "one-line" summary for each example, and a fuller description.
+</p>
+
+<p>
+<i>2007-02-08</i>
+<b>Generate BuildInfo.C automatically</b>
+Rather than generate BuildInfo.C automatically (which was deemed to be
+a bit too dynamic), an equivalent effect can be achieved simply by
+using special compilation flags for that one file.  This removes the
+need for the ugly and complicated CXXFLAGS which we previously used
+for all files.  In fact, CXXFLAGS was simplified further than expected:
+all the tricky stuff is concentrated inside the special case for
+BuildInfo.C.  CoCoAServer.C needed some minor adjustment.  A big
+benefit is that the command for compiling against the CoCoA library
+has become considerably simpler.  Added a new example, updated the
+corresponding documentation.
+</p>
+
+<p>
+<i>2007-01-29</i>
+<b>One line defns are obsolete</b>
+Modify CoCoA4 so that one line fn defns produce an "obsolescent" warning,
+and replace all one line defns in the packages by proper fn defns.
+</p>
+
+<p>
+<i>2007-01-24</i>
+<b>Unify three PolyRingHoms</b>
+The implementations of the three PolyRingHoms
+(in the three different sort of SparsePolyRing) are virtually identical.  Now we
+have polynomial iterators, it should be possibly to unify them into a single
+implementation in SparsePolyRingBase.
+Same thing for coeff embedding homs.
+</p>
+
+<p>
+<i>2007-01-18</i>
+<b>Make TmpHilbertDir</b>
+Make a separate directory for the Hilbert stuff.
+Perhaps following the scheme used for the factorizer code.
+</p>
+
+<p>
+<i>2007-01-16</i>
+<b>Rename "raw" args</b>
+Improve readability/comprehensibility of code by using "suggestive"
+names for fn args which are "raw" values.  This conversion generally
+happens in parallel with other reviews of the code.  It will
+eventually require a final "closing" assessment.  While the task is
+simple, it is time-consuming to be sure that absolutely all changes
+have been effected.  It does not seem possible to get the computer to
+check that the task is complete.
+</p>
+
+<p>
+<i>2007-01-15</i>
+<b>SmartPtr in RingHom</b>
+Use SmartPtrIRC in RingHom, probably as a data member.
+Was not as quick and simple as predicted, but did lead to an overhaul
+of the code (esp. regarding printing of homomorphisms).
+</p>
+
+<p>
+<i>2007-01-10</i>
+<b>Use SmartPtrIRC in ring</b>
+Put SmartPtrIRC in
+rings, modules; substitute <i>ad hoc</i>reference counting with reuse
+of SmartPtrIRC.
+</p>
+
+<p>
+<i>2007-01-11</i>
+<b>Clean includes in header files</b>
+Sutter's
+coding conventions suggest using forward declarations instead of
+including header files.  This makes (re)compilation faster, and
+expresses more clearly the true dependencies in the code.  Task should
+take at most 1 week, unless more unpleasant surprises surface.
+</p>
+
+<p>
+<i>2007-01-11</i>
+<b>Fix typedef ring</b>
+The use of a typedef for
+[ring] causes trouble as a typedef cannot be forward declared as a
+class can.  [ring] should become a trivial class forwarding all its
+operations to a SmartPtrIRC data member.  Everything can be inline.
+Task should take at most 1 day.
+</p>
+
+<p>
+<i>2007-01-10</i>
+<b>Attach old factorizer</b>
+Attach old CoCoA4
+factorizer to CoCoALib; mostly involves fiddling with makefiles and
+the "build system".  A working factorizer was put in CVS for version
+0.9713.  This stopgap solution should be enough for a few months.
+</p>
+
+</div>
+<!-- =========================================================== -->
+<h2><a name=2006>2006</a></h2>
+<div>
+
+<p>
+<i>2006-12-22</i>
+<b>Minicourse</b>
+Prepare CoCoALib minicourse (to be
+held in Dortmund); Bigatti might help.  This task will occupy almost
+all of Abbott's time until the end of 2006.
+</p>
+
+<p>
+<i>2006-11-16</i>
+<b>Migrate into SparsePolyRing</b>
+The code for
+ideal in the multivariate polynomial rings is essentially repeated
+three times: simply copied for each of the specific ring
+implementations.  This code should be migrated into SparsePolyRing, so
+that just a single copy exists.  The migration should be possible, but
+this must be verified.  It may also be possible for ideals in RingWeyl
+to be covered by this same migrated generic implementation -- again
+this must be assessed.  Time estimate: 3-7 days.
+</p>
+
+</div>
+<!-- ============================================================ -->
+
+
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://\
+www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' \
+type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11245099-8");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>

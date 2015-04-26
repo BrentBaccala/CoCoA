@@ -1,0 +1,27 @@
+* foreach
+* file che produce segv
+* Control-L (vedere sotto)
+* revisione della gestione degli errori; vedere mail "Error Objects in CoCoALib" (in piu' parti)
+
+
+----- OLDER NOTES -----
+
+- fixare tagged
+GUI: aggiungere ctrl-L alla gui in modo
+	1 - manda la linea in esecuzione
+	2 - sposta il cursore sulla linea successiva
+- refactoring della gestione arietà (c'è duplicazione...)
+
+- warning su Define f(f) Return f; EndDefine;
+- packages pre-parsati (?)
+- C5: multiline da "console" (via checkbox)
+- C5: permettere di eseguire una "regione" selezionata (probabilmente la cosa migliore è introdurre un'estensione di Source che legge solo una parte di file)
+- C5: tab "alla firefox"
+- C5: realtime help
+- C5 (e basta?): completion
+- in CharPosition::stringTo potrebbe diventare outTo (e stringTo lo potrebbe chiamare con uno stringstream)
+- warning/error se una fn-proc non termina con Return/Error, considerando anche
+  qualche pattern semplice (while True...); vedere mail "Re: fun and proc: error or warning?" 
+  del 20/05/2010
+- aggiungere un'opzione per permettere la moltiplicazione implicita di default a top-level (cioe' fuori da package e definizioni di funzione)
+

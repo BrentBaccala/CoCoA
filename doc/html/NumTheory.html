@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      NumTheory</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      NumTheory</H1>
+<FONT SIZE="4">
+<I>      &copy;  2009,2012-2013 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc2">Generalities</A>
+      <LI><A HREF="#examples">Examples</A>
+      <LI><A HREF="#toc4">The Functions Available For Use</A>
+        <UL>
+        <LI><A HREF="#toc5">Continued Fractions</A>
+        <LI><A HREF="#toc6">Chinese Remaindering -- Integer Reconstruction</A>
+        <LI><A HREF="#toc7">Rational Reconstruction</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc8">Maintainer Documentation</A>
+    <LI><A HREF="#toc9">Bugs, Shortcomings, etc.</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation</H2>
+<A NAME="toc2"></A>
+<H3>Generalities</H3>
+<P>
+The functions in the <CODE>NumTheory</CODE> file are predominantly basic
+operations from number theory.  Most of the functions may be
+applied to machine integers or big integers (<I>i.e.</I> values of
+type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>).  Please recall that computational number theory is
+not the primary remit of CoCoALib, so do not expect to find a
+complete collection of operations here -- you would do better to
+look at Victor Shoup's NTL (Number Theory Library), or PARI/GP,
+or some other specialized library/system.
+</P>
+<P>
+See also <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A> for very basic arithmetic operations on integers,
+and <A HREF="BigRat.html"><CODE>BigRat</CODE></A> for very basic arithmetic operations on rational numbers.
+</P>
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-NumTheory1.C">ex-NumTheory1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc4"></A>
+<H3>The Functions Available For Use</H3>
+<P>
+Several of these functions give errors if they are handed unsuitable values:
+unless otherwise indicated below the error is of type <CODE>ERR::BadArg</CODE>.
+All functions expecting a modulus will throw an error if the modulus is
+less than 2 (or an <CODE>unsigned long</CODE> value too large to fit into a <CODE>long</CODE>).
+</P>
+<P>
+The main functions available are:
+</P>
+<UL>
+<LI><CODE>gcd(m,n)</CODE> computes the non-negative gcd of <CODE>m</CODE> and <CODE>n</CODE>.  If both args are machine integers, the result is of type <CODE>long</CODE> (or error if it does not fit); otherwise result is of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+<LI><CODE>ExtGcd(a,b,m,n)</CODE> computes the non-negative gcd of <CODE>m</CODE> and <CODE>n</CODE>; also sets <CODE>a</CODE> and <CODE>b</CODE> so that <CODE>gcd = a*m+b*n</CODE>.  If <CODE>m</CODE> and <CODE>n</CODE> are machine integers then <CODE>a</CODE> and <CODE>b</CODE> must be of type (signed) <CODE>long</CODE>.  If <CODE>m</CODE> and <CODE>n</CODE> are of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A> then <CODE>a</CODE> and <CODE>b</CODE> must also be of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  The cofactors <CODE>a</CODE> and <CODE>b</CODE> satisfy <CODE>abs(a) &lt;= abs(n)/2g</CODE> and <CODE>abs(b) &lt;= abs(m)/2g</CODE> where <CODE>g</CODE> is the gcd (inequalities are strict if possible).  Error if <CODE>m=n=0</CODE>.
+<LI><CODE>InvMod(r,m)</CODE> computes the least positive inverse of <CODE>r</CODE> modulo <CODE>m</CODE>; returns 0 <B>if the inverse does not exist</B>.  Gives error if <CODE>m &lt; 2</CODE>.  Result is of type <CODE>long</CODE> if <CODE>m</CODE> is a machine integer; otherwise result is of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+<LI><CODE>lcm(m,n)</CODE> computes the non-negative lcm of <CODE>m</CODE> and <CODE>n</CODE>.  If both args are machine integers, the result is of type <CODE>long</CODE>; otherwise result is of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  Gives error <CODE>ERR::ArgTooBig</CODE> if the lcm of two machine integers is too large to fit into an <CODE>long</CODE>.
+<LI><CODE>IsPrime(n)</CODE> tests the positive number <CODE>n</CODE> for primality (may be <B>very slow</B> for larger numbers).  Gives error if <CODE>n &lt;= 0</CODE>.
+<LI><CODE>IsProbPrime(n)</CODE> tests the positive number <CODE>n</CODE> for primality (fairly fast for large numbers, but in very rare cases may falsely declare a number to be prime).  Gives error if <CODE>n &lt;= 0</CODE>.
+<LI><CODE>IsProbPrime(n,iters)</CODE> tests the positive number <CODE>n</CODE> for primality; performs <CODE>iters</CODE> iterations of the Miller-Rabin test (default value is 25).  Gives error if <CODE>n &lt;= 0</CODE>.
+<LI><CODE>NextPrime(n)</CODE> and <CODE>PrevPrime(n)</CODE> compute next or previous positive prime (fitting into a machine integer); returns 0 if none exists.  Gives error if <CODE>n &lt;= 0</CODE>.
+<LI><CODE>NextProbPrime(N)</CODE> and <CODE>PrevProbPrime(N)</CODE> compute next or previous positive probable prime (uses <CODE>IsProbPrime</CODE>).  Gives error if <CODE>N &lt;= 0</CODE>.
+<LI><CODE>SmoothFactor(n,limit)</CODE> finds small prime factors of <CODE>n</CODE> (up to &amp; including the specified <CODE>limit</CODE>); result is a <CODE>factorization</CODE> object.  Gives error if <CODE>limit</CODE> is not positive or too large to fit into a <CODE>long</CODE>.
+<LI><CODE>factor(n)</CODE> finds the complete factorization of <CODE>n</CODE> (may be <B>very slow</B> for large numbers); NB <B>implementation incomplete</B>
+<LI><CODE>valuation(p,n)</CODE> find largest <CODE>k</CODE> such that <CODE>power(p,k)</CODE> divides <CODE>n</CODE> (error if <CODE>p</CODE> is not prime or <CODE>n</CODE> is not positive)
+<LI><CODE>EulerPhi(n)</CODE> computes Euler's <I>totient</I> function of the positive number <CODE>n</CODE> (<I>i.e.</I> the number of integers up to <CODE>n</CODE> which are coprime to <CODE>n</CODE>, or the degree of the <CODE>n</CODE>-th cyclotomic polynomial).  Gives error if <CODE>n &lt;= 0</CODE>.
+<LI><CODE>PrimitiveRoot(p)</CODE> computes the least positive primitive root for the positive prime <CODE>p</CODE>.  Gives error if <CODE>p</CODE> is not a positive prime.  May be <B>very slow</B> for large <CODE>p</CODE> (because it must factorize <CODE>p-1</CODE>).
+<LI><CODE>MultiplicativeOrder(res,mod)</CODE> computes multiplicative order of <CODE>res</CODE> modulo <CODE>mod</CODE>.  Gives error if <CODE>mod &lt; 2</CODE> or <CODE>gcd(res,mod)</CODE> is not 1.
+<LI><CODE>PowerMod(base,exp,modulus)</CODE>  computes <CODE>base</CODE> to the power <CODE>exp</CODE> modulo <CODE>modulus</CODE>; result is least non-negative residue.  If <CODE>modulus</CODE> is a machine integer then the result is of type <CODE>long</CODE> (or error if it does not fit), otherwise the result is of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  Gives error if <CODE>modulus &lt;= 1</CODE>.  Gives <CODE>ERR::DivByZero</CODE> if <CODE>exp</CODE> is negative and <CODE>base</CODE> cannot be inverted.  If <CODE>base</CODE> and <CODE>exp</CODE> are both zero, it produces 1.
+<LI><CODE>SimplestBigRatBetween(A,B)</CODE> computes the simplest rational between <CODE>A</CODE> and <CODE>B</CODE>
+<LI><CODE>BinomialRepr(N,r)</CODE> produces the repr of <CODE>N</CODE> as a sum of binomial coeffs with "denoms" <CODE>r, r-1, r-2, ...</CODE>
+<LI><CODE>NumPartitions(n)</CODE> computes number of partitions of <CODE>n</CODE>, <I>i.e.</I> how many distinct ways to write <CODE>n</CODE> as a sum of positive integers (error if <CODE>n</CODE> is negative)
+</UL>
+
+<A NAME="toc5"></A>
+<H4>Continued Fractions</H4>
+<P>
+Several of these functions give errors if they are handed unsuitable values:
+unless otherwise indicated below the error is of type <CODE>ERR::BadArg</CODE>.
+</P>
+<P>
+Recall that any real number has an expansion as a <B>continued fraction</B>
+(<I>e.g.</I> see Hardy &amp; Wright for definition and many properties).  This expansion
+is finite for any rational number.  We adopt the following conventions which
+guarantee that the expansion is unique:
+</P>
+<UL>
+<LI>the last partial quotient is greater than 1 (except for the expansion of integers &lt;= 1)
+<LI>only the very first partial quotient may be non-positive.
+</UL>
+
+<P>
+For example, with these conventions the expansion of -7/3 is (-3, 1, 2).
+</P>
+<P>
+The main functions available are:
+</P>
+<UL>
+<LI><CODE>ContFracIter(q)</CODE> constructs a new continued fraction iterator object
+<LI><CODE>IsEnded(CFIter)</CODE> true iff the iterator has moved past the last <I>partial quotient</I>
+<LI><CODE>IsFinal(CFIter)</CODE> true iff the iterator is at the last <I>partial quotient</I>
+<LI><CODE>quot(CFIter)</CODE> gives the current <I>partial quotient</I> as a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> (or throws <CODE>ERR::IterEnded</CODE>)
+<LI><CODE>*CFIter</CODE> gives the current <I>partial quotient</I> as a <A HREF="BigInt.html"><CODE>BigInt</CODE></A> (or throws <CODE>ERR::IterEnded</CODE>)
+<LI><CODE>++CFIter</CODE> moves to next <I>partial quotient</I> (or throws <CODE>ERR::IterEnded</CODE>)
+<P></P>
+<LI><CODE>ContFracApproximant()</CODE> for constructing a rational from its continued fraction quotients
+<LI><CODE>CFA.myAppendQuot(q)</CODE> appends the quotient <CODE>q</CODE> to the continued fraction
+<LI><CODE>CFA.myRational()</CODE> returns the rational associated to the continued fraction
+<P></P>
+<LI><CODE>CFApproximantsIter(q)</CODE> constructs a new continued fraction approximant iterator
+<LI><CODE>IsEnded(CFAIter)</CODE> true iff the iterator has moved past the last "partial quotient"
+<LI><CODE>*CFAIter</CODE> gives the current continued fraction approximant as a <A HREF="BigRat.html"><CODE>BigRat</CODE></A> (or throws <CODE>ERR::IterEnded</CODE>)
+<LI><CODE>++CFAIter</CODE> moves to next approximant (or throws <CODE>ERR::IterEnded</CODE>)
+<P></P>
+<LI><CODE>CFApprox(q,eps)</CODE> gives the simplest cont. frac. approximant to <CODE>q</CODE> with relative error at most <CODE>eps</CODE>
+</UL>
+
+<A NAME="toc6"></A>
+<H4>Chinese Remaindering -- Integer Reconstruction</H4>
+<P>
+CoCoALib offers the class <CODE>CRTMill</CODE> for reconstructing an integer from
+several residue-modulus pairs via Chinese Remaindering.  At the moment the
+moduli from distinct pairs must be coprime.
+</P>
+<P>
+The operations available are:
+</P>
+<UL>
+<LI><CODE>CRTMill()</CODE> ctor; initially the residue is 0 and the modulus is 1
+<LI><CODE>CRT.myAddInfo(res,mod)</CODE> give a new residue-modulus pair to the <CODE>CRTMill</CODE> (error if <CODE>mod</CODE> is not coprime to all previous moduli)
+<LI><CODE>CRT.myAddInfo(res,mod,CRTMill::CoprimeModulus)</CODE> give a new residue-modulus pair to the <CODE>CRTMill</CODE> asserting that <CODE>mod</CODE> is coprime to all previous moduli --  <CODE>CRTMill::CoprimeModulus</CODE> is a constant
+<LI><CODE>residue(CRT)</CODE> the combined residue with absolute value less than or equal to <CODE>modulus(CRT)/2</CODE>
+<LI><CODE>modulus(CRT)</CODE> the product of the moduli of all pairs given to the mill
+</UL>
+
+<A NAME="toc7"></A>
+<H4>Rational Reconstruction</H4>
+<P>
+CoCoALib offers two heuristic methods for reconstructing rationals from
+residue-modulus pairs; they have the same user interface but internally one
+algorithm is based on continued fractions while the other uses lattice
+reduction.  The methods are heuristic, so may (rarely) produce an incorrect
+result.
+</P>
+<P>
+The constructors available are:
+</P>
+<UL>
+<LI><CODE>RatReconstructByContFrac(threshold)</CODE> ctor for continued fraction method mill with given threshold (0 --&gt; use default)
+<LI><CODE>RatReconstructByLattice(SafetyFactor)</CODE> ctor for lattice method mill with given <CODE>SafetyFactor</CODE> (0 --&gt; use default)
+</UL>
+
+<P>
+The operations available are:
+</P>
+<UL>
+<LI><CODE>reconstructor.myAddInfo(res,mod)</CODE> give a new residue-modulus pair to the reconstructor
+<LI><CODE>IsConvincing(reconstructor)</CODE> gives <CODE>true</CODE> iff the mill can produce a <I>convincing</I> result
+<LI><CODE>ReconstructedRat(reconstructor)</CODE> gives the reconstructed rational (or an error if <CODE>IsConvincing</CODE> is not true).
+</UL>
+
+<P>
+There is also a function for deterministic rational reconstruction which
+requires certain bounds to be given in input.  It uses the continued fraction
+method.
+</P>
+<UL>
+<LI><CODE>RatReconstructWithBounds(e,P,Q,res,mod)</CODE> where <CODE>e</CODE> is upper bound for number of "bad" moduli, <CODE>P</CODE> and <CODE>Q</CODE> are upper bounds for numerator and denominator of the rational to be reconstructed, and <CODE>(res[i],mod[i])</CODE> is a residue-modulus pair with distinct moduli being coprime.
+</UL>
+
+<A NAME="toc8"></A>
+<H2>Maintainer Documentation</H2>
+<P>
+Correctness of <CODE>ExtendedEuclideanAlg</CODE> is not immediately clear,
+because the cofactor variables could conceivably overflow -- in fact
+this cannot happen (at least on a binary computer): for a proof see
+Shoup's book <I>A Computational Introduction to Number Theory and Algebra</I>,
+in particular Theorem 4.3 and the comment immediately following it.  There is
+just one line where a harmless "overflow" could occur -- it is commented in
+the code.
+</P>
+<P>
+I have decided to make <CODE>ExtGcd</CODE> give an error if the inputs are both zero
+because this is an exceptional case, and so should be handled specially.  I
+note that <CODE>mpz_exgcd</CODE> accepts this case, and returns two zero cofactors; so if we
+decide to accept this case, we should do the same -- this all fits in well with
+the (reasonable/good) principle that "zero inputs have zero cofactors".
+</P>
+<P>
+Several functions are more complicated than you might expect because I wanted them
+to be correct for all possible machine integer inputs (<I>e.g.</I> including the
+most negative <CODE>long</CODE> value).
+</P>
+<P>
+In some cases the function which does all the work is implemented as a file
+local function operating on <CODE>unsigned long</CODE> values: the function should
+normally be used only via the "dispatch" functions whose args are of type
+<A HREF="MachineInt.html"><CODE>MachineInt</CODE></A> or <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
+</P>
+<P>
+The continued fractions functions are all pretty simple.  The only tricky
+part is that the "end" of the <CODE>ContFracIter</CODE> is represented by both
+<CODE>myFrac</CODE> and <CODE>myQuot</CODE> being zero.  This means that a newly created
+iterator for zero is already ended.
+</P>
+<P>
+<CODE>CFApproximantsIter</CODE> delegates most of the work to <CODE>ContFracIter</CODE>.
+</P>
+<A NAME="toc9"></A>
+<H2>Bugs, Shortcomings, etc.</H2>
+<P>
+Several functions return <CODE>long</CODE> values when perhaps <CODE>unsigned long</CODE>
+would possibly be better choice (since it offers a greater range, and
+in the case of <CODE>gcd</CODE> it would permit the fn to return a result always,
+rather than report "overflow").  The choice of return type was dictated
+by the coding conventions, which were in turn dictated by the risks of nasty
+surprises to unwary users unfamiliar with the foibles of unsigned values in C++.
+</P>
+<P>
+Should there also be procedural forms of functions which return <A HREF="BigInt.html"><CODE>BigInt</CODE></A> values?
+(<I>e.g.</I> gcd, lcm, InvMod, PowerMod, and so on).
+</P>
+<P>
+Certain implementations of <CODE>PowerMod</CODE> should be improved (<I>e.g.</I> to use
+<CODE>PowerModSmallModulus</CODE> whenever possible).  Is behaviour for 0^0 correct?
+</P>
+<P>
+<CODE>LucasTest</CODE> should produce a certificate, and be made publicly accessible.
+</P>
+<P>
+How should the cont frac iterators be printed out???
+</P>
+<P>
+<CODE>ContFracIter</CODE> could be rather more efficient for rationals having
+very large numerator and denominator.  One way would be to compute with
+num and den divided by the same large factor (probably a power of 2),
+and taking care to monitor how accurate these "scaled" num and den are.
+I'll wait until there is a real need before implementing (as I expect
+it will turn out a bit messy).
+</P>
+<P>
+<CODE>CFApproximantsIter::operator++()</CODE> should be made more efficient.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/NumTheory.html -i txt/NumTheory.txt -->
+</BODY></HTML>

@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      module</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      module</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2009 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for the classes module, ModuleBase, ModuleElem</A>
+        <UL>
+        <LI><A HREF="#toc2">Functions on ModuleElems</A>
+        </UL>
+    <LI><A HREF="#toc3">Maintainer documentation for the classes module, and ModuleElem</A>
+        <UL>
+        <LI><A HREF="#toc4">(2.1) Member functions for operations on raw values  [IGNORE THIS -- OUT OF DATE]</A>
+        </UL>
+    <LI><A HREF="#toc5">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for the classes module, ModuleBase, ModuleElem</H2>
+<P>
+You may also wish to look at the documentation for <A HREF="FGModule.html"><CODE>FGModule</CODE></A>
+the type which represents (explicitly) Finitely Generated Modules.
+</P>
+<P>
+The classes <CODE>module</CODE>, <CODE>ModuleBase</CODE> and <CODE>ModuleElem</CODE> are closely linked
+together (analogously to the triple <CODE>ring</CODE>, <CODE>RingBase</CODE> and <CODE>RingElem</CODE>).
+</P>
+<P>
+The class <CODE>module</CODE> is a reference counting smart pointer to an object of
+type derived from <CODE>ModuleBase</CODE>; all concrete types for representing modules
+are derived from <CODE>ModuleBase</CODE>.  For a library implementor the class
+<CODE>ModuleBase</CODE> defines the minimal interface which every concrete module
+class must offer; indeed the concrete class must be derived from
+<CODE>ModuleBase</CODE>.
+</P>
+<P>
+A user of CoCoALib who does not wish to add to the library need
+know only what it is in this section.
+</P>
+<P>
+Analogously to <CODE>ring</CODE>s and <CODE>RingElem</CODE>s, every <CODE>ModuleElem</CODE> belongs to some
+<CODE>module</CODE>.  So before you can compute with <CODE>ModuleElem</CODE>s you must create the
+<CODE>module</CODE>(s) which contain them.
+</P>
+<P>
+To create a <CODE>module</CODE> you must a pseudo-constructor for one of the concrete
+module classes (refer to their documentation for details): <I>e.g.</I>
+</P>
+<PRE>
+   NewFreeModule(R, n)   -- create a new FreeModule of n components over R
+</PRE>
+<P></P>
+<P>
+The functions which one may apply directly to a module are:
+</P>
+<PRE>
+    NumCompts(M) -- the number of components an element of M has
+    RingOf(M)  -- the base ring of M (i.e. M is a module over this ring)
+    gens(M)      -- a read only C++ vector containing the generators of M
+    zero(M)      -- a read only ModuleElem which is the zero of M
+    M1 == M2     -- are the two modules identical (same repr in memory)?
+    M1 != M2     -- opposite of M1 == M2
+</PRE>
+<P>
+As you can see there is not a lot one can do to a module.  Primarily
+they exist to "give the correct type" to module elements; internally
+they play a crucial role in applying operations to module elements.  A
+C++ value of type <CODE>ModuleElem</CODE> represents an element of some concrete
+module.  The module to which the value belongs is called the <CODE>owner</CODE> of
+that value.  The owner of an object of type <CODE>ModuleElem</CODE> must be specified
+(explicitly or implicitly) when it is created, and cannot be changed
+during the lifetime of the object; the value it contains may, however,
+be changed (C++ const rules permitting).
+</P>
+<A NAME="toc2"></A>
+<H4>Functions on ModuleElems</H4>
+<P>
+Let <CODE>v</CODE> be a non-const <CODE>ModuleElem</CODE>, and <CODE>v1, v2</CODE> be <CODE>const ModuleElems</CODE> all
+belonging to the same concrete module <CODE>M</CODE>.  Let <CODE>R</CODE> be the base ring of <CODE>M</CODE>,
+and <CODE>r</CODE> a const element of <CODE>R</CODE>.  Then we summarize the possible operations
+using C++ syntax:
+</P>
+<PRE>
+  owner(v1)   // gives the module to which v1 belongs
+  
+  -v1                                       // Usual arithmetic operations
+  v1 + v2                    v1 - v2        // between ModuleElems and
+  r * v1                     v1 * r         // RingElems.
+                             v1 / r
+  v = v1
+  v += v1                    v -= v1
+  v *= r                     v /= r
+  v1 == v2                   v1 != v2
+  IsZero(v1)                 cout &lt;&lt; v1
+  
+  v[pos]  // throws if the module is not FGModule 
+</PRE>
+<P></P>
+<P>
+In every case it is an error to combine/compare <CODE>ModuleElems</CODE> belonging to
+different modules.  As you would expect, instead of multiplying or dividing
+by a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> you may also multiply or divide by a machine integer, a
+<A HREF="BigInt.html"><CODE>BigInt</CODE></A> or a <A HREF="BigRat.html"><CODE>BigRat</CODE></A>.
+</P>
+<A NAME="toc3"></A>
+<H2>Maintainer documentation for the classes module, and ModuleElem</H2>
+<P>
+I shall suppose that the user documentation has already been read and
+digested.  It could also be helpful to have read the documentation for
+<A HREF="ring.html"><CODE>ring</CODE></A> since the design philosophy here imitates that used for rings.
+</P>
+<P>
+The class <CODE>module</CODE> is simply a reference counting smart pointer class to a
+concrete module (<I>i.e.</I> an object belonging to a class derived from
+<CODE>ModuleBase</CODE>).
+</P>
+<P>
+A <CODE>ModuleElem</CODE>, like a <CODE>RingElem</CODE>, comprises two components: one specifying
+the algebraic structure to which the value belongs, and the other being
+an opaque representation of the value which can be correctly interpreted
+only by the owning module.  The data members are:
+</P>
+<PRE>
+    module myM;             // the module to which the ModuleElem belongs
+    ModuleRawValue myValue; // "opaque" representation of the value,
+                            // concrete modules must "import" this value.
+</PRE>
+<P></P>
+<P>
+The design philosophy for modules follows closely that used for rings.  This means
+that every operation on <CODE>ModuleElem</CODE>s is actually effected by calling
+the appropriate member function of the owning <CODE>module</CODE>.  These member
+functions expect raw values as input.  A normal <CODE>ModuleElem</CODE> stores
+within itself both the identity of the <CODE>module</CODE> to which it belongs and
+its value as an element of that particular module -- we call the first
+datum the <CODE>owner</CODE> and the second datum the <CODE>RawValue</CODE>.  A RawValue can
+be correctly interpreted only if supplied as argument to a member
+function of the owning module -- calling module member functions for
+an incompatible concrete module and RawValue will very likely have
+grave consequences (officially stated as <I>undefined behaviour</I>, and
+most probably perceived as a program crash).
+</P>
+<P>
+The member functions of a module <B>do not check</B> their arguments for being
+sensible.  This decision is largely just a design policy imitating
+that used for rings, but may also lead to some slight beneficial effect
+on run-time performance.  It does naturally imply that the programmer
+bears a considerable burden of responsibility.
+</P>
+<A NAME="toc4"></A>
+<H4>(2.1) Member functions for operations on raw values  [IGNORE THIS -- OUT OF DATE]</H4>
+<P>
+For ring elements (especially those in a small finite field), noticeable
+speed gains arise from using directly raw values and ring member
+functions.  For modules the analogous effect exists in theory but will
+likely be negligible in practice.  Nevertheless we list here the member
+functions of a module; this list will be useful to library authors who
+wish to create their own concrete module classes.
+</P>
+<P>
+Let <CODE>v</CODE> be a non-const RawValue, and <CODE>v1, v2</CODE> const RawValues belonging to <CODE>M</CODE>.
+Let <CODE>r</CODE> be a RingBase::RawValue belonging to the base ring of <CODE>M</CODE>.
+</P>
+<PRE>
+  M.myNumCompts()
+  M.myRing()
+  M.myGens()        -- returns a const ref to a C++ vector of module:elems
+  M.myZero()        -- returns a const ref to a ModuleElem
+  
+  M.myNew(v)       -- allocates resources, apply only to uninitialized RawValue
+  M.myNew(v, v1)   -- allocates resources, apply only to uninitialized RawValue
+  M.myDelete(v)    -- releases resources
+  M.mySwap(v, w)
+  M.myAssign(v, v1)
+  M.myNegate(v, v1)
+  M.myAdd(v, v1, v2)
+  M.mySub(v, v1, v2)
+  M.myMul(v, r, v1)
+  M.myDiv(v, r, v1) -- NOTE funny arg order!
+  M.myOutput(out, v1)
+  M.myOutputSelf(out)
+  M.myIsZero(v1)
+  M.myIsEqual(v1, v2)
+</PRE>
+<P></P>
+<A NAME="toc5"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+This code is too new, largely untried/untested.  As soon as it gets
+some use, there will be some material to put here :-)
+</P>
+<P>
+The documentation is very incomplete.  Will be fixed (eventually).
+Maintainer documentation is incompleter than user doc.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/module.html -i txt/module.txt -->
+</BODY></HTML>

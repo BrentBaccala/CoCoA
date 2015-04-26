@@ -1,0 +1,43 @@
+Package $chebyshev -- compute Chebyshev polynomials
+
+Export ChebyshevPoly;
+Export ChebyshevPoly2;
+
+-----------------------------------------------------------------------------
+-- Chebyshev polynomials
+
+-- The Chebyshev polynomials are a sequence of orthogonal polynomials,
+-- one in each degree.  They enjoy many interesting properties.
+
+-- Chebyshev polynomials "of the first kind"
+Define ChebyshevPoly(N,x)
+  If N = 0 Then Return one(RingOf(x)); EndIf;
+  If N = 1 Then Return x; EndIf;
+  prev := 1;
+  curr := x;
+  twox := 2*x;
+  For k := 2 To N Do
+    tmp := twox*curr - prev;
+    prev := curr;
+    curr := tmp;
+  EndFor;
+  Return curr;
+EndDefine; -- ChebyshevPoly
+
+
+-- Chebyshev polynomials "of the second kind"
+Define ChebyshevPoly2(N,x)
+  If N = 0 Then Return one(RingOf(x)); EndIf;
+  prev := 1;
+  curr := 2*x;
+  twox := 2*x;
+  For k := 2 To N Do
+    tmp := twox*curr - prev;
+    prev := curr;
+    curr := tmp;
+  EndFor;
+  Return curr;
+EndDefine; -- ChebyshevPoly2
+
+
+EndPackage; -- chebyshev

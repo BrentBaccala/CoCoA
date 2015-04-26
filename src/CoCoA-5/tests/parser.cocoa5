@@ -1,0 +1,111 @@
+// Use ZZ/(10);
+// Use R ::= QQ;
+// Set Id;
+// Set Answer := 42;
+//Unset Foo;
+//For I := 1 To 10 Do EndFor
+//For I := 1 To 10*2 Step 4 Do PrintLn "ciao"; EndFor
+//For I := 1 To 10 Step 4 Do Block Print I EndBlock EndFor
+//Block Print 1 EndBlock
+// Block Block Print 1 EndBlock EndBlock
+// Foreach x in [1+2] Do If x>1 Then 2 Elif x>2 Then 7 EndIf EndForeach
+// Foreach x in [1+2] Do If x>1 Then 2 Elif x>2 Then 7 Else 8 EndIf EndForeach
+// Func () Func () Return  EndFunc(); EndFunc();
+// Func () Func () Return 7 EndFunc(); EndFunc();
+// Define F() Return 8; EndDefine
+// Func (a,b,c) Return 8; EndFunc;
+// Func (a,b,c) TopLevel d,e; ImportByValue z; Return 8; EndFunc;
+// Using Foo Do Bar(); EndUsing;
+// Print;
+// Print 1;
+// Print 1, 2;
+// Print On 3;
+// Print 1, 2 On 3;
+// For I:=1 to 10 Do Break; EndFor
+// For I:=1 to 10 Do Continue; EndFor
+// Repeat Print a^2; Until a-1;
+// While a And b Do c; EndWhile
+// Describe -1;
+// Clear Foo, Bar;
+// Delete a, b, c;
+// Destroy d, e, f;
+// Alias  a:=$ciao, b:=$mondo;
+// Alias  a:=$ciao, b:=$mondo In bibuba(1,2,3); EndAlias
+// Ciao;
+// Quit;
+// Catch Ciao EndCatch
+// Catch Ciao In foobar EndCatch
+// Package $bu Ciao; Quit; Ciao EndPackage
+// ? la la / \ --> bibuba
+// << 1;
+// Source "hi";
+// Try Ciao UponError A Do Quit EndTry
+// A := 1;
+// B := "test";
+// Protect A;
+// Unprotect A;
+// Protect A : B;
+// A := 1;
+// A ::= QQ;
+// Time Print;
+// Func (...) Return 8; EndFunc;
+// Func (ref a, opt b) Return 8; EndFunc;
+// NewLine;
+// ${ 3 x y ^ 2}$;
+// a Or b ;
+// ...;
+// F(...);
+// Define F(X, Opt Y) G(...) EndDefine
+// Define F(...) Func () G(...) EndFunc EndDefine
+// Define F(...) G(1,2,3); G(...) EndDefine
+// Define F(...) Func (X) Func (...) G(...) EndFunc EndFunc EndDefine
+// Break;
+// Continue;
+// Break foo;
+/*foo: While True Do
+	Continue bar;
+	Break;
+	Continue;
+	Break foo;
+	Continue bar;
+EndWhile
+
+bar: For I:=1 To 2 Do PrintLn I;
+foo: While True Do
+	Continue bar;
+	Break;
+	Continue;
+	Break foo;
+	Continue bar;
+EndWhile
+EndFor
+
+bar: For I:=1 To 2 Do PrintLn I;
+foo: While True Do
+	Break;
+EndWhile
+EndFor
+
+bar: For I:=1 To 2 Do PrintLn I;
+foo: While True Do
+	Break bar;
+EndWhile
+EndFor
+
+bar: For I:=1 To 2 Do PrintLn I;
+foo: While True Do
+	Break foo;
+EndWhile
+EndFor
+
+foo: While 1 Do foo: While 2 Do End End;
+
+Func () foo: While 1 Do EndWhile EndFunc + Func () foo: While 1 Do EndWhile EndFunc;
+
+If 1 Then
+	Define F()
+		Package $p End
+	EndDefine
+EndIf
+*/
+

@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      PolyRing</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      PolyRing</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+      <UL>
+      <LI><A HREF="#examples">Examples</A>
+      </UL>
+
+    <UL>
+    <LI><A HREF="#toc2">User documentation for PolyRing</A>
+      <UL>
+      <LI><A HREF="#constructors">Pseudo-constructors</A>
+      <LI><A HREF="#query">Queries and views</A>
+      <LI><A HREF="#operations">Operations on a PolyRing</A>
+      <LI><A HREF="#homomorphisms">Homomorphisms</A>
+      </UL>
+    <LI><A HREF="#toc7">Maintainer documentation for PolyRing</A>
+    <LI><A HREF="#toc8">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H3>Examples</H3>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-PolyRing1.C">ex-PolyRing1.C</A>
+<LI><A HREF="../../examples/index.html#ex-PolyRing2.C">ex-PolyRing2.C</A>
+<LI><A HREF="../../examples/index.html#ex-PolyIterator1.C">ex-PolyIterator1.C</A>
+<LI><A HREF="../../examples/index.html#ex-PolyIterator2.C">ex-PolyIterator2.C</A>
+<LI><A HREF="../../examples/index.html#ex-PolyInput1.C">ex-PolyInput1.C</A>
+<LI><A HREF="../../examples/index.html#ex-factor1.C">ex-factor1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation for PolyRing</H2>
+<P>
+PolyRing is an abstract class (inheriting from <A HREF="ring.html"><CODE>ring</CODE></A>) representing
+rings of polynomials with coefficients in a commutative <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>.
+</P>
+<P>
+The polynomials may be (dense) univariate or (sparse) multivariate.
+</P>
+<P>
+See <A HREF="RingElem.html#PolyRing"><CODE>RingElem</CODE> PolyRing</A> for operations on its elements, but
+only a few operations are available at this level of abstraction:
+see <A HREF="RingElem.html#SparsePolyRing"><CODE>RingElem</CODE> SparsePolyRing</A> or <A HREF="RingElem.html#DenseUPolyRing"><CODE>RingElem</CODE> DenseUPolyRing</A> for more
+operations on polynomials of <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A> or <A HREF="DenseUPolyRing.html"><CODE>DenseUPolyRing</CODE></A>.
+</P>
+<A NAME="constructors"></A>
+<H3>Pseudo-constructors</H3>
+<P>
+There are several functions to create polynomial rings: see
+</P>
+<UL>
+<LI><A HREF="SparsePolyRing.html#constructors"><CODE>SparsePolyRing</CODE> constructors</A> for the sparse implementation and
+<LI><A HREF="DenseUPolyRing.html#constructors"><CODE>DenseUPolyRing</CODE> constructors</A> for the dense (univariate) implementation.
+</UL>
+
+<P></P>
+<UL>
+<LI><CODE>PolyRing(R)</CODE> -- sort of downcast the ring <CODE>R</CODE> to a poly ring;
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotPolyRing</CODE> if needed.
+</UL>
+
+<P></P>
+<A NAME="query"></A>
+<H3>Queries and views</H3>
+<P>
+Let <CODE>R</CODE> be an object of type <A HREF="ring.html"><CODE>ring</CODE></A>.
+</P>
+<UL>
+<LI><CODE>IsPolyRing(R)</CODE> -- <CODE>true</CODE> if <CODE>R</CODE> is actually <CODE>PolyRing</CODE>
+<LI><CODE>PolyRingPtr(R)</CODE> -- pointer to impl of <CODE>R</CODE> (for calling mem fns);
+will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotPolyRing</CODE> if needed
+</UL>
+
+<P></P>
+<A NAME="operations"></A>
+<H3>Operations on a PolyRing</H3>
+<P>
+In addition to the standard <A HREF="ring.html#operations"><CODE>ring</CODE> operations</A>, a <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A> may be
+used in other functions.
+</P>
+<P>
+Let <CODE>P</CODE> be an object of type <CODE>PolyRing</CODE>.
+Let <CODE>R</CODE> be an object of type <A HREF="ring.html"><CODE>ring</CODE></A>.
+</P>
+<UL>
+<LI><CODE>NumIndets(P)</CODE>      -- the number of indeterminates in <CODE>P</CODE>
+<LI><CODE>CoeffRing(P)</CODE>      -- the ring of coefficients of <CODE>P</CODE>
+<LI><CODE>indets(P)</CODE>         -- a const std::vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s whose i-th
+                        element is the i-th indeterminate in <CODE>P</CODE>
+<LI><CODE>indets(P, str)</CODE>    -- a std::vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s with all 
+                        indeterminates in <CODE>P</CODE> whose head is the string <CODE>str</CODE>
+<LI><CODE>indet(P,i)</CODE>        -- the <CODE>i</CODE>-th indet of <CODE>P</CODE> as a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>
+<LI><CODE>IndetPower(P,i,n)</CODE> -- the <CODE>n</CODE>-th power of the <CODE>i</CODE>-th indet of <CODE>P</CODE> as a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>
+</UL>
+
+<P></P>
+<A NAME="homomorphisms"></A>
+<H3>Homomorphisms</H3>
+<P>
+Let <CODE>P</CODE> be an object of type <CODE>PolyRing</CODE>.
+Let <CODE>R</CODE> be an object of type <A HREF="ring.html"><CODE>ring</CODE></A>.
+</P>
+<DL>
+<DT><CODE>CoeffEmbeddingHom(P)</CODE></DT><DD>
+  the homomorphism which maps <CODE>CoeffRing(P)</CODE> into <CODE>P</CODE>
+<P></P>
+<DT><CODE>PolyRingHom(P, R, CoeffHom, IndetImages)</CODE></DT><DD>
+  the homomorphism from <CODE>P</CODE> to <CODE>R</CODE> which maps the coeffs using <CODE>CoeffHom</CODE>, and
+  maps the k-th indet into <CODE>IndetImages[k]</CODE>
+<P></P>
+<DT><CODE>EvalHom(P, IndetImages)</CODE></DT><DD>
+  the evaluation homomorphism from <CODE>P</CODE> to <CODE>CoeffRing(P)</CODE> which is the identity
+  on the coeffs, and maps the kth indet into <CODE>IndetImages[k]</CODE>
+<P></P>
+<DT><CODE>PolyAlgebraHom(P, R, IndetImages)</CODE></DT><DD>
+  must have <CODE>CoeffRing(P)</CODE> = <CODE>R</CODE>  or  <CODE>CoeffRing(P)</CODE> = <CODE>CoeffRing(R)</CODE>
+  this is the identity on coeffs, and maps the k-th indet into <CODE>IndetImages[k]</CODE>
+</DL>
+
+<A NAME="toc7"></A>
+<H2>Maintainer documentation for PolyRing</H2>
+<P>
+The hard part has been deciding which member functions should be in
+<CODE>PolyRingBase</CODE> and which should be in less abstract classes.  If you
+want to modify the code here, you should probably also look at
+<CODE>SparsePolyRing</CODE> and <CODE>DUPolyRing</CODE>  before messing with the code!
+</P>
+<P>
+The implementations in <CODE>PolyRing.C</CODE> are all very simple: they just conduct
+some sanity checks on the function arguments before passing them to the
+<CODE>PolyRing</CODE> member function which will actually do the work.
+</P>
+<A NAME="toc8"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+What precisely should the <I>fancy</I> version of deriv do?
+What are permitted values for the second arg?  Must coeff=1?
+What if the second arg does not have precisely one term?
+</P>
+<P>
+The range of member functions on RawValues is rather a hotch-potch.
+Hopefully, experience and use of the code will bring some better order
+to the chaos.
+</P>
+<P>
+Verify the true need for <CODE>myRemoveBigContent</CODE>, <CODE>myMulByCoeff</CODE>,
+<CODE>myDivByCoeff</CODE>.  If the coeff ring has zero divisors then
+<CODE>myMulByCoeff</CODE> could change the structure of the poly!
+</P>
+<P>
+<B>Maintainer doc is largely absent.</B>
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/PolyRing.html -i txt/PolyRing.txt -->
+</BODY></HTML>

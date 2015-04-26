@@ -1,0 +1,194 @@
+      BigRat
+      Copyright (c)  2009,2011,2014  John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{BigRat}{John Abbott}
+
+
+== Examples ==
+%======================================================================
+- [ex-BigRat1.C   ../../examples/index.html#ex-BigRat1.C]
+-
+
+== User documentation ==
+%======================================================================
+
+=== Generalities ===
+%----------------------------------------------------------------------
+
+The class ``BigRat`` is intended to represent (exact) rational numbers
+of practically unlimited range; it is currently based on the
+implementation in the GMP //multiple precision// library.  This code forms
+the interface between CoCoALib and the big integer/rational library
+upon which it relies.  It seems most unlikely that GMP will be
+displaced from its position as the foremost library of this type; as a
+consequence the class ``BigRat`` may eventually be replaced by GMP's
+own C++ interface.
+
+The usual arithmetic operations are available with standard C++ syntax
+but generally these incur run-time overhead since results are returned
+through temporaries which are created and destroyed silently by the
+compiler.  Thus if the variables ``a``, ``b`` and ``c`` are each of
+type ``BigRat`` then ``a = b+c;`` is a valid C++ statement for placing
+the sum of ``b`` and ``c`` in ``a``, **but** the sum is first computed
+into a hidden temporary which is then copied to ``a``, and then
+finally the temporary is destroyed.  As a general principle, the type
+``BigRat`` is provided for convenience of representing rational
+values rather than for rapid computation.
+
+There is an important exception to the natural syntax: ``^`` does **not**
+denote exponentiation; you must use the function ``power`` instead.
+We have chosen not to define ``operator^`` to perform exponentiation
+because it is too easy to write misleading code: for instance,
+``a*b^2`` is interpreted by the compiler as ``(a*b)^2``.  There is no
+way to make the C++ compiler use the expected interpretation.
+
+Arithmetic may also be performed between a ``BigRat`` and a machine
+integer or a [[BigInt]].  The result is always of type ``BigRat``
+(even if the value turns out to be an integer).  Do remember, though,
+that operations between two machine integers are handled directly by
+C++, and problems of overflow can occur.
+
+
+It is important not to confuse values of type ``BigRat`` with values of type
+[[RingElem]] which happen to belong to the ring [[RingQQ]].  The distinction
+is analogous to that between values of type [[BigInt]] and value of type
+[[RingElem]] which happen to belong to the ring [[RingZZ]].  In summary, the
+operations available for [[RingElem]] are those applicable to elements of
+any ordered commutative ring, whereas the range of operations on ``BigRat``
+values is wider (since we have explicit knowledge of the type).
+
+
+
+=== The Functions Available For Use ===
+%----------------------------------------------------------------------
+
+==== Constructors ====
+ A value of type ``BigRat`` may be created from:
+- nothing, in which case the value is zero
+- another value of type ``BigRat``  (its value is copied)
+- ``BigRat(n,d)`` a pair of integers (machine integers or
+  [[BigInt]]s) specifying numerator and denominator in that order
+- ``BigRat(str)`` where ``str`` is a string of the form ``N`` or ``N/D``
+   where ``N`` is the decimal representation of the numerator and
+   ``D`` that of the denominator
+- ``BigRat(mpq_value)`` copy a GMP rational (of type ``mpq_t``) into
+  a ``BigRat``; helps interfacing between CoCoALib and code using GMP directly.
+
+
+The ctors ``BigRat(n,d)`` and ``BigRat(str)`` accept an optional arg
+``BigRat::AlreadyReduced`` which asserts that the value is already reduced
+(//i.e.// positive denominator, and numerator and denominator are coprime).
+Use this feature only if you are **absolutely certain** that there is no
+common factor between the given numerator and denominator.
+
+See **Bugs** section for why there is no ctor from a single integer, and
+also for why ``BigRat(0)`` is accepted by the compiler (but crashes at run-time).
+
+
+==== Infix operators ====
+
+**NOTE:** similar to operations on ``BigInt`` -- see [[IntOperations]]
+
++ normal arithmetic (potentially inefficient because of temporaries)
+ - ``+``    the sum
+ - ``-``    the difference
+ - ``*``    the product
+ - ``/``    quotient
+ - ``=``    assignment
+
++ arithmetic and assignment
+ - ``+=``, ``-=``, ``*=``, ``/=`` --  definitions as expected; LHS must be of type ``BigRat``
+
++ arithmetic ordering
+ - ``==``, ``!=``
+ - ``<``, ``<=``, ``>``, ``>=`` -- comparison (using the normal arithmetic ordering)
+    -- see also the ``cmp`` function below.
+
++ increment/decrement
+ - ``++``, ``--`` (prefix, e.g. ``++a``)   use these if you can
+ - ``++``, ``--`` (postfix, e.g. ``a++``)  avoid these if you can, as they create temporaries
+
+
+==== More functions ====
++ query functions (all take 1 argument)
+ - ``IsZero(q)``     -- true iff ``q`` is zero
+ - ``IsOne(q)``      -- true iff ``q`` is 1
+ - ``IsMinusOne(q)`` -- true iff ``q`` is -1
+ - ``IsOneNum(q)``   -- true iff ``num(q)`` is 1
+ - ``IsOneDen(q)``   -- true iff ``den(q)`` is 1
+ - ``sign(q)``       -- gives -1 (machine integer) to mean ``q`` is negative,
+                         0 (machine integer) to mean ``q`` is zero,
+                        +1 (machine integer) to mean ``q`` is positive.
+
++ Exponentiation
+  - ``power(a, b)`` -- returns ``a`` to the power ``b`` (result is always a ``BigRat``)
+
++ The cmp function (three way comparison)
+ - ``cmp(a,b)`` -- returns an ``int`` which is ``< 0`` if ``a < b``, or ``== 0`` if ``a == b``, or ``> 0`` if ``a > b``.
+ - ``CmpAbs(a,b)`` -- equivalent to ``cmp(abs(a),abs(b))``
+
++ Other functions
+ - ``abs(q)``   -- gives the absolute value of ``q``
+ - ``floor(q)`` -- returns a [[BigInt]] for the greatest integer ``<= q``
+ - ``ceil(q)``  -- returns a [[BigInt]] for the least integer ``>= q``
+ - ``round(q)`` -- returns a [[BigInt]] which is the nearest to ``q``
+                   (halves round the same way as in ``RoundDiv``, see [[IntOperations]])
+ - ``num(q)``   -- returns a [[BigInt]] which is the numerator of ``q``
+ - ``den(q)``   -- returns a positive [[BigInt]] which is the denominator of ``q``
+ - ``log(q)``   -- returns a double whose value is (approx) the natural logarithm of ``q``
+ - ``ILogBase(q,base)`` -- returns largest integer ``k`` such that ``power(base,k) <= abs(q)``
+ - ``mantissa(q)`` -- returns a ``double`` between 0.5 and 1 (excluded)
+ - ``exponent(q)`` -- 
+
++ Functions violating encapsulation
+  - ``mpqref(n)``-- this gives a (const) reference to the ``mpq_t`` value inside
+               a ``BigRat`` object.  You should use this accessor very sparingly!
+
+
+
+
+== Maintainer Documentation ==
+%======================================================================
+
+Nothing very clever.  Conversion from a string was a bit tedious.
+
+Note that the ctor call ``BigRat(0)`` actually calls the ctor from a string.
+Unfortunately, this a C++ "feature".  It will result in a run-time error.
+
+I have replaced the bodies of the ``BigRat`` ctors which take two integers
+as arguments by a call to the common body ``BigRat::myAssign``.  This does
+mean that some wasteful temporaries are created when either of the
+arguments is a machine integer.  Time will tell whether this waste is
+intolerable.
+
+
+== Bugs, Shortcomings and other ideas ==
+%======================================================================
+
+This code is probably not //exception safe//; I do not know what the ``mpq_*``
+functions do when there is insufficient memory to proceed.  Making the
+code //exception safe// could well be non-trivial: I suspect a sort of
+``auto_ptr`` to an ``mpq_t`` value might be needed.
+
+Removed ``BigRat`` ctors from a single (machine) integer because too often
+I made the mistake of writing something like ``BigRat(1/2)`` instead of
+``BigRat(1,2)``.
+
+Should the ``BigRat`` ctor from string also accept numbers with decimal points?
+//e.g.// ``BigRat("3.14159")``?  We'll wait and see whether there is demand for this
+before implementing; note that GMP does **not** offer this capability.
+
+
+
+== Main changes ==
+%======================================================================
+
+**2011**
+- August (v0.9950):
+   class ``QQ`` renamed into ``BigRat``:
+   to avoid confusion with [[RingQQ]] and its name in CoCoA system
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For "txt2tags safety" leave 2 empty lines after the last line of text.

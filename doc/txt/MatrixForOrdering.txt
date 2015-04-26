@@ -1,0 +1,71 @@
+      MatrixForOrdering
+      Copyright (c)  2008 Anna Bigatti
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{MatrixForOrdering}{Anna Bigatti}
+
+
+
+== User Documentation ==
+%======================================================================
+
+This is very preliminary documentation.  These functions are about matrices
+which define term orderings.  They expect and return matrices over [[RingZZ]].
+
+=== Examples ===[examples]
+%----------------------------------------------------------------------
+- [ex-OrderingGrading1.C ../../examples/index.html#ex-OrderingGrading1.C]
+-
+
+=== PseudoConstructors ===[constructors]
+%----------------------------------------------------------------------
+- ``NewPositiveMat(M)`` -- returns a matrix with non-negative entries
+  which  defines an equivalent term-ordering (but grading may
+  be different!) 
+
+- ``NewMatMinimize(M)`` -- the (ordering) matrix obtained by removing
+  linearly dependent rows 
+
+- ``NewDenseMatRevLex(n)`` -- produce the ``n``-by-``n`` dense matrix over
+  [[RingZZ]] corresponding to the revlex ordering on ``n`` indets 
+
+- ``NewMatCompleteOrd(ConstMatrixView M)`` -- complete M to an
+  ordering matrix; if M is suitable the resulting matrix defines a
+  term-ordering.
+
+- ``NewMatCompleteOrd(ConstMatrixView M, ConstMatrixView NewRows)`` -- 
+  concatenate M and NewRows, and remove redundant rows.
+
+- ``NewMatElim(NumIndets, IndetsToElim)``  -- returns the dense matrix
+  for the elimination ordering of the given indets 
+
+- ``NewMatElim(GradingM, IndetsToElim, IsHomog)``  -- ??? 
+
+- ``NewHomogElimMat(GradingM, IndetsToElim)``  -- ??? 
+-
+
+=== Queries ===[queries]
+%----------------------------------------------------------------------
+- ``IsTermOrdering(M)``    -- true iff matrix ``M`` defines a term ordering
+
+- ``IsPositiveGrading(M)`` -- true iff ``M`` defines a positive grading 
+  (i.e. no null columns and first non-zero entry in each column is positive)
+
+- ``IsPositiveGrading(M, GradingDim)``  -- true iff the first
+  ``GradingDim`` rows of ``M`` define a positive grading 
+-
+
+== Maintainer Documentation ==
+%======================================================================
+
+
+
+== Bugs, Shortcomings, and other ideas ==
+%======================================================================
+
+Doc is woefully incomplete.
+
+Definitely don't like the name NewMatMinimize!
+
+Fixed 2009-09-22: Naming convention not respected ("Matrix" should be "Mat")
+

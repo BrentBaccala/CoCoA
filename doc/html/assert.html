@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      assert</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      assert</H1>
+<FONT SIZE="4">
+<I>      &copy;  2007 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation for files assert.H and assert.C</A>
+      <UL>
+      <LI><A HREF="#toc3">Debugging</A>
+      </UL>
+    <LI><A HREF="#toc4">Maintainer documentation for files assert.H and assert.C</A>
+    <LI><A HREF="#toc5">Bugs, Shortcomings, and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-PolyIterator2.C">ex-PolyIterator2.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User documentation for files assert.H and assert.C</H2>
+<P>
+The only part of <CODE>assert.H</CODE> which a normal CoCoALib user might find useful
+is the <CODE>CoCoA_ASSERT</CODE> macro: it is intended to be a debugging aid.
+</P>
+<P>
+The <CODE>CoCoA_ASSERT</CODE> macro does absolutely nothing (not even evaluating its
+argument) unless the compilation flag <CODE>CoCoA_DEBUG</CODE> is set.  If that flag
+is set then the macro evaluates its argument to a boolean result which
+is then tested: if the result is true nothing further happens, if the
+result is false then the function <CODE>CoCoA::AssertionFailed</CODE> is called with
+some arguments indicating which <CODE>CoCoA_ASSERT</CODE> macro call obtained the false
+value.  The <CODE>AssertionFailed</CODE> function prints out an informative message on
+<CODE>std::cerr</CODE> and then throws a <CODE>CoCoA::ERR::AssertFail</CODE> exception.
+</P>
+<P>
+The file <CODE>assert.H</CODE> contains the following:
+-  definition of the <CODE>CoCoA_ASSERT</CODE> macro to aid debugging, and the
+     related function <CODE>AssertionFailed</CODE>
+</P>
+<A NAME="toc3"></A>
+<H3>Debugging</H3>
+<P>
+During debugging, a debugger can be used to intercept calls to the
+function <CODE>CoCoA::AssertionFailed</CODE> which will stop the program just before
+throwing the <CODE>CoCoA::ERR::AssertFail</CODE> exception.  This should enable one
+to find more easily the cause of the problem.
+</P>
+<P>
+For example, in <B>gdb</B> type
+</P>
+<PRE>
+  break CoCoA::AssertionFailed
+</PRE>
+<P>
+and then go <CODE>up</CODE> (perhaps repeatedly) to the offending line.
+</P>
+<A NAME="toc4"></A>
+<H2>Maintainer documentation for files assert.H and assert.C</H2>
+<P>
+The macro name <CODE>CoCoA_ASSERT</CODE> is rather cumbersome, but must contain the
+prefix <CODE>CoCoA_</CODE> since macro names cannot be placed in C++ namespaces.
+The two definitions of the macro (debugging and non-debugging cases)
+both look rather clumsy, but are done that way so that the macro expands
+into an expression which is syntactically a simple command.  The
+definition for the non-debugging case I took from <CODE>/usr/include/assert.h</CODE>;
+I do not recall where I got the definition for the debugging case, but
+the definition in <CODE>/usr/include/assert.h</CODE> looked to be gcc specific.
+</P>
+<P>
+The purpose of the procedure <CODE>AssertionFailed</CODE> is explained above in the
+user documentation (to facilitate interception of failed assertions).  The
+procedure never returns; instead it throws a CoCoALib exception with code
+<CODE>ERR::AssertFail</CODE>.  Before throwing the exception it prints out a message
+on <CODE>std::cerr</CODE> summarising what the assertion was, and where it was.
+Note the non-standard way of throwing the CoCoA exception: this allows the
+<CODE>ErrorInfo</CODE> object to refer to the file and line where <CODE>CoCoA_ASSERT</CODE> was
+called (rather then to the line in <CODE>assert.C</CODE> where <CODE>CoCoA_ERROR</CODE> is called).
+The entire printed message is assembled into an <CODE>ostringstream</CODE> before being
+printed to ensure exception safety: either the whole message is printed or
+none of it is, since the printing step is an atomic operation.
+</P>
+<A NAME="toc5"></A>
+<H2>Bugs, Shortcomings, and other ideas</H2>
+<P>
+Is the exception safe implementation of <CODE>AssertionFailed</CODE> excessive?
+</P>
+<P>
+You have to use explicitly <CODE>#ifdef CoCoA_DEBUG</CODE> if you want to have a
+loop or any other non-trivial piece of code executed only when debugging
+it turned on.
+</P>
+<P>
+The following (simplified but real) code excerpt is mildly problematic:
+</P>
+<PRE>
+  {
+    bool OK = ....;
+    CoCoA_ASSERT(OK);
+  }
+</PRE>
+<P>
+When compiled without debugging (<I>i.e.</I> <CODE>CoCoA_DEBUG</CODE> is zero) the compiler
+(gcc-3) complains that the variable <CODE>OK</CODE> is unusued.  It does not appear
+to be possible to make the macro "depend on its argument" in the
+non-debugging case without incurring the run-time cost of evaluating the
+argument (if the argument is just a variable the cost is negligible, but
+if it is a more complex expression then the cost could be considerable).
+The solution adopted was to modify the calling code like this:
+</P>
+<PRE>
+  {
+    bool OK;
+    OK = ....;
+    CoCoA_ASSERT(OK);
+  }
+</PRE>
+<P>
+Note that the apparently simpler code below <B>will not work</B> if the elided
+code (<I>i.e.</I> the <CODE>....</CODE>) has a side effect since the elided code will not
+be called at all in the non-debugging case:
+</P>
+<PRE>
+  {
+    CoCoA_ASSERT(....);
+  }
+</PRE>
+<P></P>
+<P>
+<B>POSSIBLE SOLUTION</B>: maybe <CODE>CoCoA_ASSERT</CODE> could compute <CODE>sizeof(...)</CODE> in the
+non-debugging case -- this should avoid evaluation of the argument, and
+will compile away to nothing.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/assert.html -i txt/assert.txt -->
+</BODY></HTML>

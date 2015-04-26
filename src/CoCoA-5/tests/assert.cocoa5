@@ -1,0 +1,21 @@
+Define Assert(B)
+	If Not B Then
+		PrintLn("*** FAILED ***");
+		error("Assertion failed");
+	EndIf
+	PrintLn "Ok";
+EndDefine
+
+Define AssertEqual(X, Y)
+	If X=Y Then 
+		Assert(true);
+	Else
+		PrintLn "*** FAILED *** ", X, " is not equal to ", Y;
+		Assert(false);
+	EndIf
+EndDefine
+
+Define BeginTest(Msg)
+	Print Msg, ": ";
+EndDefine
+

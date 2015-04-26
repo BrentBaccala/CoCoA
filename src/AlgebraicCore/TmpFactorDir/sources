@@ -1,0 +1,19 @@
+SRC_FILES= primes.c DUPFF.c FF.c FindPrimRoot.c DUPFFsqfrd.c DUPFFderiv.c \
+ DUPFFmod.c DUPFFddf.c berlekamp.c DUPFFfactor.c DUPFFlist.c \
+ DUPZcra.c  WGD.c \
+ DUPZ.c DUPZgcd.c DUPZlist.c DUPZ_DUPFF.c DUPZcontent.c DUPZsqfrd.c \
+ DUPZformal_deriv.c DUPZevaluate.c DUPZroot_bound.c \
+ DUPZfactor.c DUPZfactors.c DUPZfactor_prime.c DUPZfactor_refine_fds.c\
+ DUPZfactor_info.c DUPZfactor_bound.c DUPZfactor_liftq.c DUPZfactor_combine.c \
+ mpz_cra_ui.c mpz_cmp_abs.c mpz_log.c mpz_lcm.c mpz_lift_recip.c \
+ mpq_to_FFelem.c \
+ add_logs.c jaaerror.c logi.c \
+ FFmat.c FFsolve.c FFkernel.c FFdet.c \
+ Qmat.c Qsolve.c \
+ Zmat.c Zmat_det_bound.c Zsolve.c Zdet.c Zkernel.c mpz_from_padic.c \
+ DUPZexgcd.c DMPZfactors.c \
+ DMPZfactor.c DMPZlist.c DMPZeval.c DMPZ.c \
+ DMPZevalQ.c DMPZfactor_modp.c DMPZgcd.c DMPZ_to_DUPZ.c \
+ DMPZlift.c DMPZ_to_DUPFF.c DMPZmap_to_univariate.c \
+ BM.c PPstream.c GBM.c
+

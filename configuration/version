@@ -1,0 +1,13 @@
+##################################################################
+# Version information: major, minor, and patch level;
+# major just counts upwards
+# minor should be two digits (from 00 to 99)
+# patch should be 3 digits (from 000 to 999); last digit EVEN means stable release.
+# The values must be positive integers (without any whitespace before or after).
+
+VER_MAJ=0
+VER_MIN=99
+VER_PATCH=535
+
+
+# Note this file is read by the main configure script (via the "source" command).

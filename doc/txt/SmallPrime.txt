@@ -1,0 +1,80 @@
+      SmallPrime
+      Copyright (c)  2005 John Abbott
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{SmallPrime}{John Abbott}
+
+
+
+== User documentation for the files SmallPrime* ==
+%======================================================================
+
+These files offer some functions for finding "small primes" which are
+defined as primes whose square fits into an unsigned long.  There are four
+functions which compute directly with a given (unsigned long) value:
+
+-  ``IsSmallPrime(n)``    returns true iff n^2 fits into an unsigned
+                          long, and n is prime.
+-  ``NextSmallPrime(n)``  finds the least value strictly greater than n
+                          which satisfies the predicate IsSmallPrime;
+                          returns 0 if none exists.
+-  ``PrevSmallPrime(n)``  finds the greatest value strictly less than n
+                          which satisfies the predicate IsSmallPrime;
+                          returns 0 if none exists.
+-  ``FindPrimRoot(p)``    if p does not satisfy IsSmallPrime, return 0;
+                          otherwise return the least positive
+                          primitive root modulo p.
+
+
+The class ``SmallPrimeSource`` can be used to generate a succession of small
+primes in increasing order.  By default the succession starts with 2; if
+the constructor is given argument n then the succession starts with the
+first small prime greater than n.  When no more small primes exist,
+zeroes are generated.  The function ``CurrentPrime`` returns the current
+prime in the succession WITHOUT advancing along the succession.  The
+prefix operator ``++`` advances to the next prime in the succession.  See the
+example program below to understand better how to use a ``SmallPrimeSource``.
+
+
+EXAMPLE program to print out all small primes whose least positive
+primitive root exceeds 15.
+```
+#include <iostream>
+#include "CoCoA/SmallPrime.H"
+using namespace CoCoA;
+
+int main()
+{
+  std::cout << "Program to find all small primes with large primitive root" << std::endl;
+  for (SmallPrimeSource ps; CurrentPrime(ps) != 0; ++ps)
+  {
+    unsigned long p = CurrentPrime(ps);
+    unsigned long r = FindPrimRoot(p);
+    if (r > 15) std::cout << p << " has least positive prim root " << r << std::endl;
+  }
+  return 0;
+}
+```
+
+
+== Maintainer documentation for the files SmallPrime* ==
+%======================================================================
+
+The class SmallPrimeSource is really very simple.
+The other functions are pretty simple too (once you've grasped
+the underlying maths).
+
+
+=== Bugs, shortcomings, etc ===
+%----------------------------------------------------------------------
+
+What about the assignment and copy constructor of SmallPrime source?
+Should they be hidden, allowed, or what?
+
+The code is not valid for computers with more than 64 bits in an unsigned long.
+
+Use "static" or an unnamed namespace to hide those functions not intended
+for public consumption.
+
+Should there also be a -- for SmallPrimeSource?
+

@@ -1,0 +1,6 @@
+v1 = [x[0] -x[1], x[0]^2 -x[1]*x[2], x[0]^2, x[1]*x[2]]
+LPosn(v1) = 1
+LPP(v1) = x[0]^2
+wdeg(v1) = (2)
+IsHomog(v1) = 0
+IsHomog(v2) = 1

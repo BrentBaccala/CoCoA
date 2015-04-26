@@ -1,0 +1,156 @@
+-- TESTS for HomomorphismFns.cpkg5
+--------------------------------------------------------------------------
+TestCount := 0;
+PrintInfo := false;
+
+define TEST_ASSERT(A,B)
+  toplevel TestCount;
+  toplevel PrintInfo;
+  TestCount := TestCount+1;
+  If A<>B Then
+    error("TEST: " + Sprint(A) + " <> " + Sprint(B));
+  endif;
+  if PrintInfo then print ".",TestCount; EndIf;
+enddefine; -- TEST_ASSERT
+
+T0 := CpuTime();
+---------------------------------------------------------------------------
+try
+  $HomomorphismFns.CheckInputAffAlgebraHom(4, "Esempio1");
+uponerror E Do
+  TEST_ASSERT(GetErrMesg(E), "Expecting type RINGHOM in Esempio1, but found INT");
+endtry;
+
+Use R ::= ZZ[x,y];
+Phi := PolyAlgebraHom(R,R,[x+3,x*y]);
+try
+  $HomomorphismFns.CheckInputAffAlgebraHom(Phi,"Esempio 2");
+uponerror E Do
+  TEST_ASSERT(GetErrMesg(E), "RINGHOM must be between K-algebras: Esempio 2");
+endtry;
+
+Use R ::= QQ[x,y];
+RmodI1 := NewQuotientRing(R,Ideal(x^8-y^3));
+Phi := CanonicalHom(R,RmodI1);
+$HomomorphismFns.CheckInputAffAlgebraHom(Phi,"Esempio 3");
+
+-----------------------------------------------------------------
+-- (1) Omomorfismo di K-algebre affini, iniettivo ma non surgettivo,
+-- avente come dominio un anello quoziente e come codominio un anello
+-- di polinomi.
+
+-- (2) Omomorfismo di K-algebre affini, surgettivo ma non inettivo,
+-- avente come dominio e come codominio due anelli quoziente.
+
+-- (3) Isomorfismo di K-algebre affini,
+-- avente come dominio e come codominio due anelli quoziente.
+
+-- (4) Omomorfismo di K-algebre polinomiali, né iniettivo, né surgettivo.
+
+-- (5) Omomorfismo di K-algebre affini, surgettivo ma non iniettivo,
+-- avente come dominio un anello di polinomi e come codominio un anello
+-- quoziente.
+
+-----------------------------------------------------------------
+-- Phi : QQ[x,y]/Ideal(y^2-x^3)  ----> QQ[a]
+-- x+I1=[x] -----> a^2
+-- y+I1=[y] -----> a^3
+
+-- Nota: Questo omomorfismo è iniettivo e ha come immagine
+-- QQ[a^2,a^3], quindi non è surgettivo.
+
+Use R ::= QQ[x,y];  RmodI1 := NewQuotientRing(R, ideal(y^2-x^3));
+Use S ::= QQ[a];
+phi := PolyAlgebraHom(R,S,[a^2,a^3]);
+Phi := InducedHom(RmodI1, phi); -- R/ideal(y^2-x^3) --> S
+
+TEST_ASSERT(IsZero(ker(Phi)), true);
+TEST_ASSERT(IsInjective(Phi), true);
+TEST_ASSERT(IsSurjective(Phi), false);
+Use S;
+TEST_ASSERT(PreImage(Phi, a).IsInImage, false);
+TEST_ASSERT(PreImage(Phi, a^2-4*a^6).IsInImage, true);
+TEST_ASSERT(Phi(PreImage(Phi, a^2-4*a^6).OnePreImage), a^2-4*a^6);
+-----------------------------------------------------------------------------
+-- Phi : QQ[x,y]/Ideal(y^2-x^3)  ----> QQ[a,b]/Ideal(b^2,a^2)
+-- x+I1=[x] -----> [a]=a+I2
+-- y+I1=[y] -----> [b]=b+I2
+
+-- Nota: non iniettivo (Phi(x^2)=0), surgettivo.
+
+Use R ::= QQ[x,y]; RmodI1 := NewQuotientRing(R, ideal(y^2-x^3));
+Use S::= QQ[a,b];  SmodI2 := NewQuotientRing(S, ideal(a^2,b^2));
+phi := PolyAlgebraHom(R,S,[a,b]);
+
+Phi := InducedHom(RmodI1, CanonicalHom(S,SmodI2)(phi));
+TEST_ASSERT(ker(Phi), ideal(RingElem(RmodI1,"x")^2, RingElem(RmodI1,"x")^2));
+TEST_ASSERT(IsInjective(Phi), false);
+TEST_ASSERT(IsSurjective(Phi), true);
+Use SmodI2;
+TEST_ASSERT(PreImage(Phi,a+3*b-2).IsInImage,True);
+TEST_ASSERT(Phi(PreImage(Phi,a+3*b-2).OnePreImage),a+3*b-2);
+-----------------------------------------------------------------------------
+-- Phi : QQ[x,y,z]/Ideal([x-3,z-2])  ----> QQ[a,b,c]/Ideal([b,c+5])
+-- x+I1=[x] -----> [b+3]=b+3+I2
+-- y+I1=[y] -----> [a]=a+I2
+-- z+I1=[z] -----> [c+7]=c+7+I2
+
+-- domain(Phi) ~ QQ[y], codomain(Phi) ~ QQ[a] --> isomorfismo.
+Use R ::= QQ[x,y,z];  RmodI1 := NewQuotientRing(R, ideal(x-3,z-2));
+Use S ::= QQ[a,b,c];  SmodI2 := NewQuotientRing(S, ideal(b,c+5));
+
+phi := PolyAlgebraHom(R,S,[b+3,a,c+7]);
+Phi := InducedHom(RmodI1, CanonicalHom(S,SmodI2)(phi));
+
+TEST_ASSERT(IsZero(ker(Phi)), true); 
+TEST_ASSERT(IsInjective(Phi), True);
+TEST_ASSERT(IsSurjective(Phi), True);
+Use SmodI2;
+TEST_ASSERT(PreImage(Phi,a^8-3).IsInImage,True);
+TEST_ASSERT(Phi(PreImage(Phi,a^8-3).OnePreImage),a^8-3);
+
+-------------------------------------------------------------------------------
+-- Phi : QQ[x,y,z,t]  ----> QQ[a,b,c]
+-- x -----> a^2
+-- y -----> b
+-- z -----> c
+-- t -----> b
+-- Nota: non iniettivo, non surgettivo.
+
+R ::= QQ[x,y,z,t];
+S ::= QQ[a,b,c];
+Use S;
+L := [a^2,b,c,b];
+Phi := PolyAlgebraHom(R,S,L);
+
+TEST_ASSERT(ker(Phi), ideal(-RingElem(R,"y")+RingElem(R,"t")));
+TEST_ASSERT(IsInjective(Phi), False);
+TEST_ASSERT(IsSurjective(Phi), False);
+Use S;
+TEST_ASSERT(PreImage(Phi,a+b).IsInImage,False);
+TEST_ASSERT(PreImage(Phi,b^3+c).IsInImage,True);
+TEST_ASSERT(Phi(PreImage(Phi,b^3+c).OnePreImage),b^3+c);
+
+------------------------------------------------------------------------------
+-- Phi: QQ[x,y]------>QQ[x,y]/Ideal(x^8-y^3);
+-- Nota: non iniettiva, surgettiva.
+Use R ::= QQ[x,y];
+RmodI1 := NewQuotientRing(R,Ideal(x^8-y^3));
+Phi := CanonicalHom(R,RmodI1);
+
+TEST_ASSERT(ker(Phi), ideal(RingElem(R,"x")^8- RingElem(R,"y")^3));
+TEST_ASSERT(IsInjective(Phi), False);
+TEST_ASSERT(IsSurjective(Phi), True);
+Use RmodI1;
+TEST_ASSERT(PreImage(Phi,x^13+y^26+34).IsInImage,True);
+TEST_ASSERT(Phi(PreImage(Phi,x^13+y^26+34).OnePreImage),x^13+y^26+34);
+
+-------------------------------------------------------------------------------
+-- PrintLn "\n------ done ------";
+-- If PrintInfo Then
+--   PrintLn TestCount, " tests in ", DecimalStr(CpuTime()-T0), "s";
+-- EndIf;
+
+------------------------------------------------------------
+Use R ::= QQ[x,y,z];
+------------------------------------------------------------

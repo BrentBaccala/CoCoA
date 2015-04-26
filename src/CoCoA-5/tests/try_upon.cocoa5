@@ -1,0 +1,18 @@
+<< "tests/assert.cocoa5";
+
+BeginTest("1/0");
+Try
+	1/0;
+	Assert(false);
+UponError e Do
+	Assert(GetErrMesg(e)="Division by zero or by a zero-divisor");
+EndTry
+
+BeginTest("1/1");
+Try
+	Whatever := 1/1;
+	Assert(true);
+UponError e Do
+	Assert(false);
+EndTry
+

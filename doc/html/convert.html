@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      convert</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      convert</H1>
+<FONT SIZE="4">
+<I>      &copy;  2007,2009,2013 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">Examples</A>
+    <LI><A HREF="#toc2">User Documentation</A>
+        <UL>
+        <LI><A HREF="#toc3">NumericCast</A>
+        </UL>
+    <LI><A HREF="#toc4">Maintenance notes for convert</A>
+    <LI><A HREF="#toc5">Bugs, Shortcomings, etc</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-convert1.C">ex-convert1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc2"></A>
+<H2>User Documentation</H2>
+<P>
+The header file <CODE>convert.H</CODE> supplies several conversion functions.
+They are for converting a <I>numerical</I> value of one type into another
+<I>numerical</I> type (at least one of the types must be a CoCoALib
+type).  There is also a way of safely converting machine integer
+values into other integral types.
+</P>
+<P>
+There are two families of conversion functions:
+</P>
+<OL>
+<LI><CODE>IsConvertible(dest,src)</CODE> the result is a boolean: <CODE>true</CODE> means the conversion
+was successful (and the result was placed in <CODE>dest</CODE>, the 1st arg)
+<LI><CODE>ConvertTo&lt;DestType&gt;(src)</CODE> the result is the converted value; if <CODE>src</CODE> cannot
+be converted then an error is thrown (with code <CODE>ERR::BadConvert</CODE>)
+<LI><CODE>ConvertTo&lt;DestType&gt;(src, ErrMesg)</CODE> the result is the converted
+value; if <CODE>src</CODE> cannot be converted then an error is thrown
+(with code ErrMesg)
+</OL>
+
+<P></P>
+<P>
+Here is a summary of the conversions currently offered:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TH>"to" type</TH>
+<TH>"from" type</TH>
+<TH>notes</TH>
+</TR>
+<TR>
+<TD ALIGN="right">(unsigned) long</TD>
+<TD ALIGN="center"><A HREF="BigInt.html"><CODE>BigInt</CODE></A></TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="center">(unsigned) int</TD>
+<TD ALIGN="center"><A HREF="BigInt.html"><CODE>BigInt</CODE></A></TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="right">(unsigned) long</TD>
+<TD ALIGN="center"><A HREF="BigRat.html"><CODE>BigRat</CODE></A></TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="center">(unsigned) int</TD>
+<TD ALIGN="center"><A HREF="BigRat.html"><CODE>BigRat</CODE></A></TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="center">long</TD>
+<TD ALIGN="center"><A HREF="RingElem.html"><CODE>RingElem</CODE></A></TD>
+<TD>equiv to <CODE>IsInteger</CODE> &amp; range check</TD>
+</TR>
+<TR>
+<TD ALIGN="center"><A HREF="BigInt.html"><CODE>BigInt</CODE></A></TD>
+<TD ALIGN="center"><A HREF="RingElem.html"><CODE>RingElem</CODE></A></TD>
+<TD>same as <CODE>IsInteger</CODE></TD>
+</TR>
+<TR>
+<TD ALIGN="center"><A HREF="BigRat.html"><CODE>BigRat</CODE></A></TD>
+<TD ALIGN="center"><A HREF="RingElem.html"><CODE>RingElem</CODE></A></TD>
+<TD>same as <CODE>IsRational</CODE></TD>
+</TR>
+<TR>
+<TD ALIGN="center">long</TD>
+<TD ALIGN="center">double</TD>
+<TD>value must be integral &amp; in range</TD>
+</TR>
+<TR>
+<TD ALIGN="center"><A HREF="BigInt.html"><CODE>BigInt</CODE></A></TD>
+<TD ALIGN="center">double</TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="center"><A HREF="BigRat.html"><CODE>BigRat</CODE></A></TD>
+<TD ALIGN="center">double</TD>
+<TD></TD>
+</TR>
+<TR>
+<TD ALIGN="center">double</TD>
+<TD ALIGN="center"><A HREF="BigInt.html"><CODE>BigInt</CODE></A></TD>
+<TD>may have rounding error!!</TD>
+</TR>
+<TR>
+<TD ALIGN="center">double</TD>
+<TD ALIGN="center"><A HREF="BigRat.html"><CODE>BigRat</CODE></A></TD>
+<TD>may have rounding error!!</TD>
+</TR>
+</TABLE>
+
+<P>
+<B>NOTE 1: Conversion to a <CODE>string</CODE></B> can be achieved via <CODE>ostringstream</CODE>:
+</P>
+<PRE>
+    ostringstream buffer;
+    buffer &lt;&lt; value;
+    const string&amp; ConvertedValue = buffer.str();
+</PRE>
+<P></P>
+<P>
+<B>NOTE 2: Conversion fails</B> if overflow occurs.  Currently converting a non-zero <CODE>BigRat</CODE> to
+a <CODE>double</CODE> does not fail if the closest double is 0.
+</P>
+<A NAME="toc3"></A>
+<H4>NumericCast</H4>
+<P>
+There is a templated class called <CODE>NumericCast</CODE>; it is roughly analogous
+to <CODE>BOOST::numeric_cast</CODE>, and will eventually be replaced by direct use
+of this BOOST feature.  It is to be used for converting safely from one
+machine integer type to another: the conversion succeeds only if the value
+supplied can be represented by the destination type.  In case of failure an
+<CODE>ERR::BadConvert</CODE> exception is thrown.
+</P>
+<A NAME="toc4"></A>
+<H2>Maintenance notes for convert</H2>
+<P>
+The <CODE>ConvertTo</CODE> fns simply call the corresponding <CODE>IsConvertible</CODE>
+function -- indeed a template implementation is appropriate here.
+</P>
+<P>
+Only some combinations of <CODE>IsConvertible</CODE> functions are present so far.
+</P>
+<P>
+The class <CODE>NumericCast</CODE> has a single template argument, and the constructor
+has a separate template argument to allow the "natural syntax" like that of
+<CODE>static_cast</CODE> (or BOOST's <CODE>numeric_cast</CODE>).  I used a class rather than a templated function because a
+function would have required the user to specify two template arguments
+(<I>i.e.</I> unnatural syntax).  I don't know if this is the best way to achieve
+what I want, but it is simple enough that there are <I>obviously no deficiencies</I>.
+</P>
+<A NAME="toc5"></A>
+<H2>Bugs, Shortcomings, etc</H2>
+<P>
+Conversion to C++ integral types other than (unsigned) int/long is not yet supported.
+Indeed the <CODE>IsConvertible</CODE> functions are a hotch potch, but how can it be done better?
+</P>
+<P>
+BOOST has <CODE>numeric_cast</CODE> which is like <CODE>NumericCast</CODE> for built in numerical types.
+Sooner or later we should use that.
+</P>
+<P>
+Should conversion of <CODE>BigRat</CODE> to <CODE>double</CODE> ignore underflow, or should it fail?
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/convert.html -i txt/convert.txt -->
+</BODY></HTML>

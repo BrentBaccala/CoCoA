@@ -1,0 +1,306 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      MatrixView</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      MatrixView</H1>
+<FONT SIZE="4">
+<I>      &copy;  2008,2014 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#examples">Examples</A>
+    <LI><A HREF="#toc2">User documentation for MatrixView</A>
+      <UL>
+      <LI><A HREF="#PseudoConstructors">Pseudo-constructors</A>
+        <UL>
+        <LI><A HREF="#toc4">Constant Matrix Views</A>
+        <LI><A HREF="#toc5">Matrix Views of a Vector</A>
+        <LI><A HREF="#toc6">Matrix Views of a Matrix</A>
+        <LI><A HREF="#toc7">Matrix Views of Several Matrices</A>
+        </UL>
+      <LI><A HREF="#toc8">Operations on ConstMatrixView, MatrixView</A>
+      </UL>
+    <LI><A HREF="#toc9">Maintainer documentation for MatrixView</A>
+    <LI><A HREF="#toc10">Bugs, Shortcomings and other ideas</A>
+    <LI><A HREF="#toc11">Main changes</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="examples"></A>
+<H2>Examples</H2>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-matrix1.C">ex-matrix1.C</A>
+<LI><A HREF="../../examples/index.html#ex-matrix2.C">ex-matrix2.C</A>
+<LI><A HREF="../../examples/index.html#ex-matrix4.C">ex-matrix4.C</A>
+</UL>
+
+<A NAME="toc2"></A>
+<H2>User documentation for MatrixView</H2>
+<P>
+A <CODE>MatrixView</CODE> offers a means to <B>view</B> one or more
+ <B>existing objects</B> as though they were a <A HREF="matrix.html"><CODE>matrix</CODE></A>:
+</P>
+<UL>
+<LI>if you change the entries in the objects then the <CODE>MatrixView</CODE> changes;
+<LI>if you change the entries in the <CODE>MatrixView</CODE> then the underlying objects change;
+<LI>if you destroy or change the structure of the objects then the
+  <CODE>MatrixView</CODE> may become invalid (and using it could lead to the
+  dreaded <B>undefined behaviour</B>, <I>i.e.</I> probably a crash).
+</UL>
+
+<P></P>
+<P>
+<B>NB</B> <I>Matrix views</I> do not make copies, so be careful with
+  temporaries!  Look at these examples (<CODE>val</CODE> is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>):
+</P>
+<PRE>
+    // OK
+    const vector&lt;RingElem&gt; v(3, val);
+    MatrixView MV = RowMat(v);  // MV reads/writes in the vector v
+  
+    // NO   this compiles, but the vector disappears after the ";"!!
+    ConstMatrixView MVGhost = RowMat(vector&lt;RingElem&gt;(3, val));
+  
+    // OK   NewDenseMat makes a copy of the vector before it disappears
+    matrix M = NewDenseMat(RowMat(vector&lt;RingElem&gt;(3, val)));
+</PRE>
+<P></P>
+<A NAME="PseudoConstructors"></A>
+<H3>Pseudo-constructors</H3>
+<A NAME="toc4"></A>
+<H4>Constant Matrix Views</H4>
+<P>
+<B>NB</B> no entry is <I>writable</I>
+</P>
+<UL>
+<LI><CODE>ZeroMat(R, r, c)</CODE>     -- constant <CODE>r</CODE>-by-<CODE>c</CODE> zero matrix over <CODE>R</CODE>
+<LI><CODE>IdentityMat(R, n)</CODE>    -- constant <CODE>n</CODE>-by-<CODE>n</CODE> identity matrix over <CODE>R</CODE>
+</UL>
+
+<P></P>
+<A NAME="toc5"></A>
+<H4>Matrix Views of a Vector</H4>
+<P>
+You can <I>view</I> a <CODE>std::vector&lt;RingElem&gt;</CODE>, all of whose entries belong to the
+same <A HREF="ring.html"><CODE>ring</CODE></A>, as a matrix in three ways:
+</P>
+<UL>
+<LI><CODE>ColMat(v)</CODE>  -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as a column matrix
+<LI><CODE>RowMat(v)</CODE>  -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as a row matrix
+<LI><CODE>DiagMat(v)</CODE> -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as a diagonal matrix
+                    (NB: only the diagonal entries are <I>writable</I>)
+<LI><CODE>MatByRows(r,c, v)</CODE> -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as an <CODE>r</CODE>x<CODE>c</CODE> matrix
+where the entries of <CODE>v</CODE> are row 1, then row 2, and so on.
+<LI><CODE>MatByCols(r,c, v)</CODE> -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as an <CODE>r</CODE>x<CODE>c</CODE> matrix
+where the entries of <CODE>v</CODE> are col 1, then col 2, and so on.
+</UL>
+
+<P></P>
+<A NAME="toc6"></A>
+<H4>Matrix Views of a Matrix</H4>
+<UL>
+<LI><CODE>transpose(M)</CODE>         -- transposed <I>view</I> of the matrix <CODE>M</CODE>
+<LI><CODE>submat(M, rows, cols)</CODE>-- submatrix <I>view</I> into <CODE>M</CODE>; the
+                          rows and columns visible in the submatrix
+                          are those specified in the (<CODE>std::vector&lt;long&gt;</CODE>) arguments <CODE>rows</CODE>
+                          and <CODE>cols</CODE>; repeated indices are not allowed.
+</UL>
+
+<A NAME="toc7"></A>
+<H4>Matrix Views of Several Matrices</H4>
+<P>
+The following pseudo-constructors assemble several matrices into a bigger one;
+the argument matrices must all have the same <CODE>BaseRing</CODE>.  Be careful about
+passing temporaries to these functions: they <B>only make references</B> to the
+submatrices <CODE>A</CODE>, <CODE>B</CODE> etc
+</P>
+<UL>
+<LI><CODE>ConcatVer(A, B)</CODE>     -- matrix <I>view</I> with the rows of <CODE>A</CODE> above those of <CODE>B</CODE>
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD ALIGN="center">A</TD>
+</TR>
+<TR>
+<TD ALIGN="center">B</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI><CODE>ConcatHor(A, B)</CODE>     -- matrix <I>view</I> with the cols of <CODE>A</CODE> before those of <CODE>B</CODE>
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD ALIGN="center">A</TD>
+<TD ALIGN="center">B</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI><CODE>ConcatDiag(A,B)</CODE>     -- block diagonal matrix <I>view</I>
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD ALIGN="center">A</TD>
+<TD ALIGN="center">0</TD>
+</TR>
+<TR>
+<TD ALIGN="center">0</TD>
+<TD ALIGN="center">B</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI><CODE>ConcatAntiDiag(A,B)</CODE> -- block antidiagonal matrix <I>view</I>
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD ALIGN="center">0</TD>
+<TD ALIGN="center">A</TD>
+</TR>
+<TR>
+<TD ALIGN="center">B</TD>
+<TD ALIGN="center">0</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI><CODE>BlockMat(A, B, C, D)</CODE> -- block matrix <I>view</I>
+</UL>
+
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD ALIGN="center">A</TD>
+<TD ALIGN="center">B</TD>
+</TR>
+<TR>
+<TD ALIGN="center">C</TD>
+<TD ALIGN="center">D</TD>
+</TR>
+</TABLE>
+
+<P>
+  <B>NB</B> the boundaries of the four submatrices must be aligned.
+</P>
+<A NAME="toc8"></A>
+<H3>Operations on ConstMatrixView, MatrixView</H3>
+<P>
+See <A HREF="matrix.html#operations"><CODE>matrix</CODE> operations</A>
+</P>
+<A NAME="toc9"></A>
+<H2>Maintainer documentation for MatrixView</H2>
+<P>
+Most of the implementations are quite straightforward; the tricky part was
+getting the design of the abstract classes right (well, I hope it is right
+now).  Below are a few comments on some less obvious aspects of the
+implementations.
+</P>
+<P>
+Note: it is a mathematical fact that the determinant of the 0x0 matrix is 1.
+</P>
+<P>
+<CODE>ZeroMatImpl</CODE> and <CODE>IdentityMatImpl</CODE> are both derived from
+<CODE>MatrixViewBase</CODE> rather than <CODE>ConstMatrixViewBase</CODE> as one might
+naturally expect.  The main reason for this is to simplify the
+implementation of <CODE>BlockMat</CODE>.  I wanted to be lazy and
+implement <CODE>ConcatDiag</CODE> and <CODE>ConcatAntidiag</CODE> using <CODE>BlockMat</CODE>;
+while this may not be the best implementation, it is a natural
+approach and should certainly work as one might reasonably expect.
+However, the pseudo-ctor <CODE>BlockMat</CODE> has just two signatures: if any
+one of the submatrices is <I>const</I> then whole result becomes <I>const</I>.
+I didn't want to implement sixteen different signatures for
+<CODE>BlockMat</CODE>, and the easy way out seemed to be to make
+<CODE>ZeroMatImpl</CODE> and <CODE>IdentityMatImpl</CODE> non-const.  As a consequence
+there are a number of <I>useless</I> member functions in <CODE>ZeroMatImpl</CODE>
+and <CODE>IdentityMatImpl</CODE>.  I believe this compromise is reasonable.  It
+seemed reasonable to allow <CODE>ZeroMatImpl::myAssignZero</CODE> to succeed.
+</P>
+<P>
+There is a small problem with creating a matrix from an empty <CODE>std::vector</CODE>
+because there is no indication of what the base ring should be.  I have
+chosen to throw an error if one tries to create a matrix view from an empty
+vector (in <CODE>RowMat</CODE>, <CODE>ColMat</CODE> and <CODE>DiagMat</CODE>).
+</P>
+<P>
+The routines which access the <CODE>(i,j)</CODE> entry in a <CODE>BlockMat</CODE> are messy.
+I could not see an elegant way to make them simpler (or to avoid repeating
+similar structure in several places in the code).  See Bugs about implementing
+<CODE>BlockMat</CODE> in terms of <CODE>ConcatVer</CODE> and <CODE>ConcatHor</CODE>.
+</P>
+<A NAME="toc10"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+There is an appalling amount of code duplication in the implementations.
+I do not yet see a good way of reducing this.  I hope someone will sooner
+or later find an elegant way to avoid the duplication.
+Maybe a <I>diagonal</I> abstract class for ZeroMatImpl,
+IdentityMatImpl,  DiagMatImpl, ConstDiagMatImpl?
+</P>
+<P>
+It is a great nuisance to have to implement two very similar classes:
+one for the <I>const</I> case, and the other for the <I>non-const</I> case.
+Is there a better way?
+</P>
+<P>
+Add <CODE>ColMat</CODE>, <CODE>RowMat</CODE> and <CODE>DiagMat</CODE> for a free module element?
+</P>
+<P>
+Should <CODE>submatrix</CODE> allow repeated row/col indices?  It could lead to
+some some funny behaviour (e.g. setting one entry may change other
+entries), so perhaps it would be better to forbid it?  Currently, it
+is forbidden.
+</P>
+<P>
+The pseudo-ctor for <CODE>submatrix</CODE> ought to accept begin/end iterators instead
+of insisting that the caller put the indices in <CODE>std::vectors</CODE>.
+</P>
+<P>
+Should there be a more general version of <CODE>BlockMat</CODE> which allows
+non-aligned borders?  <CODE>BlockMat</CODE> could be eliminated and replaced by
+suitable calls to <CODE>ConcatVer</CODE> and <CODE>ConcatHor</CODE>.
+</P>
+<P>
+<B>Tensor product</B> of two matrices: we implement it as a DenseMatrix
+instead of MatrixView because the latter would give no practical
+advantage and hide the cost of accessing the entries.
+</P>
+<A NAME="toc11"></A>
+<H2>Main changes</H2>
+<P>
+<B>2014</B>
+</P>
+<UL>
+<LI>April (v0.99533)
+  <UL>
+  <LI>removed <CODE>FilledMat</CODE>
+  <P></P>
+<B>2011</B>
+  </UL>
+<LI>February (v0.9943):
+  <UL>
+  <LI>optimized implementations for <CODE>IsSymmetric</CODE>, <CODE>IsAntiSymmetric</CODE>, <CODE>IsDiagonal</CODE>, <CODE>operator==</CODE>
+  <LI>added <CODE>FilledMat</CODE>
+-
+  </UL>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/MatrixView.html -i txt/MatrixView.txt -->
+</BODY></HTML>

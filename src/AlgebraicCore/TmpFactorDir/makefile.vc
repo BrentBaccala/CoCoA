@@ -1,0 +1,23 @@
+# Makefile for Windows port of factor
+# May 2000 - Fabian Theis
+
+include sources
+
+COC_VERSION	= -DCA_TEXT -DSIS_WIN32
+OFILES		= $(SRC_FILES:.c=.obj)
+CC		= cl -nologo -D__STDC__
+# change your gmp path here
+INCLUDES	= -Ie:/gmp-3.1.1
+CFLAGS		= -Ox -Zl -D_NEED_LOG1P_ $(COC_VERSION) $(INCLUDES)
+
+factor.lib:	$(OFILES) jintf.obj
+	lib /out:factor.lib $(OFILES) jintf.obj
+
+all:	$(OFILES)
+
+jintf.obj:	# NB jintf.obj is compiled with an additional "-I...cocoa"
+	$(CC) -c $(CFLAGS) jintf.c $(INCLUDES) -I../cocoa -I.
+
+clean:  
+	- del *.obj 2> nul
+	- del factor.lib 2> nul

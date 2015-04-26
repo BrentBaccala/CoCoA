@@ -1,0 +1,129 @@
+package $RationalPoints;
+
+export RationalSolve;
+export RationalAffinePoints;
+export RationalProjectivePoints;
+
+
+// Check PolyList is suitable; if not throw error.  Returns nothing.
+define RationalSolveArgCheck(PolyList, FnName)
+  if type(PolyList) <> LIST Then
+    error(FnName+": arg must be list of polys");
+  endif;
+  if MakeSet([type(g) | g in PolyList]) <> [RINGELEM] Then
+    error(FnName+": arg must be list of polys");
+  endif;
+  if len(MakeSet([RingOf(g) | g In PolyList])) <> 1 Then
+    error(FnName+": defining polys must be in the same ring");
+  endif;
+  if not(IsPolyRing(RingOf(PolyList[1]))) then
+    error(FnName+": arg must be a list of polys");
+  endif;
+  if FindIndets(PolyList) = [] then
+    error(FnName+": polys must be non-constant");
+  endif;
+enddefine; -- RationalSolveArgCheck
+
+
+define EveryElemOf(L, HasProperty)
+  foreach x in L do
+    if not(HasProperty(x)) then return false; endif;
+  endforeach;
+  return true;
+enddefine; -- EveryElemOf
+
+
+define FindIndets(L)
+  P := RingOf(L[1]);
+  ListX := [];
+  foreach x in indets(P) do
+    foreach g in L do
+      if not(IsZero(g)) and deg(g,x) > 0 then append(ref ListX, x); break; endif;
+    endforeach;
+  endforeach;
+  return ListX;
+enddefine; -- FindIndets
+
+
+define RationalSolve(PolyList)
+  IsScaledIndet := func(f) return IsZero(f) or (NumTerms(f)=1 and deg(f)=1); endfunc;
+  RationalSolveArgCheck(PolyList, "RationalSolve");
+  // Special case: if all polys are +/- indet then treat as affine
+  if EveryElemOf(PolyList, IsScaledIndet) then
+    return [zero(RingOf(PolyList[1])) | x in FindIndets(PolyList)];
+  endif;
+  if IsHomog(PolyList) then return RationalProjectivePoints(PolyList); endif;
+  return RationalAffinePoints(PolyList);
+enddefine; -- RationalSolve
+
+
+define RationalAffinePoints(PolyList)
+  RationalSolveArgCheck(PolyList, "RationalAffinePoints");
+  ListX := FindIndets(PolyList); // will be non-empty since we've checked PolyList
+  P := RingOf(PolyList[1]);
+  SurplusIndets := diff(indets(P), ListX);
+  if not(IsZeroDim(ideal(PolyList)+ideal(P,SurplusIndets))) Then
+    error("RationalAffinePoints: system is not 0-dimensional");
+  endif;
+  return RationalAffinePointsLoop(PolyList, ListX);
+enddefine; -- RationalAffinePoints
+
+
+define RationalAffinePointsLoop(PolyList, ListX)
+  if len(ListX)=1 then return [[Z] | Z in RationalRoots(gcd(PolyList))]; endif;
+  P := RingOf(PolyList[1]);
+  pts := [];
+  X := first(ListX);
+  RemainingX := tail(ListX);
+  J := elim(RemainingX, ideal(PolyList)); // NB ideal J is principal
+  MinPoly := gens(J)[1];
+  foreach val in RationalRoots(MinPoly) do
+    SubspacePts := RationalAffinePointsLoop(subst(PolyList, X, val), RemainingX);
+    if SubspacePts <> [] then
+      pts := concat(pts, [concat([val], SubspacePt) | SubspacePt in SubspacePts]);
+    endif;
+  endforeach;
+  return pts;
+enddefine; -- RationalAffinePointsLoop
+
+define RootOfLinear(f)
+  if NumTerms(f) = 1 then return zero(RingOf(f)); endif;
+  phi := CoeffEmbeddingHom(RingOf(f));
+  return (LM(f) - f)/phi(LC(f));
+enddefine; -- RootOfLinear
+
+
+define RationalRoots(f)
+// assume f is non-zero polyomial
+  LinearFacs := [g in factor(f).factors | deg(g) = 1];
+  return [RootOfLinear(g) | g in LinearFacs];
+enddefine; -- RationalRoots
+
+
+define RationalProjectivePoints(PolyList)
+  RationalSolveArgCheck(PolyList, "RationalProjectivePoints");
+  if not(IsHomog(PolyList)) Then
+    error("RationalProjectivePoints: generators must be homogeneous");
+  endif;
+  ListX := FindIndets(PolyList);
+  if len(ListX) < 2 then return []; endif;
+  P := RingOf(PolyList[1]);
+  SurplusIndets := diff(indets(P), ListX);
+  if not(IsZeroDim(ideal(PolyList)+ideal(P,SurplusIndets)+ideal(ListX[1]-1))) Then
+    error("RationalProjectivePoints: homog system is not 1-dimensional");
+  endif;
+
+  return RationalProjectivePointsLoop(PolyList, ListX);
+enddefine; -- RationalProjectivePoints
+
+define RationalProjectivePointsLoop(PolyList, ListX)
+  if len(ListX)=1 then return []; endif;
+  P := RingOf(PolyList[1]);
+  X := first(ListX);
+  RemainingX := tail(ListX);
+  pts0 := [concat([0], SubspacePt) | SubspacePt in RationalProjectivePointsLoop(subst(PolyList,X,0), RemainingX)];
+  pts1 := [concat([1], AffPt) | AffPt in RationalAffinePointsLoop(subst(PolyList, X, 1), RemainingX)];
+  return concat(pts0, pts1);
+enddefine; -- RationalProjectivePointsLoop
+
+endpackage;

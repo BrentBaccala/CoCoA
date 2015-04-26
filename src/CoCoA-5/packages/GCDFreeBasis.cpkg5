@@ -1,0 +1,121 @@
+-- Routines to compute GCDFreeBasis
+
+Package $GCDFreeBasis -- compute or refine a GCD free basis
+
+export GCDFreeBasis;
+export RefineGCDFreeBasis;
+export FactorMultiplicity;
+
+
+Define About()
+  PrintLn  "    Author: J Abbott";
+  PrintLn  "    Date: 17 Jun 2004";
+  PrintLn  "    Comment: algorithm is cute, but could be faster";
+EndDefine;
+
+-- I invented this algorithm, but Shallit and others invented the
+-- same algorithm about 10 years ahead of me (sigh).
+-- Currently the code is written only for lists of integers
+-- (since there are calls to Abs), otherwise the method should be
+-- valid also for lists of polynomials.
+
+-- Exportable functions are: GCDFreeBasis and RefineGCDFreeBasis.
+-- Also FactorMultiplicity.
+
+-- This function computes a GCD free basis for a pair of elements (A, B).
+-- The result is a triple [L, C, R] where the union is the GCD free basis
+-- (possibly including the value 1).  L is the "rest" of A after all
+-- factors In C have been divided out; similar R is the "rest" of B.
+-- For instance (2*3^3*5^2*7,3*5^2*7^3*11) --> [2, [3,25,7], 11],
+-- and (6,3) --> [2, [3], 1]
+-- ASSUMES A and B are strictly positive.
+Define GFB_LCR(A, B)
+  G := GCD(A, B);
+  If G=1 Then Return [A, [], B]; EndIf;
+  A := A/G;
+  B := B/G;
+  If A = 1 Then  -- special case
+    While mod(B, G) = 0 Do B := div(B, G); EndWhile;
+    LCR := $.GFB_LCR(G, B);
+    If LCR[1] = 1 Then C := LCR[2];
+    Else C := concat([LCR[1]], LCR[2]);
+    EndIf;
+    Return [A, C, LCR[3]];
+  EndIf;
+  If B = 1 Then  -- special case
+    While mod(A, G) = 0 Do A := div(A, G); EndWhile;
+    LCR := $.GFB_LCR(A, G);
+    If LCR[3] = 1 Then C := LCR[2];
+    Else C := concat(LCR[2], [LCR[3]]);
+    EndIf;
+    Return [LCR[1], C, B];
+  EndIf;
+  -- General case follows
+  LCR := $.GFB_LCR(A, G);
+  L := LCR[1];
+  C := LCR[2];
+  R := LCR[3];
+  If R = 1 Then Return [L, C, B]; EndIf;
+  LCR := $.GFB_LCR(R, B);
+  If LCR[1] <> 1 Then append(ref C, LCR[1]); EndIf;
+  C := concat(C, LCR[2]);
+  Return [L, C, LCR[3]];
+EndDefine; -- GFB_LCR
+
+
+-- L is a list of integers (or polynomials).
+-- Returns a GCD free basis for the elements of L
+Define GCDFreeBasis(L)
+  If type(L) <> LIST Or MakeSet(shape(L)) <> [INT] Then
+    error("GCDFreeBasis: argument must be a list of integers");
+  EndIf;
+  L := [abs(N) | N In L And abs(N) > 1]; -- valid only when L is list of integers
+  If L = [] Then Return L; EndIf;
+  Basis := [];
+  Foreach N In L Do
+    Tmp := $.RefineGCDFreeBasis(Basis, N);
+    Basis := Tmp[1];
+    If Tmp[2] <> 1 Then append(ref Basis, Tmp[2]); EndIf;
+  EndForeach;
+  Return Basis;
+EndDefine; -- GCDFreeBasis
+
+
+  -- Compute a refined basis by adjoining N to B.
+  -- Result is [NewB, N2] where NewB is the refined basis
+  -- and N2 is the part of N coprime to every element of B.
+Define RefineGCDFreeBasis(B, N)
+  If type(N) <> INT Or type(B) <> LIST Or B <> [] And MakeSet(shape(B)) <> [INT] Then
+    error("RefineGCDFreeBasis: args must be basis (result of GCDFreeBasis) and an integer");
+  EndIf;
+  N := abs(N);
+  If N < 2 Then Return B; EndIf;
+  NewBasis := [];
+  Foreach M In B Do
+    If N <> 1 Then
+      LCR := $.GFB_LCR(M, N);
+      N := LCR[3];
+      If LCR[1] <> 1 Then append(ref NewBasis, LCR[1]); EndIf;
+      NewBasis := concat(NewBasis, LCR[2]);
+    Else
+      append(ref NewBasis, M);
+    EndIf;
+  EndForeach;
+  Return [NewBasis, N];
+EndDefine; -- RefineGCDFreeBasis
+
+
+-- Maximum power of Fac which divides N; Fac and N must be integers
+Define FactorMultiplicity(N, Fac)
+  If type(N) <> INT Or type(Fac) <> INT Then error("FactorMultiplicity: args must be integers"); EndIf;
+  If Fac IsIn [-1,0,1] Then error("FactorMultiplicity: Factor is a unit or zero"); EndIf;
+  If N = 0 Then error("FactorMultiplicity: cannot determine multiplicity of factors of zero"); EndIf;
+  H := 0;
+  While mod(N, Fac) = 0 Do
+    H := H+1;
+    N := div(N, Fac);
+  EndWhile;
+  Return H;
+EndDefine; -- FactorMultiplicity
+
+EndPackage;

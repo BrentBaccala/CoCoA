@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      SocketStream</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      SocketStream</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2010 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User Documentation for SocketStream</A>
+      <UL>
+      <LI><A HREF="#toc2">General description</A>
+      <LI><A HREF="#toc3">Example of Basic Use</A>
+      <LI><A HREF="#toc4">Source for server.C</A>
+      <LI><A HREF="#toc5">Source for client.C</A>
+      </UL>
+    <LI><A HREF="#toc6">Maintenance notes for the SocketStream source code</A>
+    <LI><A HREF="#toc7">Bugs, Shortcomings, etc</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User Documentation for SocketStream</H2>
+<A NAME="toc2"></A>
+<H3>General description</H3>
+<P>
+A <CODE>SocketStream</CODE> is intended to be used for client-server socket
+connections.  The distinction between the two sorts of use is
+made explicit when the socket is created:
+</P>
+<UL>
+<LI>the server end of a socket is created by specifying the port
+   number on which to listen for connexions
+<LI>the client end of a socket is created by specifying both the
+   machine name and port number to call
+</UL>
+
+<P>
+In both cases the <CODE>SocketStream</CODE> object is an <CODE>iostream</CODE>, <I>i.e.</I> it supports
+both input and output.  Note that the constructor for a server end
+socket (<I>i.e.</I> one with just the port number as argument) will block until
+a connexion is received!
+</P>
+<A NAME="toc3"></A>
+<H3>Example of Basic Use</H3>
+<P>
+Here is a simple, and rather silly, example.  The server reads strings,
+and for each string read returns a string being the decimal
+representation of the length of the string received.  Don't forget to
+start the server first, and then run the client (otherwise the client
+will complain about connexion refused).
+</P>
+<A NAME="toc4"></A>
+<H3>Source for server.C</H3>
+<PRE>
+  #include &lt;string&gt;
+  #include "CoCoA/SocketStreambuf.C"
+  
+  int main()
+  {
+    CoCoA::SocketStream s(8000); // server socket -- waits for a call
+  
+    while (s)
+    {
+      std::string str;
+      s &gt;&gt; str;
+      if (!s) break;
+      std::cout &lt;&lt; "Read the string: " &lt;&lt; str &lt;&lt; std::endl;
+      s &lt;&lt; str.size() &lt;&lt; std::endl;
+    }
+  
+    std::cout &lt;&lt; "REACHED EOF -- QUITTING" &lt;&lt; std::endl;
+    return 0;
+</PRE>
+<P></P>
+<A NAME="toc5"></A>
+<H3>Source for client.C</H3>
+<PRE>
+  #include &lt;string&gt;
+  #include &lt;iostream&gt;
+  #include "CoCoA/SocketStreambuf.C"
+  
+  void process(const std::string&amp; str, std::iostream&amp; s)
+  {
+    s &lt;&lt; str &lt;&lt; endl;
+    std::string result;
+    s &gt;&gt; result;
+    std::cout &lt;&lt; '"' &lt;&lt; str &lt;&lt; "\" transformed into \"" &lt;&lt; result &lt;&lt; '"' &lt;&lt; std::endl;
+  }
+  
+  int main()
+  {
+    CoCoA::SocketStream s("point", 8000); // client socket
+    
+    process("String1", s);
+    process("String2", s);
+    process("archeopteryx", s);
+    process("asuccessionofnonwhitespacecharacters", s);
+  
+    return 0;
+  }
+</PRE>
+<P></P>
+<A NAME="toc6"></A>
+<H2>Maintenance notes for the SocketStream source code</H2>
+<P>
+As mentioned below, most of this code was written by copying from other
+reliable sources -- I don't really understand how it all works.  For the
+<CODE>streambuf</CODE> code refer to Josuttis's excellent book.  I do not know any
+formal reference for the "low-level" C code which uses the socket
+functions of the C library.
+</P>
+<P>
+<CODE>SocketStreambuf::ourUngetSize</CODE> is a lower bound on how much one can "go
+backwards" using the <CODE>ungetc</CODE> function.
+<CODE>SocketStreambuf::ourInputBufferSize</CODE> is the size of the internal input
+byte buffer, so the maximum number of characters which can be read in
+a single call to "recv" is the difference between <CODE>ourInputBufferSize</CODE>
+and <CODE>ourUngetSize</CODE> (currently 99996 bytes).
+</P>
+<P>
+The constructor for a server size <CODE>SocketStream</CODE> internally calls "fork"
+when a connexion is received -- the constructor completes only in the
+child, the parent process waits for further connexions.
+</P>
+<A NAME="toc7"></A>
+<H2>Bugs, Shortcomings, etc</H2>
+<P>
+I do not like having to include <CODE>&lt;cstdio&gt;</CODE> just to get the
+preprocessor macro <CODE>EOF</CODE>
+</P>
+<P>
+ERROR HANDLING NEEDS TO BE RECONSIDERED.
+Error handling is probably not correct: too great a tendency to throw
+exceptions instead of simply putting the iostream into an "anomalous
+state".  Not sure what is the accepted C++ approach.
+</P>
+<P>
+The values for the constants <CODE>SocketStreambuf::ourInputBufferSize</CODE>
+and <CODE>SocketStreambuf::ourUngetSize</CODE> are rather arbitrary.
+</P>
+<P>
+Most of the code has been "ripped off": either from Daniele's C source,
+or from Josuttis's book.  I have felt free to make (wholesale) changes.
+</P>
+<P>
+Maintainer documentation is largely absent.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/SocketStream.html -i txt/SocketStream.txt -->
+</BODY></HTML>

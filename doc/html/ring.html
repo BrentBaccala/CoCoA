@@ -1,0 +1,475 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      ring</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      ring</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2010,2012 John Abbott, Anna M. Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc2">Examples</A>
+      <LI><A HREF="#toc3">Types of ring (inheritance structure)</A>
+      <LI><A HREF="#toc4">Pseudo-constructors</A>
+      <LI><A HREF="#operations">Operations on Rings</A>
+        <UL>
+        <LI><A HREF="#toc6">Queries</A>
+        <LI><A HREF="#toc7">Queries and views</A>
+        </UL>
+      <LI><A HREF="#toc8">ADVANCED USE OF RINGS</A>
+        <UL>
+        <LI><A HREF="#toc9">Writing C++ classes for new types of ring</A>
+        </UL>
+      </UL>
+    <LI><A HREF="#toc10">Maintainer documentation</A>
+        <UL>
+        <LI><A HREF="#toc11">Further comments about implementation aspects of the above classes.</A>
+        </UL>
+    <LI><A HREF="#toc12">Bugs, Shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation</H2>
+<P>
+The primary use for a variable of type <CODE>ring</CODE> is simply to specify
+the ring to which <A HREF="RingElem.html"><CODE>RingElem</CODE></A> variables are associated.  CoCoALib
+requires that the user specify first the rings in which to compute,
+then values in those rings can be created and manipulated.  We
+believe that this explicit approach avoids any possible problem of ambiguity.
+</P>
+<P>
+The file <CODE>ring.H</CODE> introduces several classes used for representing rings
+and their elements.  A normal user of the CoCoA library will use
+principally the classes <CODE>ring</CODE> and <A HREF="RingElem.html"><CODE>RingElem</CODE></A>: an object of type
+<CODE>ring</CODE> represents a mathematical ring with unity, and objects of type
+<A HREF="RingElem.html"><CODE>RingElem</CODE></A> represent values from some ring.  To make the documentation
+more manageable it has been split into two: this file describes operations
+directly applicable to rings, whereas a separate file describes the
+operations on a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>.  Documentation about the creation and use of
+homomorphisms between rings can be found in <A HREF="RingHom.html"><CODE>RingHom</CODE></A>.
+</P>
+<P>
+The documentation here is very general in nature: it applies to all rings
+which can be created in the CoCoA library.  To find out how to create rings,
+and for more specific documentation about the various special types of ring
+CoCoALib offers, look at the relevant file: see the subsection below about
+<B><I>Types of Ring</I></B>.
+</P>
+<P>
+While the CoCoA library was conceived primarily for computing with
+commutative rings, the possibility of creating and using certain
+non-commutative rings exists.  The documentation for these rings is kept
+separately in <A HREF="RingWeyl.html"><CODE>RingWeyl</CODE></A>.
+</P>
+<A NAME="toc2"></A>
+<H3>Examples</H3>
+<P>
+Here is a list of example programs (to be found in the <CODE>examples/</CODE>
+subdirectory) illustrating the creation and use of various sorts of ring
+and their elements
+</P>
+<UL>
+<LI><A HREF="../../examples/index.html#ex-ring1.C">ex-ring1.C</A>
+<LI><A HREF="../../examples/index.html#ex-ring2.C">ex-ring2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingElem1.C">ex-RingElem1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingFp2.C">ex-RingFp2.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingQ1.C">ex-RingQ1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingTwinFloat1.C">ex-RingTwinFloat1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingWeyl1.C">ex-RingWeyl1.C</A>
+<LI><A HREF="../../examples/index.html#ex-RingZZ1.C">ex-RingZZ1.C</A>
+</UL>
+
+<P></P>
+<A NAME="toc3"></A>
+<H3>Types of ring (inheritance structure)</H3>
+<UL>
+<LI><A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>
+<LI><A HREF="RingTwinFloat.html"><CODE>RingTwinFloat</CODE></A>
+<LI><A HREF="FractionField.html"><CODE>FractionField</CODE></A>
+ <UL>
+ <LI>generic
+ <LI><A HREF="RingQQ.html"><CODE>RingQQ</CODE></A>
+ </UL>
+<LI><A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>
+ <UL>
+ <LI>generic
+ <LI><A HREF="RingFp.html"><CODE>RingFp</CODE></A>
+ <LI><A HREF="RingFpLog.html"><CODE>RingFpLog</CODE></A>
+ <LI><A HREF="RingFpDouble.html"><CODE>RingFpDouble</CODE></A>
+ <LI>Simple algebraic extensions (not yet implemented)
+ </UL>
+<LI><A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>
+ <UL>
+ <LI><A HREF="DenseUPolyRing.html"><CODE>DenseUPolyRing</CODE></A>
+  <UL>
+  <LI><A HREF="DenseUPolyClean.html"><CODE>DenseUPolyClean</CODE></A>
+  </UL>
+ <LI><A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A>
+  <UL>
+  <LI><A HREF="RingWeyl.html"><CODE>RingWeyl</CODE></A>
+  <LI><A HREF="DistrMPoly.html"><CODE>DistrMPoly</CODE></A>
+  <LI>DistrMPolyInlPP
+  <LI><A HREF="DistrMPolyInlFpPP.html"><CODE>DistrMPolyInlFpPP</CODE></A>
+  </UL>
+ </UL>
+</UL>
+
+<P></P>
+<A NAME="toc4"></A>
+<H3>Pseudo-constructors</H3>
+<P>
+The default initial value for a <CODE>ring</CODE> is the ring of integers (<CODE>RingZZ</CODE>).
+</P>
+<P>
+You can specify explicitly the initial value using one of the various ring pseudo-constructors:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>RingZZ()</CODE></TD>
+<TD>see <A HREF="RingZZ.html#constructors"><CODE>RingZZ</CODE> constructors</A></TD>
+</TR>
+<TR>
+<TD><CODE>RingQQ()</CODE></TD>
+<TD>see <A HREF="RingQQ.html#constructors"><CODE>RingQQ</CODE> constructors</A></TD>
+</TR>
+<TR>
+<TD><CODE>NewZZMod(n)</CODE></TD>
+<TD>see <A HREF="QuotientRing.html#constructors"><CODE>QuotientRing</CODE> constructors</A></TD>
+</TR>
+<TR>
+<TD><CODE>NewRingTwinFloat(n)</CODE></TD>
+<TD>see <A HREF="RingTwinFloat.html#constructors"><CODE>RingTwinFloat</CODE> constructors</A></TD>
+</TR>
+<TR>
+<TD><CODE>NewFractionField(R)</CODE></TD>
+<TD>see <A HREF="FractionField.html#constructors"><CODE>FractionField</CODE> constructors</A></TD>
+</TR>
+<TR>
+<TD><CODE>NewQuotientRing(R,I)</CODE></TD>
+<TD>see <A HREF="QuotientRing.html#constructors"><CODE>QuotientRing</CODE> constructors</A></TD>
+</TR>
+</TABLE>
+
+<A NAME="operations"></A>
+<H3>Operations on Rings</H3>
+<P>
+Let <CODE>R</CODE> and <CODE>R2</CODE> be two variable of type <CODE>ring</CODE>.
+</P>
+<UL>
+<LI><CODE>characteristic(R)</CODE> -- the characteristic of <CODE>R</CODE> (as a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>)
+<LI><CODE>symbols(R)</CODE>        -- a std::vector of the symbols in <CODE>R</CODE>
+                          (<I>e.g.</I> Q(a)[x,y] contains the symbols a, x, and y)
+<LI><CODE>R = R2</CODE>           -- assign <CODE>R2</CODE> to <CODE>R</CODE> (so they both refer to the same identical internal impl)
+<LI><CODE>R == R2</CODE>          -- test whether <CODE>R</CODE> and <CODE>R2</CODE> are <B>identical</B>
+       	                  (<I>i.e.</I> they refer to the same internal impl)
+<LI><CODE>R != R2</CODE>          -- the logical negation of <CODE>R == R2</CODE>
+</UL>
+
+<P></P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>zero(R)</CODE></TD>
+<TD>the zero element of <CODE>R</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>one(R)</CODE></TD>
+<TD>the one element of <CODE>R</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>BaseRing(R)</CODE></TD>
+<TD>the ring from which <CODE>R</CODE> was built</TD>
+</TR>
+</TABLE>
+
+<P>
+In CoCoALib all rings are built starting from ZZ by applying various
+"constructors" (<I>e.g.</I> fraction field, quotient ring).  The function
+<CODE>BaseRing</CODE> gives the immediate predecessor in the chain of
+constructions.
+</P>
+<A NAME="toc6"></A>
+<H4>Queries</H4>
+<P>
+In some cases the best algorithm to use may depend on whether the ring in
+which we are computing has certain properties or not; so CoCoALib offers
+some functions to ask a ring <CODE>R</CODE> about its properties:
+</P>
+<UL>
+<LI><CODE>IsCommutative(R)</CODE>     -- a boolean, true iff <CODE>R</CODE> is commutative
+<LI><CODE>IsIntegralDomain(R)</CODE>  -- a boolean, true iff <CODE>R</CODE> has no zero divisors
+<LI><CODE>IsIntegralDomain3(R)</CODE> -- a 3-state boolean, like <CODE>IsIntegralDomain</CODE> but fast, gives <CODE>uncertain3</CODE> if cannot determine proper answer quickly
+<LI><CODE>IsTrueGCDDomain(R)</CODE>   -- a boolean, true iff <CODE>R</CODE> is a true GCD domain (<B>note</B>: fields are <I>not</I> true GCD domains)
+<LI><CODE>IsOrderedDomain(R)</CODE>   -- a boolean, true iff <CODE>R</CODE> is arithmetically ordered
+<LI><CODE>IsField(R)</CODE>           -- a boolean, true iff <CODE>R</CODE> is a field
+<LI><CODE>IsFiniteField(R)</CODE>     -- a boolean, true iff <CODE>R</CODE> is a finite field
+<LI><CODE>LogCardinality(R)</CODE>    -- the integer k such that card(R) = p^k where p is char(R)
+</UL>
+
+<P></P>
+<P>
+NOTE: a pragmatic approach is taken: <I>e.g.</I> <CODE>IsOrderedDomain</CODE> is true only
+if comparisons between elements can actually be performed using the CoCoA library.
+</P>
+<A NAME="toc7"></A>
+<H4>Queries and views</H4>
+<P>
+It may also be important to discover practical structural details of a <CODE>ring</CODE>
+(<I>e.g.</I> some algorithms make sense only for a polynomial ring).  The
+following query functions <CODE>Is...</CODE> tell you how the <CODE>ring</CODE> is implemented,
+and the <I>view</I> functions <CODE>As...</CODE> give access to the specific operations:
+</P>
+<UL>
+<LI><CODE>IsZZ(R)</CODE>             -- see <A HREF="RingZZ.html#query"><CODE>RingZZ</CODE> query</A>
+<LI><CODE>IsQQ(R)</CODE>             -- see <A HREF="RingQQ.html#query"><CODE>RingQQ</CODE> query</A>
+<LI><CODE>IsDenseUPolyRing(R)</CODE> -- see <A HREF="DenseUPolyRing.html#query"><CODE>DenseUPolyRing</CODE> query</A>
+<LI><CODE>IsFractionField(R)</CODE>  -- see <A HREF="FractionField.html#query"><CODE>FractionField</CODE> query</A>
+<LI><CODE>IsPolyRing(R)</CODE>       -- see <A HREF="PolyRing.html#query"><CODE>PolyRing</CODE> query</A>
+<LI><CODE>IsQuotientRing(R)</CODE>   -- see <A HREF="QuotientRing.html#query"><CODE>QuotientRing</CODE> query</A>
+<LI><CODE>IsSparsePolyRing(R)</CODE> -- see <A HREF="SparsePolyRing.html#query"><CODE>SparsePolyRing</CODE> query</A>
+</UL>
+
+<P></P>
+<P>
+In general the function "IsXYZ" should be read as "Is internally
+implemented as XYZ": for instance <CODE>IsQuotientRing</CODE> is true only if the
+internal implementation is as a quotient ring, so if <CODE>ZZ</CODE> denotes the ring
+of integers and <CODE>R = ZZ[x]/ideal(x)</CODE> then <CODE>R</CODE> and <CODE>ZZ</CODE> are obviously
+isomorphic but <CODE>IsZZ(R)</CODE> gives <CODE>false</CODE> and <CODE>IsZZ(Z)</CODE> gives <CODE>true</CODE>,
+while conversely <CODE>IsQuotientRing(R)</CODE> gives <CODE>true</CODE> and
+<CODE>IsQuotientRing(ZZ)</CODE> gives <CODE>false</CODE>.
+</P>
+<A NAME="toc8"></A>
+<H3>ADVANCED USE OF RINGS</H3>
+<P>
+The rest of this section is for more advanced use of <CODE>ring</CODE>s (<I>e.g.</I> by
+CoCoA library contributors).  If you are new to CoCoA, you need not read
+this subsection.
+</P>
+<A NAME="toc9"></A>
+<H4>Writing C++ classes for new types of ring</H4>
+<P>
+An important convention of the CoCoA library is that the class <CODE>RingBase</CODE>
+is to be used as an abstract base class for all rings.  You are strongly
+urged to familiarize yourself with the maintainer documentation if you want
+to understand how and why rings are implemented as they are in the CoCoA
+library.
+</P>
+<P>
+The first decision to make when implementating a new ring class for
+CoCoALib is where to place it in the ring inheritance structure.  This
+inheritance structure is a (currently) tree with all concrete classes at
+the leaves, and all abstract classes being internal nodes.  Usually the new
+concrete ring class is attached to the structure by making it derive from
+one of the existing abstract ring classes.  You may even decide that it is
+appropriate to add a new abstract ring class to this structure, and to make
+the new concrete class derive from this new abstract class.
+</P>
+<P>
+<B>Note:</B> I have note used multiple inheritance in the structure, largely
+  because I do not trust multiple inheritance (not doubt due in part to my
+  ignorance of the topic).
+</P>
+<P>
+Once you have decided where to attach the new concrete class to the
+structure, you will have to make sure that all pure virtual functions in the
+abstract class are implemented.  Almost all instances of concrete rings are
+built through pseudo-constructors (the rings ZZ and QQ are exceptional cases).
+</P>
+<P>
+An <B>important detail</B> of the constructor for a new concrete ring is that
+the reference count of the new ring object must be incremented to 1 at the
+start of the constructor body (or more precisely, before any self
+references are created, <I>e.g.</I> when creating the zero and one elements of
+the ring); without this "trick" the constructor is not exception safe.
+</P>
+<P>
+<B>NOTE</B> Every concrete ring creates a copy of its zero and one elements
+(kept in auto_ptrs <CODE>myZeroPtr</CODE> and <CODE>myOnePtr</CODE>).  This common
+implementation detail cannot (safely) be moved up into <CODE>RingBase</CODE> because
+during destruction by default the data members of <CODE>RingBase</CODE> are
+destroyed after the derived concrete ring.  It seems much safer simply to
+duplicate the code for each ring implementation class.
+</P>
+<A NAME="toc10"></A>
+<H2>Maintainer documentation</H2>
+<P>
+(<B>NB</B> consider consulting also <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
+and <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
+</P>
+<P>
+The design underlying rings and their elements is more complex than I
+would have liked, but it is not as complex as the source code may make
+it appear.  The guiding principles are that the implementation should be
+flexible and easy/pleasant to use while offering a good degree of
+safety; extreme speed of execution was not a goal (as it is usually
+contrary to good flexibility) though an interface offering slightly
+better run-time efficiency remains.
+</P>
+<P>
+Regarding flexibility: in CoCoALib we want to handle polynomials whose
+coefficients reside in (almost) any commutative ring.  Furthermore, the
+actual rings to be used will be decided at run-time, and cannot
+restricted to a given finite set.  We have chosen to use C++ inheritance
+to achieve the implementation: the abstract class <CODE>RingBase</CODE> defines the
+interface that every concrete ring class must offer.
+</P>
+<P>
+Regarding ease of use: since C++ allows the common arithmetic operators
+to be overloaded, it is essential that these work as expected for
+elements of arbitrary rings -- with the caveat that <CODE>/</CODE> means <B>exact division</B>,
+as this is the only reasonable interpretation.  Due to problems of
+ambiguity, arithmetic between elements of different rings is forbidden:
+<I>e.g.</I> let f be in QQ[x,y] and g in ZZ[y,x], where should f+g reside?
+</P>
+<P>
+The classes in the file ring.H are closely interrelated, and there is no
+obvious starting point for describing them -- you may find that you need
+to read the following more than once to comprehend it.  Here is a list
+of the classes:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>ring</CODE></TD>
+<TD>value represents a ring; it is a smart pointer</TD>
+</TR>
+<TR>
+<TD><CODE>RingBase</CODE></TD>
+<TD>abstract class <I>defining what a ring is</I></TD>
+</TR>
+<TR>
+<TD><CODE>RingElem</CODE></TD>
+<TD>value represents an element of a ring</TD>
+</TR>
+<TR>
+<TD><CODE>ConstRefRingElem</CODE></TD>
+<TD>const-reference to a RingElem</TD>
+</TR>
+<TR>
+<TD><CODE>RingElemConstRawPtr</CODE></TD>
+<TD>raw pointer to a <I>const</I> ring value</TD>
+</TR>
+<TR>
+<TD><CODE>RingElemRawPtr</CODE></TD>
+<TD>raw pointer to a ring value</TD>
+</TR>
+</TABLE>
+
+<P>
+The class <CODE>RingBase</CODE> is of interest primarily to those wanting to
+implement new types of ring (see relevant section below); otherwise you
+probably don't need to know about it.  Note that <CODE>RingBase</CODE> includes an
+intrusive reference counter -- so every concrete ring instance will have
+one.  <CODE>RingBase</CODE> also includes a machine integer field containing a
+unique numerical ID -- this is so that distinct copies of otherwise
+identical rings can be distinguished when output (<I>e.g.</I> in OpenMath).
+</P>
+<P>
+The class <CODE>ring</CODE> is used to represent mathematical rings (<I>e.g.</I> possible
+values include ZZ, QQ, or QQ[x,y,z]).  An object of type <CODE>ring</CODE> is just a
+reference counting smart pointer to a concrete ring implementation
+object -- so copying a ring is fairly cheap.  In particular two rings
+are considered equal if and only if they refer to the same identical
+concrete ring implementation object.  In other files you will find
+classes derived from <CODE>ring</CODE> which represent special subclasses of rings,
+for instance <CODE>PolyRing</CODE> is used to represent polynomial rings.  The
+intrusive reference count, which must be present in every concrete ring
+implementation object, is defined as a data member of <CODE>RingBase</CODE>.
+</P>
+<P>
+For the other classes see <A HREF="RingElem.html"><CODE>RingElem</CODE></A>.
+</P>
+<A NAME="toc11"></A>
+<H4>Further comments about implementation aspects of the above classes.</H4>
+<P>
+Recall that <CODE>ring</CODE> is essentially a smart pointer to a <CODE>RingBase</CODE>
+object, <I>i.e.</I> a concrete implementation of a ring.  Access to the
+implementation is given via <CODE>operator-&gt;</CODE>.  If necessary, the pointer may
+also be read using the member function <CODE>myRingPtr</CODE>: this is helpful for
+defining functions such as <CODE>IsPolyRing</CODE> where access to the pointer is
+required but <CODE>operator-&gt;</CODE> cannot be used.
+</P>
+<P>
+The class <CODE>RingBase</CODE> declares a number of pure virtual functions for
+computing with ring elements.  Since these functions are pure they must
+all be fully defined in any instantiable ring class (<I>e.g.</I> RingZZImpl or
+RingFpImpl).  These member functions follow certain conventions:
+</P>
+<DL>
+<DT><B>RETURN VALUES</B>:</DT><DD>
+   most arithmetic functions return no value, instead the
+   result is placed in one of the arguments (normally the first argument
+   is the one in which the result is placed), but functions which return
+   particularly simple values (<I>e.g.</I> booleans or machine integers) do
+   indeed return the values by the usual function return mechanism.
+<P></P>
+<DT><B>ARG TYPES</B>:</DT><DD>
+   ring element values are passed as <I>raw pointers</I>
+   (<I>i.e.</I> a wrapped <CODE>void*</CODE> pointing to the actual value).  A read-only
+   arg is of type <CODE>RingElemConstRawPtr</CODE>, while a writable arg is of type
+   <CODE>RingElemRawPtr</CODE>.  When there are writable args they normally appear
+   first.  For brevity there are typedefs <CODE>ConstRawPtr</CODE> and <CODE>RawPtr</CODE> in
+   the scope of <CODE>RingBase</CODE> or any derived class.
+<P></P>
+<DT><B>ARG CHECKS</B>:</DT><DD>
+   sanity checks on the arguments are <B>not conducted</B> (<I>e.g.</I> the
+   division function assumes the divisor is non-zero).  These member
+   functions are supposed to be fast rather than safe.  However, if the
+   compilation flag <CODE>CoCoA_DEBUG</CODE> was set then some checks may be performed.
+</DL>
+
+<P>
+In a few cases there are non-pure virtual member functions in
+<CODE>RingBase</CODE>.  They exist either because there is a simple universal
+definition or merely to avoid having to define inappropriate member
+functions (<I>e.g.</I> gcd functions when the ring cannot be a gcd domain).
+Here is a list of them:
+</P>
+<TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
+<TR>
+<TD><CODE>IamTrueGCDDomain()</CODE></TD>
+<TD>defaults to not <CODE>IamField()</CODE></TD>
+</TR>
+<TR>
+<TD><CODE>IamOrderedDomain()</CODE></TD>
+<TD>defaults to false</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc12"></A>
+<H2>Bugs, Shortcomings and other ideas</H2>
+<P>
+Printing rings is unsatisfactory.  Need a mechanism for specifying a
+print name for a ring; and also a mechanism for printing out the full
+definition of the ring avoiding all/some print names.  For instance,
+given the definitions <CODE>R = QQ(x)</CODE> and <CODE>S = R[a,b]</CODE> we see that
+<CODE>S</CODE> could be printed as <CODE>S</CODE>, <CODE>R[a,b]</CODE> or <CODE>QQ(x)[a,b]</CODE>.  We
+should allow at least the first and the last of these possibilities.
+</P>
+<P>
+Should (some of) the query functions return <CODE>bool3</CODE> values?
+What about properties which are hard to determine?
+</P>
+<P>
+The fn <CODE>IsFiniteField</CODE> is not very smart; it recognises only prime
+finite fields, and simple algebraic extensions of them.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/ring.html -i txt/ring.txt -->
+</BODY></HTML>

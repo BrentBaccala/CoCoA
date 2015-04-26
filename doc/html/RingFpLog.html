@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      RingFpLog</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      RingFpLog</H1>
+<FONT SIZE="4">
+<I>      &copy;  2005,2010-2011 John Abbott</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation for the class RingFpLogImpl</A>
+    <LI><A HREF="#toc2">Maintainer documentation for the class RingFpLogImpl</A>
+    <LI><A HREF="#toc3">Bugs, shortcomings and other ideas</A>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation for the class RingFpLogImpl</H2>
+<P>
+The usual way to perform arithmetic in a (small, prime) finite field
+is to create the appropriate ring via the pseudo-constructors
+<CODE>NewZZmod</CODE> (or <CODE>NewQuotientRing</CODE> if you prefer) which are
+documented in <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>.  These functions will automatically
+choose a suitable underlying implementation, and you should normally
+use them.
+</P>
+<P>
+In some special circumstances, you may wish to choose explicitly the
+underlying implementation.  CoCoALib offers three distinct
+implementations of small prime finite fields: <A HREF="RingFp.html"><CODE>RingFp</CODE></A>, and
+<CODE>RingFpLog</CODE> (described here) and <A HREF="RingFpDouble.html"><CODE>RingFpDouble</CODE></A>.  Of these
+<CODE>RingFpLog</CODE> may be the fastest if your processor has slow division
+instructions -- this file describes how to create a <CODE>RingFpLog</CODE>
+implementation.
+</P>
+<P>
+To create a <A HREF="ring.html"><CODE>ring</CODE></A> of this specific type use one of the pseudo-constructors:
+</P>
+<PRE>
+    NewRingFpLog(p) -- Z ring of integers, p a machine integer or BigInt
+    NewRingFpLog(I) -- Z ring of integers, I an ideal of Z
+    NewRingFpLog(p, res) -- p a machine integer, res is either ``GlobalSettings::SymmResidues`` or ``GlobalSettings::NonNegResidues``
+</PRE>
+<P>
+These pseudo-constructors are for creating small prime finite fields; they
+will fail if the characteristic is not prime or is too large: the error
+signalled by throwing a <CODE>CoCoA::ErrorInfo</CODE> whose <I>code</I> is
+<CODE>CoCoA::ERR::BadSmallFpChar</CODE>.  You can test whether an argument is
+suitable by calling <CODE>IsGoodFoRingFpLog</CODE>.
+</P>
+<P>
+In the directory <CODE>examples/</CODE> there is a small example program showing
+how small finite fields (with known implementation) can be created and
+used: <CODE>ex-RingFp2.C</CODE>.
+</P>
+<P>
+The default convention for printing residues is specified when you create
+the <A HREF="GlobalManager.html"><CODE>GlobalManager</CODE></A>; you can also specify explicitly which convention to
+use by giving a second argument to the pseudo-ctor <CODE>NewRingFpLog</CODE>.  Note
+that the <B>internal representation</B> is always least non-negative
+regardless of the output convention chosen.
+</P>
+<P>
+If you seek a means for fast arithmetic in small finite fields consult
+the documentation about <A HREF="SmallFpImpl.html"><CODE>SmallFpImpl</CODE></A>, <A HREF="SmallFpLogImpl.html"><CODE>SmallFpLogImpl</CODE></A>, and
+<A HREF="SmallFpDoubleImpl.html"><CODE>SmallFpDoubleImpl</CODE></A>.  All arithmetic on elements of a <CODE>RingFp</CODE>
+is actually carried out by a <CODE>SmallFpImpl</CODE> object.
+</P>
+<A NAME="toc2"></A>
+<H2>Maintainer documentation for the class RingFpLogImpl</H2>
+<P>
+The class <CODE>RingFpLogImpl</CODE> is a low-level implementation of (small
+prime) finite fields; it is not intended for direct use by casual CoCoA
+library users.  Multiplication and division are effected using discrete
+log/exp tables.
+</P>
+<P>
+The class <CODE>RingFpLogImpl</CODE> is intended to represent small, prime finite
+fields.  The constructor is more complicated than one might expect, this
+is because the <CODE>RingFpLogImpl</CODE> object must store a little extra
+information to fulfil its role as a <CODE>QuotientRingBase</CODE>.  Currently, the
+characteristic must be prime (otherwise it wouldn't be a field).
+Furthermore, the characteristic must also be less than 65536 even on
+machines with 64-bit arithmetic -- larger values are prohibited as the
+internal tables would become excessively large.  Creating a
+<CODE>RingFpLogImpl</CODE> of characteristic p takes time roughly linear in p;
+space consumption is linear in p.  An error is signalled if the
+characteristic is too large or not prime.
+</P>
+<P>
+Extreme efficiency is NOT one of the main features of this version.
+</P>
+<P>
+The class <CODE>RingFpLogImpl</CODE> derives from <CODE>QuotientRingBase</CODE>, which in turn
+is derived from <CODE>RingBase</CODE>: see <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A> and <A HREF="ring.html"><CODE>ring</CODE></A> for more
+details.  Note that there is no <CODE>RingFpLog</CODE> class; a <CODE>RingFpLogImpl</CODE>
+object can only be accessed via a <CODE>QuotientRing</CODE>.
+</P>
+<P>
+Note the use of "argument checking" static member functions in the ctor:
+this is because <CODE>const</CODE> data members must be initialized before the main
+body of the ctor is entered.
+</P>
+<P>
+A member typedef <CODE>RingFpLogImpl::value_t</CODE> specifies the type used for
+representing the value of an element of a <CODE>RingFpLogImpl</CODE>: currently
+this is a typedef for <CODE>SmallFpLogElem_t</CODE> which is defined in config.H.
+</P>
+<P>
+Essentially all operations are delegated to the class <CODE>SmallFpLogImpl</CODE>.
+The two classes are separate so that the inline operations of
+<CODE>SmallFpLogImpl</CODE> can be accessed directly in certain other special case
+implementations (<I>e.g.</I> polynomials with coeffs in a SmallFp).  See the
+documentation on <A HREF="SmallFpLogImpl.html"><CODE>SmallFpLogImpl</CODE></A> for details.  I note that the
+residues are represented as the least non-negative value in the residue
+class.
+</P>
+<P>
+The data members are those of a <CODE>QuotientRingBase</CODE> (which are used only
+for answering queries about a <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>), plus the characteristic
+of the field (held as a <CODE>value_t</CODE> in <CODE>myModulusValue</CODE>), and an auto-pointer
+to a copy of the zero and one elements of the ring.
+</P>
+<P>
+The zero and one elements of the ring is held in an auto_ptr&lt;&gt; for
+consistency with the implementation of other rings -- in this simple
+class it is not really necessary for exception safety.
+</P>
+<P>
+The largest permitted modulus for a <CODE>RingFpLogImpl</CODE> may depend on the
+platform.  On a 32-bit machine the modulus must surely be less than
+65536 -- refer to <A HREF="SmallFpLogImpl.html"><CODE>SmallFpLogImpl</CODE></A> for details.  A 64-bit machine may
+allow larger characteristics.
+</P>
+<P>
+Although it may seem wasteful to use heap memory for the values of
+elements in a RingFpLogImpl, trying to make them "inline" leads to
+lots of problems -- see <A HREF="RingFp.html"><CODE>RingFp</CODE></A> for more details
+</P>
+<A NAME="toc3"></A>
+<H2>Bugs, shortcomings and other ideas</H2>
+<P>
+See also some comments in the "bugs" section of RingFp.txt.
+</P>
+<P>
+The code is not very smart in the case of characteristic 2.
+</P>
+<P>
+Run-time performance is disappointing.
+</P>
+<P>
+I wonder if this code will ever prove useful to anyone.
+</P>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/RingFpLog.html -i txt/RingFpLog.txt -->
+</BODY></HTML>

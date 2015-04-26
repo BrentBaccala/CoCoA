@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
+<TITLE>      ServerOp</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>      ServerOp</H1>
+<FONT SIZE="4">
+<I>      &copy;  2007 Anna Bigatti</I><BR>
+      GNU Free Documentation License, Version 1.2
+</FONT></CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+    <UL>
+    <LI><A HREF="#toc1">User documentation</A>
+      <UL>
+      <LI><A HREF="#toc2">Outline</A>
+        <UL>
+        <LI><A HREF="#toc3">Data members</A>
+        <LI><A HREF="#toc4">LibraryInfo</A>
+        </UL>
+      <LI><A HREF="#toc5">Virtual functions</A>
+        <UL>
+        <LI><A HREF="#toc6">myCompute</A>
+        <LI><A HREF="#toc7">myReadArgs</A>
+        <LI><A HREF="#toc8">myWriteResult</A>
+        <LI><A HREF="#toc9">myClear</A>
+        </UL>
+      <LI><A HREF="#toc10">Debugging the server</A>
+      </UL>
+    </UL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<P>
+      <center><a href="index.html">CoCoALib Documentation Index</a></center>
+</P>
+<A NAME="toc1"></A>
+<H2>User documentation</H2>
+<A NAME="toc2"></A>
+<H3>Outline</H3>
+<P>
+<CODE>ServerOpBase</CODE> is the <B>abstract class</B> for an object representing
+an operation of the CoCoAServer.  A concrete class must implement
+these functions (see below for a detailed description):
+</P>
+<PRE>
+      ServerOpBase(const LibraryInfo&amp; lib)
+      void myOutputSelf(std::ostream&amp;) const
+      void myReadArgs(std::istream&amp; in)
+      void myCompute()
+      void myWriteResult(std::ostream&amp;) const
+      void myClear()
+</PRE>
+<P></P>
+<P>
+The <B>concrete classes</B> representing the actual CoCoALib operations
+and their registrations are implemented in RegisterServerOps.C.  See
+<A HREF="RegisterServerOps.html"><CODE>RegisterServerOps</CODE></A> for the registration procedure.
+</P>
+<A NAME="toc3"></A>
+<H4>Data members</H4>
+<P>
+The class should have as data members the input <CODE>myIn..</CODE> and output
+variables <CODE>myOut..</CODE> for the main function called by <CODE>myCompute()</CODE>.
+</P>
+<P>
+For example the class <CODE>IdealGBasis</CODE> has:
+</P>
+<PRE>
+   PolyList myInPL, myOutPL;
+</PRE>
+<P></P>
+<P>
+For data types <B>without a void constructor</B> use <CODE>auto_ptr</CODE>, for example
+the class <CODE>IdealElim</CODE> has:
+</P>
+<PRE>
+   auto_ptr&lt;PPMonoidElem&gt; myInElimPPPtr;
+</PRE>
+<P></P>
+<P>
+which is initialized in <CODE>IdealElim::myReadArgs</CODE>
+</P>
+<PRE>
+   myInElimPPPtr.reset(new PPMonoidElem(t));
+</PRE>
+<P></P>
+<A NAME="toc4"></A>
+<H4>LibraryInfo</H4>
+<P>
+A <CODE>LibraryInfo</CODE> is a set of information common to a group of
+operations.  The <B>CoCoAServer</B> prints the list of loaded
+(sub)libraries at startup.
+</P>
+<PRE>
+    LibraryInfo(const std::string&amp; name,
+                const std::string&amp; version,
+                const std::string&amp; group);
+</PRE>
+<P>
+Example of definition of the function identifying a (sub)library:
+</P>
+<PRE>
+    // sublibrary of CoCoALib for groebner related operations
+    // by M.Caboara
+    const ServerOpBase::LibraryInfo&amp; CoCoALib_groebner()
+    {
+      static ServerOpBase::LibraryInfo UniqueValue("CoCoALib",
+                                                   BuildInfo::version,
+                                                   "groebner");
+      return UniqueValue;
+    }
+</PRE>
+<P></P>
+<A NAME="toc5"></A>
+<H3>Virtual functions</H3>
+<A NAME="toc6"></A>
+<H4>myCompute</H4>
+<P>
+This function should be just a straight call to a CoCoALib function,
+in particular with neither reading nor printing,
+using as input the class members called <CODE>myIn..</CODE> and storing
+the result into the data members called <CODE>myOut..</CODE>, for example
+</P>
+<PRE>
+  void myCompute() { ComputeGBasis(myOutPL, myInPL); }
+</PRE>
+<P></P>
+<A NAME="toc7"></A>
+<H4>myReadArgs</H4>
+<P>
+Read from GlobalInput, and store the arguments into <CODE>myIn..</CODE>.
+In general this is the only <I>difficult</I> function.
+</P>
+<A NAME="toc8"></A>
+<H4>myWriteResult</H4>
+<P>
+Print the result(s) (myOut..) in CoCoA-4 language assigning
+it into the CoCoA4 global variable whose name is stored in <CODE>VarName4</CODE>.
+For <I>non-standard</I> output just remember it simply is CoCoA-4 language,
+for example:
+</P>
+<PRE>
+    void MVTN1::myWriteResult(std::ostream&amp; out) const
+    {
+      out &lt;&lt; ourVarName4 &lt;&lt; " := [];";
+      for (unsigned int i=0; i&lt;myOutPP.size(); ++i)
+        out&lt;&lt; "Append(" &lt;&lt; ourVarName4&lt;&lt; ", " &lt;&lt; PP(myOutPP[i]) &lt;&lt; ");" &lt;&lt;endl;
+    }
+</PRE>
+<P>
+-- add example for "Record[..];" output from ApproxBBasis --
+</P>
+<A NAME="toc9"></A>
+<H4>myClear</H4>
+<P>
+Reset all data members to <I>0</I>.
+Right now (April 2007) it is only for <I>cleaning</I> the object right
+after it has been used, in future it might be called to <I>reuse</I> the
+object several times.
+</P>
+<A NAME="toc10"></A>
+<H3>Debugging the server</H3>
+<P>
+If a function called by CoCoA-4 needs to be debugged this is the
+procedure to avoid dealing with sockets and fork under gdb.
+</P>
+<UL>
+<LI>create from CoCoA-4 the input file <CODE>~/tmp/CoCoA4Request.cocoa5</CODE>:
+<PRE>
+    $cocoa5.Initialize();
+    MEMORY.PKG.CoCoA5.PrintOnPath := GetEnv("HOME")+"/tmp";
+    MyFun5(X);
+</PRE>
+<LI>In shell:
+<PRE>
+    src/server/CoCoAServer -d &lt; ~/tmp/CoCoA4Request.cocoa5
+</PRE>
+<LI>In gdb:
+<PRE>
+    file src/server/CoCoAServer
+    r -d &lt; ~/tmp/CoCoA4Request.cocoa5
+    break CoCoA::error
+</PRE>
+</UL>
+
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html -o html/ServerOp.html -i txt/ServerOp.txt -->
+</BODY></HTML>

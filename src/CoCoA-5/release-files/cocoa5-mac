@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Start the CoCoAInterpreter supplying the value of "--packageDir".
+
+#############################################################################
+# Find directory of this script (taken from link below)
+# http://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
+
+pushd . > /dev/null
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [ -L "$SCRIPT_PATH" ]
+do
+  cd "`dirname "$SCRIPT_PATH"`"
+  SCRIPT_PATH="$(readlink "`basename "$SCRIPT_PATH"`")"
+done
+cd "`dirname "$SCRIPT_PATH"`" > /dev/null
+SCRIPT_DIR="`pwd`"
+popd  > /dev/null
+
+
+##################################################################
+# executable
+
+COCOA_EXECUTABLE="$SCRIPT_DIR/bin/CoCoAInterpreter"
+
+
+#############################################################################
+# A simple sanity check that this script has been correctly set up.
+
+if [ ! -x "$COCOA_EXECUTABLE" ]
+then
+  echo "`basename $0`: ERROR: Don't know where to find the binary executable."
+  exit 1
+fi
+if [ ! -d "$SCRIPT_DIR/packages" ]
+then
+  echo "`basename $0`: ERROR: Don't know where to find the CoCoA packages."
+  exit 1
+fi
+
+
+#############################################################################
+# Start CoCoA!
+
+exec $COCOA_EXECUTABLE --packageDir "$SCRIPT_DIR/packages" "$@"

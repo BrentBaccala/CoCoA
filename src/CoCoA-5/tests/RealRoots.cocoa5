@@ -1,0 +1,31 @@
+Define Assert(cond)
+  If cond Then Return; EndIf;
+  PrintLn("*** FAILED ***");
+  error("Assertion failed");
+EndDefine
+
+// This example computed GCD of RingElems in QQ (in DoubleX).
+Use QQ[x];
+F := x^8 -x^7 -8*x^6 -6*x^5 -9*x^3 -16*x^2 -8*x -1;
+RRA := RealRootsApprox(F,10^(-10));
+Assert(len(RRA) = 3);
+
+// This example computed GCD of RingElems in QQ (in DoubleX).
+Use QQ[x,y,z];
+I := ideal(z, (y-3*x)^3, x^2-2);
+ApproxPts := ApproxSolve(I);
+Assert(max([max([AsRAT(eval(f,pt)) | pt in ApproxPts]) | f in gens(I)]) < 10^(-20));
+
+I := ideal(x^2-2, y^2-3/4, z^2-4);
+ApproxPts := ApproxSolve(I);
+Assert(max([max([AsRAT(eval(f,pt)) | pt in ApproxPts]) | f in gens(I)]) < 10^(-20));
+
+I := ideal(x-z^2, (x-y)*(x+y), z^2-4);
+ApproxPts := ApproxSolve(I);
+Assert(max([max([AsRAT(eval(f,pt)) | pt in ApproxPts]) | f in gens(I)]) < 10^(-20));
+Assert(EqSet(RationalSolve(gens(I)), ApproxPts));
+
+I := *** Ideal(x^5-xy-1, (xz-y)^2, y^2-z-1) ***;
+ApproxPts := ApproxSolve(I);
+Assert(max([max([AsRAT(eval(f,pt)) | pt in ApproxPts]) | f in gens(I)]) < 10^(-20));
+Assert(IsSubset(RationalSolve(gens(I)), ApproxPts));
