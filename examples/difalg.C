@@ -403,9 +403,19 @@ bool PPMonoidRingExpImpl::myIsRadical(ConstRawPtr rawpp) const
 }
 
 
+/* XXX myCmp currently uses lex ordering with no other option */
+
 int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+
+  for (long i=0; i<myNumIndets; ++i) {
+    if (expv1->exponents[i] != expv2->exponents[i]) {
+      if (expv1->exponents[i] > expv2->exponents[i]) return 1; else return -1;
+    }
+  }
+  return 0;
 }
 
 
