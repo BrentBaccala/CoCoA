@@ -435,28 +435,89 @@ int PPMonoidRingExpImpl::myCmpWDegPartial(ConstRawPtr rawpp1, ConstRawPtr rawpp2
 
 long PPMonoidRingExpImpl::myExponent(ConstRawPtr rawpp, long indet) const
 {
+  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  BigInt N;
+  long n;
+
   CoCoA_ASSERT(indet < myNumIndets);
-  CoCoA_ERROR(ERR::NYI, "Exponent extraction in PPMonoidRingExp");
+
+  if (! IsInteger(N, expv->exponents[indet])) {
+    CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+  }
+
+  if (! IsConvertible(n, N)) {
+    CoCoA_ERROR(ERR::ExpTooBig, "Exponent extraction in PPMonoidRingExp");
+  }
+
+  return n;
 }
 
 void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const
 {
+  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+
   CoCoA_ASSERT(indet < myNumIndets);
-  CoCoA_ERROR(ERR::NYI, "Exponent extraction in PPMonoidRingExp");
+
+  if (! IsInteger(EXP, expv->exponents[indet])) {
+    CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+  }
 }
 
 
 void PPMonoidRingExpImpl::myExponents(std::vector<long>& v, ConstRawPtr rawpp) const
 {
+  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  BigInt N;
+  long n;
+
   CoCoA_ASSERT(len(v) == myNumIndets);
-  CoCoA_ERROR(ERR::NYI, "Exponent extraction in PPMonoidRingExp");
+
+  // Run this loop twice so we don't modify the vector if there's an exception
+
+  for (long i=0; i < myNumIndets; ++i) {
+    if (! IsInteger(N, expv->exponents[i])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
+
+    if (! IsConvertible(n, N)) {
+      CoCoA_ERROR(ERR::ExpTooBig, "Exponent extraction in PPMonoidRingExp");
+    }
+  }
+
+  for (long i=0; i < myNumIndets; ++i) {
+    if (! IsInteger(N, expv->exponents[i])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
+
+    if (! IsConvertible(n, N)) {
+      CoCoA_ERROR(ERR::ExpTooBig, "Exponent extraction in PPMonoidRingExp");
+    }
+
+    v[i] = n;
+  }
 }
 
 
-void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expv, ConstRawPtr rawpp) const
+void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRawPtr rawpp) const
 {
+  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  BigInt N;
+
   CoCoA_ASSERT(len(expv) == myNumIndets);
-  CoCoA_ERROR(ERR::NYI, "Exponent extraction in PPMonoidRingExp");
+
+  // Run this loop twice so we don't modify the vector if there's an exception
+
+  for (long i=0; i < myNumIndets; ++i) {
+    if (! IsInteger(N, expv->exponents[i])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
+  }
+
+  for (long i=0; i < myNumIndets; ++i) {
+    if (! IsInteger(expvector[i], expv->exponents[i])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
+  }
 }
 
 
