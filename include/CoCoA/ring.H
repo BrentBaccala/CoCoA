@@ -227,6 +227,7 @@ namespace CoCoA
 
     void myPower(RawPtr rawlhs, ConstRawPtr rawx, long n) const;                     ///< lhs = x^n, n>=0
     void myPower(RawPtr rawlhs, ConstRawPtr rawx, const BigInt& N) const;            ///< lhs = x^N, N>=0
+    void myPower(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const;       ///< lhs = x^pow
     void mySquare(RawPtr rawlhs, ConstRawPtr rawx) const;                            ///< lhs = x^2, default impl
     virtual RingElem mySymbolValue(const symbol& sym) const = 0;                      ///< returns the RingElem corresponding to sym
     //===== RingElem: printing
@@ -261,6 +262,7 @@ namespace CoCoA
   protected: // These are almost an implementation detail
     virtual void myPowerSmallExp(RawPtr rawlhs, ConstRawPtr rawx, long n) const = 0; ///< lhs = x^n, n>1, x not -1,0,1
     virtual void myPowerBigExp(RawPtr rawlhs, ConstRawPtr rawx, const BigInt& N) const;///< lhs = x^N, N big, x not -1,0,1; default gives error
+    virtual void myPowerRingElemExp(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const;///< lhs=x^pow; default throws error
     void mySequentialPower(RawPtr rawlhs, ConstRawPtr rawx, long n) const;           ///< lhs = x^n (assumes n >= 0)
     void myBinaryPower(RawPtr rawlhs, ConstRawPtr rawx, long n) const;               ///< lhs = x^n (assumes n > 0)
     void myBinaryPower(RawPtr rawlhs, ConstRawPtr rawx, const BigInt& N) const;      ///< lhs = x^N (assumes N > 0)
@@ -309,6 +311,7 @@ namespace CoCoA
   bool IsDivisible(RingElem& lhs, ConstRefRingElem, ConstRefRingElem);
   RingElem power(ConstRefRingElem x, const MachineInt& n); ///< NB exponent may be negative
   RingElem power(ConstRefRingElem x, const BigInt& N);         ///< NB exponent may be negative
+  RingElem power(ConstRefRingElem x, ConstRefRingElem pow);
   ConstRefRingElem zero(const ring& R);
   ConstRefRingElem one(const ring& R);
   std::ostream& operator<<(std::ostream& out, const ring& R);

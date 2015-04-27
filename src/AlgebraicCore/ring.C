@@ -318,6 +318,46 @@ namespace CoCoA
       myPowerBigExp(rawlhs, rawx, N);
   }
 
+  // Deal with all trivial cases; pass non-trivial cases to myPowerSmallExp, myPowerBigExp, or myPowerRingElem
+  void RingBase::myPower(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const
+  {
+    BigInt N;
+
+    if (IsZero(pow))
+    {
+      myAssign(rawlhs, 1);  // note that 0^0 gives 1
+      return;
+    }
+    if (IsOne(pow) || myIsOne(rawx) || myIsZero(rawx)) { myAssign(rawlhs, rawx); return; }
+
+    if (IsInteger(N, pow)) {
+      if (myIsZero(rawx) && N < 0)
+	CoCoA_ERROR(ERR::BadPwrZero, "power(RingElem, N)");
+      if (N < 0 && !myIsInvertible(rawx))
+	CoCoA_ERROR(ERR::NotUnit, "power(RingElem, N) and N < 0");
+      if (N < 0) {
+	// Here we know N < 0 and x is invertible
+      }
+      if (myIsMinusOne(rawx))
+	{
+	  if (IsOdd(N)) myAssign(rawlhs, rawx); // -1 to odd power
+	  else myAssign(rawlhs, 1);             // -1 to even power
+	  return;
+	}
+      // Non-trivial case: x is not -1, 0, or 1, and N > 1.
+      // Handle squaring specially:
+      if (N == 2) { mySquare(rawlhs, rawx); return; }
+      // Call myPowerSmallExp or myPowerBigExp depending on value of exponent.
+      long n;
+      if (IsConvertible(n, N))
+	myPowerSmallExp(rawlhs, rawx, n);
+      else
+	myPowerBigExp(rawlhs, rawx, N);
+    } else {
+      myPowerRingElemExp(rawlhs, rawx, pow);
+    }
+  }
+
 
   // Default implementation
   void RingBase::mySquare(RawPtr rawlhs, ConstRawPtr rawx) const
@@ -425,6 +465,13 @@ namespace CoCoA
   void RingBase::myPowerBigExp(RawPtr /*rawlhs*/, ConstRawPtr /*rawx*/, const BigInt& /*N*/) const
   {
     CoCoA_ERROR(ERR::ExpTooBig, "power(r,N)");
+  }
+
+  // In myPowerBigExp we are guaranteed that the exponent is not an integer.
+  // By default we simply complain that the exponent is too big.
+  void RingBase::myPowerRingElemExp(RawPtr /*rawlhs*/, ConstRawPtr /*rawx*/, ConstRefRingElem /*pow*/) const
+  {
+    CoCoA_ERROR(ERR::BadArg, "power(r,e)");
   }
 
   // Direct iteration for computing powers -- good for multivariate polys.
@@ -956,6 +1003,14 @@ namespace CoCoA
     invx /= x;
     RingElem ans(owner(x));
     owner(x)->myPower(raw(ans), raw(invx), -N);
+    return ans;
+  }
+
+  // Check the args are mathematically sensible; use myPower to do the work.
+  RingElem power(ConstRefRingElem x, ConstRefRingElem pow) // deliberately allow negative exponents
+  {
+    RingElem ans(owner(x));
+    owner(x)->myPower(raw(ans), raw(x), pow);
     return ans;
   }
 
