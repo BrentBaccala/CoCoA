@@ -26,7 +26,7 @@ class PPMonoidRingExpImpl: public PPMonoidBase
   typedef PPMonoidElemConstRawPtr ConstRawPtr; // just to save typing
 
 public:
-  PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, const PPOrdering& ord);
+  PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, const PPOrdering& ord, const ring& ExponentRing = RingZZ());
   ~PPMonoidRingExpImpl();
 private: // disable copy ctor and assignment
   explicit PPMonoidRingExpImpl(const PPMonoidRingExpImpl& copy);  // NEVER DEFINED -- copy ctor disabled
@@ -121,9 +121,9 @@ bool PPMonoidRingExpImpl::myCheckExponents(const std::vector<long>& expv) const
 
 //----   Constructors & destructor   ----//
 
-PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, const PPOrdering& ord):
+PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, const PPOrdering& ord, const ring& ExponentRing):
   PPMonoidBase(ord, IndetNames),
-  ExponentRing(RingZZ()),
+  ExponentRing(ExponentRing),
   myIndetVector()
 {
   // XXX do something with PPOrdering ord
@@ -555,7 +555,7 @@ void PPMonoidRingExpImpl::myDebugPrint(std::ostream& out, ConstRawPtr rawpp) con
 
 
 
-PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrdering& ord)
+PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrdering& ord, const ring& ExponentRing = RingZZ())
 {
   // Sanity check on the indet names given.
   const long nvars = NumIndets(ord);
@@ -567,13 +567,13 @@ PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrdering
   if (!AreArityConsistent(IndetNames))
     CoCoA_ERROR(ERR::BadIndetNames, "NewPPMonoidRing(IndetNames,ord)");
 
-  return PPMonoid(new PPMonoidRingExpImpl(IndetNames, ord));
+  return PPMonoid(new PPMonoidRingExpImpl(IndetNames, ord, ExponentRing));
 }
 
-PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrderingCtor& ord)
+PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrderingCtor& ord, const ring& ExponentRing = RingZZ())
 {
   //return NewPPMonoidEv(IndetNames, ord.myCtor(len(IndetNames)));
-  return NewPPMonoidRing(IndetNames, ord.myCtor(len(IndetNames)));
+  return NewPPMonoidRing(IndetNames, ord.myCtor(len(IndetNames)), ExponentRing);
 }
 
 
@@ -738,8 +738,9 @@ void program()
   cout << boolalpha; // so that bools print out as true/false
 
   ring QQ = RingQQ();
+  ring ExponentRing = NewPolyRing(QQ, vector<symbol> {symbol("p")});
   //ring R = NewPolyRing(QQ, vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")});
-  PPMonoid PPM = NewPPMonoidRing(vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")}, lex);
+  PPMonoid PPM = NewPPMonoidRing(vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")}, lex, ExponentRing);
   ring R = NewPolyRing(QQ, PPM);
   ring K = NewFractionField(R);
 
