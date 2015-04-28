@@ -172,6 +172,7 @@ namespace CoCoA
     virtual ideal myIdealCtor(const std::vector<RingElem>& gens) const;
     virtual void mySquare(RawPtr rawlhs, ConstRawPtr rawx) const;          ///< lhs = x^2
     virtual void myPowerSmallExp(RawPtr rawlhs, ConstRawPtr rawx, long n) const; ///< lhs = x^n, n>1, x not -1,0,1
+    virtual void myPowerRingElemExp(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const;
     //@}
 
     ///@name  Functions for homomorphisms

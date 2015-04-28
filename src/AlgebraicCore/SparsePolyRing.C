@@ -932,6 +932,27 @@ namespace CoCoA
     mySequentialPower(rawlhs, rawx, n); //??? BUG/SLUG myBinaryPower better if univariate or coeffs are finite field
   }
 
+  void SparsePolyRingBase::myPowerRingElemExp(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const
+  {
+    BigInt N;
+
+    if (IsInteger(N, pow)) {
+      long n;
+      if (IsConvertible(n, N)) {
+	myPowerSmallExp(rawlhs, rawx, n);
+      } else {
+	CoCoA_ERROR(ERR::ExpTooBig, "SparsePolyRing::power(RingElem, RingElem)");
+      }
+    } else {
+      if (myIsMonomial(rawx) && IamCommutative()) {
+	RingElem m = monomial(SparsePolyRing(this), power(myLC(rawx), pow), power(myLPP(rawx), pow));
+	mySwap(rawlhs, raw(m));
+      } else {
+	CoCoA_ERROR(ERR::NYI, "SparsePolyRing::power(RingElem, RingElem) non-monomial case");
+      }
+    }
+  }
+
 
   //---- Special functions on RingElem owned by SparsePolyRing
 
