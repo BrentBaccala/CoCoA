@@ -731,6 +731,40 @@ public:
   }
 };
 
+class OrderedPolyRingBase : public RingDistrMPolyCleanImpl {
+
+  using RingDistrMPolyCleanImpl::RingDistrMPolyCleanImpl;
+
+  virtual bool IamOrderedDomain(void) const {
+    return true;
+  }
+
+  virtual int myCmp(ConstRawPtr rawx, ConstRawPtr rawy) const {
+    int result = 0;
+    RawPtr rawdiff = myNew();
+    mySub(rawdiff, rawx, rawy);
+    for (auto it=myBeginIter(rawdiff); it != myEndIter(rawdiff); it++) {
+      //return sign(coeff(it));
+      result = sign(coeff(it));
+      break;
+    }
+    //return 0;
+    myDelete(rawdiff);
+    return result;
+  }
+#if 0
+  virtual int myCmpAbs(ConstRawPtr rawx, ConstRawPtr rawy) const;                  ///< equiv to myCmp(abs(x),abs(y))
+  virtual int mySign(ConstRawPtr rawx) const;                                      ///< -1,0,+1 according as x <0,=0,>0
+  virtual bool myFloor(BigInt& N, ConstRawPtr rawx) const;                         ///< true iff x is integer; put floor(x) in N};
+#endif
+};
+
+SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbol>& IndetNames, const PPOrderingCtor& ord = lex)
+{
+  //return SparsePolyRing(new RingDistrMPolyCleanImpl(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
+  return SparsePolyRing(new OrderedPolyRingBase(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
+}
+
 void program()
 {
   GlobalManager CoCoAFoundations;
@@ -738,7 +772,8 @@ void program()
   cout << boolalpha; // so that bools print out as true/false
 
   ring QQ = RingQQ();
-  ring ExponentRing = NewPolyRing(QQ, vector<symbol> {symbol("p")});
+  ring ExponentRing = NewOrderedPolyRing(QQ, vector<symbol> {symbol("p")});
+
   //ring R = NewPolyRing(QQ, vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")});
   PPMonoid PPM = NewPPMonoidRing(vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")}, lex, ExponentRing);
   ring R = NewPolyRing(QQ, PPM);
