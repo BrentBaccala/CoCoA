@@ -19,6 +19,8 @@
 //   along with CoCoALib.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "CoCoA/DistrMPolyClean.H"
+
 #include <vector>
 //using std::vector;
 
@@ -40,6 +42,107 @@ namespace CoCoA
   SparsePolyRing NewPolyRing_DMP(const ring& CoeffRing, const std::vector<symbol>& IndetNames); ///< Default ordering is StdDegRevLex
   SparsePolyRing NewPolyRing_DMP(const ring& CoeffRing, long NumIndets); ///< Default ordering is StdDegRevLex
   SparsePolyRing NewPolyRing_DMP(const ring& CoeffRing, long NumIndets, const PPOrderingCtor& ord);
+
+  class RingDistrMPolyCleanImpl: public SparsePolyRingBase
+  {
+  private:
+    typedef DistrMPolyClean value_t; // DistrMPolyClean is the actual type of the values in a RingDistrMPolyCleanImpl
+    static value_t& import(RingElemRawPtr rawf);
+    static const value_t& import(RingElemConstRawPtr rawf);
+
+  public:
+    RingDistrMPolyCleanImpl(const ring& R, const PPMonoid& PPM);
+    ~RingDistrMPolyCleanImpl();
+
+  private: // Data members of RingDistrMPolyCleanImpl
+    const ring myCoeffRingValue;  ///< the coefficient ring
+    const PPMonoid myPPMValue; ///< the monoid of the power-products
+    mutable MemPool myDMPPool; ///< memory manager for polynomials
+    long myNumIndetsValue; ///< number of indeteminates
+    mutable MemPool mySummandPool; ///< memory manager for summands; MemPool MUST COME BEFORE myZeroPtr, myOnePtr, and myIndetVector!
+    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::vector<RingElem> myIndetVector;
+
+  public:  // functions which every ring must implement
+    virtual ConstRefRingElem myZero() const;
+    virtual ConstRefRingElem myOne() const;
+    using RingBase::myNew;    // disable warnings of overloading
+    using RingBase::myAssign; // disable warnings of overloading
+    using PolyRingBase::myIndets; // disable warnings of overloading
+    virtual RingElemRawPtr myNew() const;
+    virtual RingElemRawPtr myNew(const MachineInt& n) const;
+    virtual RingElemRawPtr myNew(const BigInt& N) const;
+    virtual RingElemRawPtr myNew(ConstRawPtr rawcopy) const;
+    virtual void myDelete(RawPtr rawx) const;                             // destroys x (incl all resources)
+    virtual void mySwap(RawPtr rawx, RawPtr rawy) const;                  // swap(x, y)
+    virtual void myAssign(RawPtr rawlhs, ConstRawPtr rawx) const;         // lhs = x
+    virtual void myAssign(RawPtr rawlhs, const MachineInt& n) const;  // lhs = n
+    virtual void myAssign(RawPtr rawlhs, const BigInt& N) const;          // lhs = N
+    virtual void myAssignZero(RawPtr rawlhs) const;                       // lhs = 0
+    virtual void myRecvTwinFloat(RawPtr rawlhs, ConstRawPtr rawx) const;
+    virtual void myNegate(RawPtr rawlhs, ConstRawPtr rawx) const;         // lhs = -x
+    virtual void myAdd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const;        // lhs = x+y
+    virtual void mySub(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const;        // lhs = x-y
+    virtual std::string myImplDetails() const {return "RingDistrMPolyClean";}
+    virtual bool myIsZero(ConstRawPtr rawx) const;                                // x == 0
+    virtual bool myIsEqual(ConstRawPtr rawx, ConstRawPtr rawy) const;                // x == y
+
+    // functions which every PolyRing must implement
+
+    virtual long myNumIndets() const;
+    virtual const ring& myCoeffRing() const;
+    virtual const std::vector<RingElem>& myIndets() const;
+    virtual void myIndetPower(RawPtr rawf, long var, long exp) const;
+
+    ///@name Simple functions on polynomials
+    //@{
+    virtual long myNumTerms(ConstRawPtr rawf) const;
+    virtual bool myIsMonomial(ConstRawPtr rawf) const;
+    virtual RingElemAlias myLC(ConstRawPtr rawf) const;
+    virtual void myMulByCoeff(RawPtr rawf, ConstRawPtr rawc) const; ///< WEAK EXCEPTION GUARANTEE
+    virtual bool myDivByCoeff(RawPtr rawf, ConstRawPtr rawc) const; ///< WEAK EXCEPTION GUARANTEE
+    //@}
+
+    //----------------------------------------------------------------------
+    // Functions which every SparsePolyRing must implement:
+    //----------------------------------------------------------------------
+
+    virtual const PPMonoid& myPPM() const;
+
+    ///@name   Functions for creating/building polynomials
+    //@{
+    virtual RingElem myMonomial(ConstRawPtr rawc, PPMonoidElemConstRawPtr rawpp) const;
+    virtual SparsePolyIter myBeginIter(ConstRawPtr rawf) const;
+    virtual SparsePolyIter myEndIter(ConstRawPtr rawf) const;
+
+    virtual void myPushFront(RawPtr rawf, ConstRawPtr rawc, const std::vector<long>& expv) const;
+    virtual void myPushBack(RawPtr rawf, ConstRawPtr rawc, const std::vector<long>& expv) const;
+    virtual void myPushFront(RawPtr rawf, ConstRawPtr rawc, PPMonoidElemConstRawPtr rawpp) const;
+    virtual void myPushBack(RawPtr rawf, ConstRawPtr rawc, PPMonoidElemConstRawPtr rawpp) const;
+    //@}
+
+    ///@name Special functions on polynomials needed for implementing Buchberger's Algorithm
+    //@{
+    virtual ConstRefPPMonoidElem myLPP(ConstRawPtr rawf) const;
+    virtual void myMulByPP(RawPtr rawf, PPMonoidElemConstRawPtr rawpp) const;
+    virtual bool myIsZeroAddLCs(RawPtr rawf, RawPtr rawg) const; ///< f+=LM(g); g-=LM(g); assumes LPP(f)==LPP(g); returns LC(f)+LC(g)==0
+    virtual void myMoveLM(RawPtr rawf, RawPtr rawg) const; ///< f+=LM(g); g-=LM(g); assumes LM(f)<LM(g)
+    virtual void myDeleteLM(RawPtr rawf) const; // ????? right interface
+    virtual void myDivLM(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawg) const; ///< lhs=div(LM(f),LM(g)); assumes f!=0,g!=0
+    virtual int  myCmpLPP(ConstRawPtr rawf, ConstRawPtr rawg) const; ///< cmp(LPP(f),LPP(g)); assumes f!=0,g!=0
+    virtual void myAddClear(RawPtr rawf, RawPtr rawg) const; ///< f+=g; g=0;
+    virtual void myAppendClear(RawPtr rawf, RawPtr rawg) const; ///< f+=g; g=0; appends g to f with no checks
+
+    virtual void myAddMul(RawPtr rawf, ConstRawPtr rawh, ConstRawPtr rawg) const; ///<  f += LM(h)*g
+    virtual void myAddMul(RawPtr rawf, ConstRawPtr rawh, ConstRawPtr rawg, SkipLMFlag) const; ///<  f += LM(h)*g
+    virtual void myReductionStep(RawPtr rawf, ConstRawPtr rawg) const;
+    // ??? aggiungere coefficiente
+    virtual void myReductionStepGCD(RawPtr rawf, ConstRawPtr rawg, RingElem& FScale) const;
+    // should it all be in ReductionStep ??? ANNA
+    //@}
+
+  };
 
 } // end of namespace CoCoA
 
