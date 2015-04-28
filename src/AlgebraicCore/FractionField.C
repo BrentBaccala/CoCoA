@@ -197,6 +197,7 @@ namespace CoCoA
     virtual bool myIsInvertible(ConstRawPtr rawx) const;                          // true iff x is invertible
     virtual void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const;  // lhs = gcd(x,y) in a field
     virtual void myPowerSmallExp(RawPtr rawlhs, ConstRawPtr rawx, long n) const;// lhs = x^n, n>1, x not -1,0,1
+    virtual void myPowerRingElemExp(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const;// lhs = x^n, n>1, x not -1,0,1
     virtual void mySymbols(std::vector<symbol>& SymList) const;                   // appends ring's symbols to SymList
     virtual void myOutput(std::ostream& out, ConstRawPtr rawx) const;             // out << x
     virtual bool myIsPrintAtom(ConstRawPtr rawx) const;
@@ -555,6 +556,17 @@ namespace CoCoA
     // The result is naturally reduced (if the input is).
     myBaseRingValue->myPower(RefNum(rawlhs), RefNum(rawx), n);  // call myPower because RefNum(rawx) could be 1 or -1
     myBaseRingValue->myPower(RefDen(rawlhs), RefDen(rawx), n);  // call myPower because RefDen(rawx) could be 1 or -1
+    myBaseRingValue->myNormalizeFracNoGcd(RefNum(rawlhs),RefDen(rawlhs)); // ???ever useful???
+  }
+
+
+  void FractionFieldImpl::myPowerRingElemExp(RawPtr rawlhs, ConstRawPtr rawx, ConstRefRingElem pow) const
+  {
+    // Assert that we have a genuinely non-trivial case.
+    CoCoA_ASSERT(!myIsZero(rawx) && !myIsOne(rawx) && !myIsMinusOne(rawx));
+    // The result is naturally reduced (if the input is).
+    myBaseRingValue->myPower(RefNum(rawlhs), RefNum(rawx), pow);  // call myPower because RefNum(rawx) could be 1 or -1
+    myBaseRingValue->myPower(RefDen(rawlhs), RefDen(rawx), pow);  // call myPower because RefDen(rawx) could be 1 or -1
     myBaseRingValue->myNormalizeFracNoGcd(RefNum(rawlhs),RefDen(rawlhs)); // ???ever useful???
   }
 
