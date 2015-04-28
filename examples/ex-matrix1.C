@@ -36,7 +36,7 @@ matrix NewMatrixFromC(ring R, int cmat[4][4])
 void ExBasicOps(matrix M)
 {
   cout << "M = " << M << endl;
-  cout << "rank(M) = " << rank(M) << endl;
+  cout << "rank(M) = " << CoCoA::rank(M) << endl;
   cout << "det(M) = " << det(M) << endl;
 
   matrix InvM = inverse(M);  
