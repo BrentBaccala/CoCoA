@@ -58,6 +58,7 @@ public:
   void myLcm(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const;   ///< pp = lcm(pp1,pp2)
   void myRadical(RawPtr rawpp, ConstRawPtr rawpp1) const;                   ///< pp = radical(pp1)
   void myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long exp) const;   ///< pp = pp1^exp, assumes exp >= 0
+  void myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem exp) const;   ///< pp = pp1^exp, assumes exp >= 0
 
   bool myIsOne(ConstRawPtr rawpp) const;                                   ///< is pp = 1?
   bool myIsIndet(long& index, ConstRawPtr rawpp) const;                    ///< true iff pp is an indet
@@ -73,6 +74,7 @@ public:
   int myCmpWDegPartial(ConstRawPtr rawpp1, ConstRawPtr rawpp2, long) const; ///< as myCmpWDeg wrt the first weights
   long myExponent(ConstRawPtr rawpp, long indet) const;                    ///< exponent of indet in pp
   void myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const;    ///< EXP = exponent of indet in pp
+  void myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long i) const; ///< EXP = degree of ith indet in pp
   void myExponents(std::vector<long>& expv, ConstRawPtr rawpp) const;      ///< expv[i] = exponent(pp,i)
   void myBigExponents(std::vector<BigInt>& v, ConstRawPtr rawpp) const;    ///< get exponents, SHOULD BE myExponents ???
   void myOutputSelf(std::ostream& out) const;                              ///< out << PPM
@@ -330,6 +332,16 @@ void PPMonoidRingExpImpl::myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long
 }
 
 
+void PPMonoidRingExpImpl::myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem exp) const  // assumes exp >= 0
+{
+  PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
+
+  for (long i = 0; i < myNumIndets; ++i)
+    expv->exponents[i] = exp * expv1->exponents[i];
+}
+
+
 bool PPMonoidRingExpImpl::myIsOne(ConstRawPtr rawpp) const
 {
   const PPMonoidRingExpElem * const expv = myExpv(rawpp);
@@ -471,6 +483,16 @@ void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long ind
   if (! IsInteger(EXP, expv->exponents[indet])) {
     CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
   }
+}
+
+
+void PPMonoidRingExpImpl::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long indet) const
+{
+  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+
+  CoCoA_ASSERT(indet < myNumIndets);
+
+  EXP = expv->exponents[indet];
 }
 
 
@@ -739,22 +761,22 @@ class OrderedPolyRingBase : public RingDistrMPolyCleanImpl {
     return true;
   }
 
+  virtual int mySign(ConstRawPtr rawx) const {
+    for (auto it=myBeginIter(rawx); it != myEndIter(rawx); it++) {
+      return sign(coeff(it));
+    }
+    return 0;
+  }
+
   virtual int myCmp(ConstRawPtr rawx, ConstRawPtr rawy) const {
-    int result = 0;
     RawPtr rawdiff = myNew();
     mySub(rawdiff, rawx, rawy);
-    for (auto it=myBeginIter(rawdiff); it != myEndIter(rawdiff); it++) {
-      //return sign(coeff(it));
-      result = sign(coeff(it));
-      break;
-    }
-    //return 0;
+    int result = mySign(rawdiff);
     myDelete(rawdiff);
     return result;
   }
 #if 0
   virtual int myCmpAbs(ConstRawPtr rawx, ConstRawPtr rawy) const;                  ///< equiv to myCmp(abs(x),abs(y))
-  virtual int mySign(ConstRawPtr rawx) const;                                      ///< -1,0,+1 according as x <0,=0,>0
   virtual bool myFloor(BigInt& N, ConstRawPtr rawx) const;                         ///< true iff x is integer; put floor(x) in N};
 #endif
 };
@@ -773,6 +795,7 @@ void program()
 
   ring QQ = RingQQ();
   ring ExponentRing = NewOrderedPolyRing(QQ, vector<symbol> {symbol("p")});
+  MyRingElem p(ExponentRing, "p");
 
   //ring R = NewPolyRing(QQ, vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")});
   PPMonoid PPM = NewPPMonoidRing(vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")}, lex, ExponentRing);
@@ -802,6 +825,8 @@ void program()
   cout << rh << endl;
 
   cout << rh(e) << endl;
+
+  cout << power(x,p) << endl;
 
   cout << num(dx(dx(e)) - dt(e)) << endl;
 
