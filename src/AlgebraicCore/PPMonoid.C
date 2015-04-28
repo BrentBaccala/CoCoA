@@ -20,6 +20,7 @@
 #include "CoCoA/IntOperations.H"
 #include "CoCoA/OpenMath.H"
 #include "CoCoA/PPMonoidEvOv.H" //  for NewPPMonoid
+#include "CoCoA/PolyRing.H"     //  for IsIndet
 #include "CoCoA/assert.H"
 #include "CoCoA/convert.H"
 #include "CoCoA/degree.H"
@@ -147,11 +148,45 @@ namespace CoCoA
       myPowerBigExp(rawpp, rawpp1, EXP);
   }
 
+  // Assume inputs are mathematically valid (i.e. exp >= 0).
+  // Deal with all trivial cases; pass other cases to myPowerSmallExp or myPowerBigExp.
+  void PPMonoidBase::myPower(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem pow) const
+  {
+    BigInt N;
+
+    if (IsZero(pow))
+    {
+      myAssignOne(rawpp);  // note that 0^0 gives 1
+      return;
+    }
+    if (IsOne(pow) || myIsOne(rawpp1)) { myAssign(rawpp, rawpp1); return; }
+
+    if (IsInteger(N, pow)) {
+      if (N < 0) {
+	CoCoA_ERROR(ERR::NotUnit, "power(pp, N) and N < 0");
+      }
+      // Call myPowerSmallExp or myPowerBigExp depending on value of exponent.
+      long n;
+      if (IsConvertible(n, N))
+	myPowerSmallExp(rawpp, rawpp1, n);
+      else
+	myPowerBigExp(rawpp, rawpp1, N);
+    } else {
+      myPowerRingElem(rawpp, rawpp1, pow);
+    }
+  }
+
 
   // Default defn of virtual fn: just gives an error.
   void PPMonoidBase::myPowerBigExp(RawPtr /*rawpp*/, ConstRawPtr /*rawpp1*/, const BigInt& /*EXP*/) const
   {
     CoCoA_ERROR(ERR::ExpTooBig, "power(pp,N)");
+  }
+
+  // Default defn of virtual fn: just gives an error.
+  void PPMonoidBase::myPowerRingElem(RawPtr /*rawpp*/, ConstRawPtr /*rawpp1*/, ConstRefRingElem /*EXP*/) const
+  {
+    CoCoA_ERROR(ERR::BadArg, "power(pp,e)");
   }
 
 
@@ -209,20 +244,33 @@ namespace CoCoA
   }
 
 
+  void PPMonoidBase::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long i) const
+  {
+    BigInt d;
+    myBigExponent(d, rawpp, i);
+    EXP = d;
+  }
+
   // Generic PP printing routine.
   void PPMonoidBase::myOutput(std::ostream& out, ConstRawPtr rawpp) const
   {
     bool all0 = true;
-    BigInt d;
+    RingElem d;
+    BigInt D;
     for (long indet=0; indet < myNumIndets; ++indet)
     {
-      myBigExponent(d, rawpp, indet); // Genericity is more important than efficiency here.
+      myRingElemExponent(d, rawpp, indet); // Genericity is more important than efficiency here.
       if (IsZero(d)) continue;
       if (!all0) out << "*";
       all0 = false;
       out << myIndetSymbol(indet);
-      if (d > 1) out << "^" << d;
-      else if (d < 0) out << "^(" << d << ")"; // ...in case we ever allow negative exponents.
+      if (IsInteger(D, d)) {
+	if (D > 1) out << "^" << D;
+	else if (D < 0) out << "^(" << D << ")"; // ...in case we ever allow negative exponents.
+      } else {
+	if (IsPolyRing(owner(d)) && IsIndet(d)) out << "^" << d;
+	else out << "^(" << d << ")";
+      }
     }
     if (all0) out << "1";
   }
@@ -624,6 +672,14 @@ namespace CoCoA
   {
     if (EXP < 0)
       CoCoA_ERROR(ERR::NegExp, "power(pp, N) and N < 0");
+    PPMonoidElem ans(owner(pp));
+    owner(pp)->myPower(raw(ans), raw(pp), EXP);
+    return ans;
+  }
+
+
+  PPMonoidElem power(ConstRefPPMonoidElem pp, ConstRefRingElem EXP)                 // pp^EXP
+  {
     PPMonoidElem ans(owner(pp));
     owner(pp)->myPower(raw(ans), raw(pp), EXP);
     return ans;

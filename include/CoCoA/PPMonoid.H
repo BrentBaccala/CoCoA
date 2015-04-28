@@ -40,6 +40,7 @@ namespace CoCoA
   class OpenMathOutput; // fwd decl -- defined in OpenMath.H
   class degree;         // fwd decl -- defined in degree.H
   class matrix;         // fwd decl -- defined in matrix.H
+  class RingElem;	// fwd decl -- defined in ring.H
 
   class PPMonoidBase; // forward declaration for SmartPtrIRC
 
@@ -186,8 +187,10 @@ namespace CoCoA
     virtual void myRadical(RawPtr rawpp, ConstRawPtr rawpp1) const = 0;           ///< pp = radical(pp1)
     void myPower(RawPtr rawpp, ConstRawPtr rawpp1, long exp) const;               ///< pp = pp1^exp, assumes exp >= 0
     void myPower(RawPtr rawpp, ConstRawPtr rawpp1, const BigInt& EXP) const;          ///< pp = pp1^EXP, assumes EXP >= 0
+    void myPower(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem EXP) const;       ///< pp = pp1^EXP, assumes EXP >= 0
     virtual void myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long exp) const = 0;// pp = pp1^exp (non-trivial), assumes exp >= 0
     virtual void myPowerBigExp(RawPtr rawpp, ConstRawPtr rawpp1, const BigInt& EXP) const; ///< pp = pp1^EXP (non-triv, EXP large); default gives error
+    virtual void myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem EXP) const; ///< pp = pp1^EXP (non-integer EXP); default gives error
 
     virtual bool myIsOne(ConstRawPtr rawpp) const = 0;                            ///< is pp = 1?
     virtual bool myIsIndet(long& index, ConstRawPtr rawpp) const = 0;             ///< true iff pp is an indet
@@ -209,6 +212,7 @@ namespace CoCoA
     virtual int myCmpWDegPartial(ConstRawPtr rawpp1, ConstRawPtr rawpp2, long n) const = 0;      ///< <0, =0, >0 as wdeg(pp1) < = > wdeg(pp2) wrt the first n rows of weights
     virtual long myExponent(ConstRawPtr rawpp, long i) const = 0;                 ///< exponent of ith indet in pp
     virtual void myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long i) const = 0;      ///< EXP = degree of ith indet in pp
+    virtual void myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long i) const; ///< EXP = degree of ith indet in pp
 
     virtual void myExponents(std::vector<long>& v, ConstRawPtr rawpp) const = 0;  ///< get exponents, SHOULD BE vector<BigInt> ????
     virtual void myBigExponents(std::vector<BigInt>& v, ConstRawPtr rawpp) const = 0;  ///< get exponents, SHOULD BE myExponents ???
@@ -273,6 +277,7 @@ namespace CoCoA
   std::vector<long> indets(ConstRefPPMonoidElem pp);                          ///< list of indices of indets actually in pp
   PPMonoidElem power(ConstRefPPMonoidElem pp, long exp);                      ///< pp^exp
   PPMonoidElem power(ConstRefPPMonoidElem pp, const BigInt& EXP);             ///< pp^EXP
+  PPMonoidElem power(ConstRefPPMonoidElem pp, ConstRefRingElem EXP);          ///< pp^EXP
   PPMonoidElem root(ConstRefPPMonoidElem pp, const MachineInt& exp);          ///< pp^(1/exp)
   bool IsPower(ConstRefPPMonoidElem pp, const MachineInt& exp);               /// true iff pp = t^exp for some t
   bool IsCoprime(ConstRefPPMonoidElem pp1, ConstRefPPMonoidElem pp2);         ///< is gcd(pp1, pp2)=1?
