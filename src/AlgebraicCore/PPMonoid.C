@@ -246,9 +246,7 @@ namespace CoCoA
 
   void PPMonoidBase::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long i) const
   {
-    BigInt d;
-    myBigExponent(d, rawpp, i);
-    EXP = d;
+    EXP = myExponent(rawpp, i);
   }
 
   // Generic PP printing routine.
@@ -465,6 +463,15 @@ namespace CoCoA
       CoCoA_ERROR(ERR::BadIndetIndex, "BigExponent(PP)");
     BigInt ans;
     owner(pp)->myBigExponent(ans, raw(pp), indet);
+    return ans;
+  }
+
+  RingElem RingElemExponent(ConstRefPPMonoidElem pp, long indet)
+  {
+    if (indet >= NumIndets(owner(pp)))
+      CoCoA_ERROR(ERR::BadIndetIndex, "RingElemExponent(PP)");
+    RingElem ans;
+    owner(pp)->myRingElemExponent(ans, raw(pp), indet);
     return ans;
   }
 

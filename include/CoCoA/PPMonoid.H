@@ -242,6 +242,7 @@ namespace CoCoA
   int CmpWDegPartial(ConstRefPPMonoidElem pp1, ConstRefPPMonoidElem pp2, long n);   ///< <0 =0 >0 according as wdeg(t1) < = > wdeg(t2) wrt the first n rows of weights
   long exponent(ConstRefPPMonoidElem pp, long var);                  ///< exponent in pp of indet of index var
   BigInt BigExponent(ConstRefPPMonoidElem pp, long var);                  ///< exponent in pp of indet of index var
+  RingElem RingElemExponent(ConstRefPPMonoidElem pp, long var);      ///< exponent in pp of indet of index var
   void exponents(std::vector<long>& v, ConstRefPPMonoidElem pp);     ///< SHOULD BE vector<BigInt> ????
   void BigExponents(std::vector<BigInt>& v, ConstRefPPMonoidElem pp);     ///< SHOULD BE exponents? should return the vector ????
   void swap(RefPPMonoidElem pp1, RefPPMonoidElem pp2);               ///< swap(t1, t2);
