@@ -27,6 +27,7 @@
 #include "CoCoA/DUPFp.H"
 #include "CoCoA/OpenMath.H"
 #include "CoCoA/PPMonoidHom.H"
+#include "CoCoA/CanonicalHom.H"
 #include "CoCoA/QuotientRing.H" // for IsQuotientRing
 #include "CoCoA/ReductionCog.H"
 #include "CoCoA/RingDistrMPolyClean.H" // for NewPolyRing_DMP
@@ -502,24 +503,60 @@ namespace CoCoA
   {
     if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
     const long n = myNumIndets();
-    ring R = myCoeffRing();
     const SparsePolyRing P(this);
     vector<long> expv(n);
     exponents(expv, myLPP(rawx));
 
+    /* Differentiating x^n -> n*x^(n-1) requires multiplying monomials
+     * by exponents.
+     *
+     * Two cases to consider: the exponents are integers, or not
+     * (generic RingElems).
+     *
+     * The cases are handled separately due to the difficulty of
+     * multiplying RingElems from different rings, though we can
+     * always multiply by integers without explicit homomorphisms.
+     *
+     * We assume that non-integer exponents are all in the same ring,
+     * so we can multiply them without homomorphisms, although we
+     * don't know what that ring is in advance, which is why REscale
+     * is initialized to 0(ZZ) and not to 1 in the exponent ring.
+     *
+     * If REscale is used, then we use a CanonicalHom to inject
+     * it into the polynomial ring.
+     */
+
     RingElem ans(P);
     for (SparsePolyIter itf=myBeginIter(rawf); !IsEnded(itf); ++itf)
     {
-      BigInt scale(1);
+      RingElem REscale(P, 1);
+      bool REscale_valid = false;
+      BigInt BIscale(1);
+
       for (long indet=0; indet < n; ++indet)
         if (expv[indet] != 0)
         {
-          const long d = exponent(PP(itf), indet);
-          if (d < expv[indet]) { scale = 0; break; }
-          scale *= RangeFactorial(d-expv[indet]+1, d);
+          const RingElem d = RingElemExponent(PP(itf), indet);
+	  BigInt D;
+	  long dd;
+	  if (IsInteger(D, d) && IsConvertible(dd,D)) {
+	    if (dd < expv[indet]) { BIscale = 0; break; }
+	    BIscale *= RangeFactorial(dd-expv[indet]+1, dd);
+	  } else {
+	    for (long i=0; i<expv[indet]; i++) {
+	      if (REscale_valid) REscale *= (d-i);
+	      else REscale = (d-i);
+	      REscale_valid = true;
+	    }
+	  }
         }
-      if (IsZero(scale)) continue;
-      RingElem m(monomial(P, scale*coeff(itf), PP(itf)/myLPP(rawx)));
+      if (IsZero(REscale)) continue;
+      if (BIscale == 0) continue;
+
+      RingElem m(monomial(P, BIscale*coeff(itf), PP(itf)/myLPP(rawx)));
+      if (REscale_valid) {
+	m *= CanonicalHom(owner(REscale), P)(REscale);
+      }
       if (!IsZero(m)) myAppendClear(raw(ans), raw(m));
     }
     mySwap(raw(ans), rawlhs); // really an assignment
