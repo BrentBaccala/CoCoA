@@ -33,33 +33,33 @@ namespace CoCoA
   {
     if (domain == codomain) return IdentityHom(domain);
 
+    // Two easy cases:
+    if (IsZZ(domain)) return ZZEmbeddingHom(codomain);
+    if (IsQQ(domain)) return QQEmbeddingHom(codomain); // NB result is only a partial hom!!
+
     // Check codomain first, as this makes it possible to exploit certain "shortcuts"
     if (IsFractionField(codomain))
     {
-///      return EmbeddingHom(codomain)(CanonicalHom(domain, BaseRing(codomain)));
       if (domain == BaseRing(codomain))
         return EmbeddingHom(codomain);
-      goto CheckDomain;
+      else
+	return EmbeddingHom(codomain)(CanonicalHom(domain, BaseRing(codomain)));
     }
     if (IsPolyRing(codomain))
     {
-///      return CoeffEmbeddingHom(P)(CanonicalHom(domain, CoeffRing(P)));
       if (domain == CoeffRing(codomain))
         return CoeffEmbeddingHom(codomain);
-      goto CheckDomain;
+      else
+	return CoeffEmbeddingHom(codomain)(CanonicalHom(domain, CoeffRing(codomain)));
     }
     if (IsQuotientRing(codomain))
     {
       const QuotientRing QR = codomain;
-///      return QuotientingHom(QR)(CanonicalHom(domain, BaseRing(QR)));
       if (domain == BaseRing(QR))
         return QuotientingHom(QR);
-      goto CheckDomain;
+      else
+	return QuotientingHom(QR)(CanonicalHom(domain, BaseRing(QR)));
     }
-  CheckDomain:
-    // Two easy cases:
-    if (IsZZ(domain)) return ZZEmbeddingHom(codomain);
-    if (IsQQ(domain)) return QQEmbeddingHom(codomain); // NB result is only a partial hom!!
 
     CoCoA_ERROR(ERR::CanonicalHomFail, "CanonicalHom(R1,R2)");
     return IdentityHom(codomain); // Never executed; just to keep the compiler quiet.
