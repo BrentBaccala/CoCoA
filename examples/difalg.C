@@ -439,7 +439,7 @@ long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr rawpp) const
 
 void PPMonoidRingExpImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  //CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
 }
 
 
@@ -596,6 +596,18 @@ PPMonoid NewPPMonoidRing(const std::vector<symbol>& IndetNames, const PPOrdering
 {
   //return NewPPMonoidEv(IndetNames, ord.myCtor(len(IndetNames)));
   return NewPPMonoidRing(IndetNames, ord.myCtor(len(IndetNames)), ExponentRing);
+}
+
+symbol mksymbol(string name)
+{
+  return symbol(name);
+}
+
+PPMonoid NewPPMonoidRing(const std::vector<string>& IndetNames, const PPOrderingCtor& ord = lex, const ring& ExponentRing = RingZZ())
+{
+  std::vector<symbol> symbols;
+  transform(IndetNames.begin(), IndetNames.end(), back_inserter(symbols), mksymbol);
+  return NewPPMonoidRing(symbols, ord.myCtor(len(symbols)), ExponentRing);
 }
 
 
@@ -794,41 +806,66 @@ void program()
   cout << boolalpha; // so that bools print out as true/false
 
   ring QQ = RingQQ();
+
   ring ExponentRing = NewOrderedPolyRing(QQ, vector<symbol> {symbol("p")});
   MyRingElem p(ExponentRing, "p");
 
-  //ring R = NewPolyRing(QQ, vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")});
-  PPMonoid PPM = NewPPMonoidRing(vector<symbol> {symbol("x"), symbol("t"), symbol("z"), symbol("N"), symbol("Nx"), symbol("Nxx"), symbol("Nt"), symbol("D"), symbol("Dx"), symbol("Dxx"), symbol("Dt")}, lex, ExponentRing);
-  ring R = NewPolyRing(QQ, PPM);
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
+	"N", "Nx", "Nxx", "Nt", "D", "Dx", "Dxx", "Dt",
+	"f", "fx", "fxx", "ft", "q", "qx", "qxx", "qt"}, lex, ExponentRing);
+  ring R = NewPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
   MyRingElem x(K, "x");
   MyRingElem t(K, "t");
   MyRingElem z(K, "z");
+
   MyRingElem N(K, "N");
   MyRingElem Nx(K, "Nx");
   MyRingElem Nxx(K, "Nxx");
   MyRingElem Nt(K, "Nt");
+
   MyRingElem D(K, "D");
   MyRingElem Dx(K, "Dx");
   MyRingElem Dxx(K, "Dxx");
   MyRingElem Dt(K, "Dt");
 
-  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx});
+  MyRingElem f(K, "f");
+  MyRingElem fx(K, "fx");
+  MyRingElem fxx(K, "fxx");
+  MyRingElem ft(K, "ft");
 
-  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, N >> Nt, D >> Dt});
+  MyRingElem q(K, "q");
+  MyRingElem qx(K, "qx");
+  MyRingElem qxx(K, "qxx");
+  MyRingElem qt(K, "qt");
+
+  Differential dx(K, vector<RingHom> {x >> 1, t >> 0,
+	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx,
+	f >> fx, fx >> fxx, q >> qx, qx >> qxx});
+
+  Differential dt(K, vector<RingHom> {x >> 0, t >> 1,
+	N >> Nt, D >> Dt, f >> ft, q >> qt});
 
   MyRingElem e = N/D;
 
-  RingHom rh = N >> 1;
+  //RingHom rh = N >> 1;
+  //cout << rh << endl;
+  //cout << rh(e) << endl;
 
-  cout << rh << endl;
-
-  cout << rh(e) << endl;
-
-  cout << power(x,p) << endl;
+  //cout << power(x,p)/x << endl;
+  //cout << dx(power(x,p)*D) << endl;
+  //cout << deriv(power(x,p)*D,x) << endl;
+  //cout << deriv(power(N,p)*D,N) << endl;
 
   cout << num(dx(dx(e)) - dt(e)) << endl;
+
+  MyRingElem d = (power(f,p) * q);
+
+  cout << d << endl;
+  cout << dx(d) << endl;
+  cout << power(dx(d),2) << endl;
+  cout << dx(dx(d)) << endl;
 
 }
 
