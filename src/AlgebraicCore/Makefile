@@ -16,7 +16,7 @@ SRCS=time.C assert.C utils.C  utils_gmp.C  ProgressReporter.C  BuildInfo.C Threa
      bool3.C MachineInt.C BigInt.C BigRat.C IntOperations.C \
      convert.C  NumTheory.C  ToString.C  FloatApprox.C \
      random.C \
-     RingElemInput.C symbol.C OpenMath.C OpenMathXML.C \
+     RingElemInput.C symbol.C OpenMath.C OpenMathXML.C TeX.C \
      SmallFpImpl.C SmallFpLogImpl.C SmallFpDoubleImpl.C DUPFp.C \
      ring.C ideal.C FieldIdeal.C RingHom.C CanonicalHom.C apply.C \
      RingFp.C RingFpLog.C RingFpDouble.C RingZZ.C RingQQ.C RingTwinFloat.C \
