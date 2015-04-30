@@ -19,6 +19,7 @@
 
 #include "CoCoA/IntOperations.H"
 #include "CoCoA/OpenMath.H"
+#include "CoCoA/TeX.H"
 #include "CoCoA/PPMonoidEvOv.H" //  for NewPPMonoid
 #include "CoCoA/PolyRing.H"     //  for IsIndet
 #include "CoCoA/assert.H"
@@ -259,14 +260,16 @@ namespace CoCoA
     {
       myRingElemExponent(d, rawpp, indet); // Genericity is more important than efficiency here.
       if (IsZero(d)) continue;
-      if (!all0) out << "*";
+      if (!all0 && !TeX_mode(out)) out << "*";
       all0 = false;
       out << myIndetSymbol(indet);
       if (IsInteger(D, d)) {
-	if (D > 1) out << "^" << D;
+	if (TeX_mode(out) && (D != 1)) out << "^{" << D << "}";
+	else if (D > 1) out << "^" << D;
 	else if (D < 0) out << "^(" << D << ")"; // ...in case we ever allow negative exponents.
       } else {
-	if (IsPolyRing(owner(d)) && IsIndet(d)) out << "^" << d;
+	if (TeX_mode(out)) out << "^{" << d << "}";
+	else if (IsPolyRing(owner(d)) && IsIndet(d)) out << "^" << d;
 	else out << "^(" << d << ")";
       }
     }

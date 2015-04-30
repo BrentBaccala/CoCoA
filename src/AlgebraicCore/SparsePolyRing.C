@@ -26,6 +26,7 @@
 #include "CoCoA/SmallFpImpl.H"
 #include "CoCoA/DUPFp.H"
 #include "CoCoA/OpenMath.H"
+#include "CoCoA/TeX.H"
 #include "CoCoA/PPMonoidHom.H"
 #include "CoCoA/CanonicalHom.H"
 #include "CoCoA/QuotientRing.H" // for IsQuotientRing
@@ -620,7 +621,7 @@ namespace CoCoA
       out << '(' << c << ')';
 
     PrintPP:      // ---- PP ----
-      if (PrintStar)  out << '*';
+      if (PrintStar && !TeX_mode(out))  out << '*';
       out << pp;
     }
   }
@@ -630,6 +631,7 @@ namespace CoCoA
   {
     long NoUse;
     if (myIsIndet(NoUse, rawx)) return true;
+    if (myIsMonomial(rawx)) return true;
     if (!myIsConstant(rawx)) return false;
     return myCoeffRing()->myIsPrintAtom(raw(myLC(rawx)));
   }
