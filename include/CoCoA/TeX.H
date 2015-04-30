@@ -30,9 +30,11 @@ namespace CoCoA
 
   bool TeX_mode(std::ios_base& s);
 
+  std::ostream& TeX(std::ostream& os);
+
   typedef std::ostream& (* ios_manipulator) (std::ostream&);
 
-  ios_manipulator TeX(bool mode = true);
+  ios_manipulator TeX(bool mode);
 
 } // end of namespace CoCoA
 

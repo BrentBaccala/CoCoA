@@ -40,7 +40,7 @@ namespace CoCoA
     TeX_flag_ref(s) = n;
   }
 
-  std::ostream& TeXon(std::ostream& os) {
+  std::ostream& TeX(std::ostream& os) {
     set_TeX_flag(os, true);
     return os;
   }
@@ -51,7 +51,7 @@ namespace CoCoA
   }
 
   ios_manipulator TeX(bool mode) {
-    if (mode) return TeXon;
+    if (mode) return TeX;
     else return TeXoff;
   }
 
