@@ -119,7 +119,7 @@ do
        echo -e "  --recall\t\tprint out the configure command given last time"
        echo -e "  --with-cxx=ARG\tspecify name of compiler [default: g++]"
        echo -e "\t\t\t(or specify via environment variable CXX)"
-       echo -e "  --with-cxxflags=ARG\tspecify compilation flags [default: \"-Wall -pedantic\"]"
+       echo -e "  --with-cxxflags=ARG\tspecify compilation flags [default: \"-Wall -pedantic --std=c++11\"]"
        echo -e "\t\t\t(or specify via environment variable CXXFLAGS)"
        echo -e "  --with-libgmp=ARG\tspecify location of the file libgmp.a (or libgmp.so)"
        echo -e "\t\t\t[default is to search]"
@@ -614,7 +614,7 @@ then
   if [ -z "$CXXFLAGS" ]
   then
     FPIC=`$SCRIPT_DIR/fpic-flag.sh "$CXX"`
-    CXXFLAGS="-Wall -pedantic $FPIC"
+    CXXFLAGS="-Wall -pedantic --std=c++11 $FPIC"
   fi
 else
   OPT_FLAG=-O
