@@ -16,6 +16,8 @@
 //   along with CoCoALib.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#if 0
+
 #include "CoCoA/debug_new.H"
 
 #include <cstddef>
@@ -244,6 +246,8 @@ void operator delete(void *ptr) throw ()
   for (size_t i=0; i < intsize+2*MARGIN; ++i) block[i] = 1122334455;
   free(block);
 }
+
+#endif
 
 
 // RCS header/log in the next few lines
