@@ -241,7 +241,6 @@ void PPMonoidRingExpImpl::myMul(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
   const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
   for (long i=0; i < myNumIndets; ++i)
     {
-      CoCoA_ASSERT("Exponent Overflow" && expv1[i] <= std::numeric_limits<SmallExponent_t>::max()-expv2[i]);
       expv->exponents[i] = expv1->exponents[i] + expv2->exponents[i];
     }
 }
@@ -265,7 +264,7 @@ void PPMonoidRingExpImpl::myDiv(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
 
   for (long i=0; i < myNumIndets; ++i)
     {
-      CoCoA_ASSERT("Exponent Underflow" && expv1[i] >= expv2[i]);
+      CoCoA_ASSERT("Exponent Underflow" && expv1->exponents[i] >= expv2->exponents[i]);
       expv->exponents[i] = expv1->exponents[i] - expv2->exponents[i];
     }
 }
@@ -535,7 +534,7 @@ void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRa
   const PPMonoidRingExpElem * const expv = myExpv(rawpp);
   BigInt N;
 
-  CoCoA_ASSERT(len(expv) == myNumIndets);
+  CoCoA_ASSERT(len(expv->exponents) == myNumIndets);
 
   // Run this loop twice so we don't modify the vector if there's an exception
 
