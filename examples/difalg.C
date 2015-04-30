@@ -803,6 +803,7 @@ void program()
   GlobalManager CoCoAFoundations;
 
   cout << boolalpha; // so that bools print out as true/false
+  cout << TeX;
 
   ring QQ = RingQQ();
 
@@ -810,8 +811,8 @@ void program()
   MyRingElem p(ExponentRing, "p");
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
-	"N", "Nx", "Nxx", "Nt", "D", "Dx", "Dxx", "Dt",
-	"f", "fx", "fxx", "ft", "q", "qx", "qxx", "qt"}, lex, ExponentRing);
+	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t",
+	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t"}, lex, ExponentRing);
   ring R = NewPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
@@ -820,24 +821,24 @@ void program()
   MyRingElem z(K, "z");
 
   MyRingElem N(K, "N");
-  MyRingElem Nx(K, "Nx");
-  MyRingElem Nxx(K, "Nxx");
-  MyRingElem Nt(K, "Nt");
+  MyRingElem Nx(K, "N_x");
+  MyRingElem Nxx(K, "N_{xx}");
+  MyRingElem Nt(K, "N_t");
 
   MyRingElem D(K, "D");
-  MyRingElem Dx(K, "Dx");
-  MyRingElem Dxx(K, "Dxx");
-  MyRingElem Dt(K, "Dt");
+  MyRingElem Dx(K, "D_x");
+  MyRingElem Dxx(K, "D_{xx}");
+  MyRingElem Dt(K, "D_t");
 
   MyRingElem f(K, "f");
-  MyRingElem fx(K, "fx");
-  MyRingElem fxx(K, "fxx");
-  MyRingElem ft(K, "ft");
+  MyRingElem fx(K, "f_x");
+  MyRingElem fxx(K, "f_{xx}");
+  MyRingElem ft(K, "f_t");
 
   MyRingElem q(K, "q");
-  MyRingElem qx(K, "qx");
-  MyRingElem qxx(K, "qxx");
-  MyRingElem qt(K, "qt");
+  MyRingElem qx(K, "q_x");
+  MyRingElem qxx(K, "q_{xx}");
+  MyRingElem qt(K, "q_t");
 
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx,
