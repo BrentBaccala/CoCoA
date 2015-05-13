@@ -1896,8 +1896,8 @@ namespace
       ConstRefPPMonoidElem t(PP(i));
       for (long ind=0; ind < NumInd; ++ind)
       {
-        const long d = exponent(t, ind); // ??? should we compute exponents?
-        if (d == 0) continue;
+        const RingElem d = RingElemExponent(t, ind); // ??? should we compute exponents?
+        if (IsZero(d)) continue;
         SummandImage *= power(IndetImages[ind], d);
       }
       //        SparsePolyRingPtr(S)->myAddClear(raw(ans), raw(SummandImage));
@@ -1919,8 +1919,8 @@ namespace
       ConstRefPPMonoidElem t(PP(i));
       for (long ind=0; ind < NumInd; ++ind)
       {
-        const long d = exponent(t, ind); // ??? should we compute exponents?
-        if (d == 0) continue;
+        const RingElem d = RingElemExponent(t, ind); // ??? should we compute exponents?
+        if (IsZero(d)) continue;
         SummandImage *= power(IndetImages[ind], d);
       }
       S->myAdd(raw(image), raw(image), raw(SummandImage));
