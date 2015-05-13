@@ -23,7 +23,7 @@ SRCS=time.C assert.C utils.C  utils_gmp.C  ProgressReporter.C  BuildInfo.C Threa
      QuotientRing.C FractionField.C PolyRing.C SparsePolyRing.C \
      degree.C PPOrdering.C  PPMonoid.C  PPMonoidHom.C \
      DivMask.C OrdvArith.C PPWithMask.C \
-     PPMonoidEv.C PPMonoidEvOv.C PPMonoidOv.C PPMonoidSparse.C \
+     PPMonoidEv.C PPMonoidEvOv.C PPMonoidOv.C PPMonoidSparse.C PPMonoidNested.C \
      QBGenerator.C  QuasiPoly.C \
      matrix.C  MatrixOperations.C  DenseMatrix.C  MatrixView.C \
      MatrixForOrdering.C  MatrixSpecial.C\
