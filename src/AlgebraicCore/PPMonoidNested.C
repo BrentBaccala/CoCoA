@@ -169,7 +169,7 @@ PPMonoidElemRawPtr PPMonoidNestedImpl::myNew() const
 
 PPMonoidElemRawPtr PPMonoidNestedImpl::myNew(PPMonoidElemConstRawPtr rawcopypp) const
 {
-  PPMonoidElemRawPtr rawpp(new PPMonoidNestedElem(nestedPPM->myNew(rawcopypp), numExtraIndets));
+  PPMonoidElemRawPtr rawpp(new PPMonoidNestedElem(nestedPPM->myNew(), numExtraIndets));
   myAssign(rawpp, rawcopypp); // cannot throw
   return rawpp;
 }
@@ -221,7 +221,9 @@ void PPMonoidNestedImpl::myAssign(RawPtr rawpp, const vector<long>& expv1) const
 
 void PPMonoidNestedImpl::myDelete(RawPtr rawpp) const
 {
-  delete myElem(rawpp);
+  PPMonoidNestedElem * const elem = myElem(rawpp);
+  nestedPPM->myDelete(elem->nestedRawElem);
+  delete elem;
 }
 
 
