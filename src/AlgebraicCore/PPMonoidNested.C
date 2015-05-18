@@ -234,6 +234,7 @@ void PPMonoidNestedImpl::mySwap(RawPtr rawpp1, RawPtr rawpp2) const
   PPMonoidNestedElem * const elem1 = myElem(rawpp1);
   PPMonoidNestedElem * const elem2 = myElem(rawpp2);
 
+  nestedPPM->mySwap(elem1->nestedRawElem, elem2->nestedRawElem);
   elem1->exponents.swap(elem2->exponents);
 }
 
