@@ -497,7 +497,7 @@ long PPMonoidNestedImpl::myStdDeg(ConstRawPtr rawpp) const
   const PPMonoidNestedElem * const elem = myElem(rawpp);
   long degree = nestedPPM->myStdDeg(elem->nestedRawElem);
 
-  for (long i=0; i<myNumIndets; ++i) {
+  for (long i=0; i<numExtraIndets; ++i) {
     degree += elem->exponents[i];
   }
 
