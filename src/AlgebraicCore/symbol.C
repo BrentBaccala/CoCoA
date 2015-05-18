@@ -87,6 +87,7 @@ namespace CoCoA
   bool symbol::IsValidHead(const std::string& head)
   {
     if (head.empty() || !IsValidFirstChar(head[0])) return false;
+    return true;
     const long n = len(head);
     for (long i=1; i < n; ++i)
     {
