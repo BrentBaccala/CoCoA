@@ -870,6 +870,7 @@ void program()
   cout << dx(d) << endl;
   cout << power(dx(d),2) << endl;
   cout << dx(dx(d)) << endl;
+  cout << dx(dx(d))/power(f,p-2) << endl;
 
 }
 
