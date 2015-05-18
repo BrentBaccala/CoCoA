@@ -623,10 +623,15 @@ void PPMonoidNestedImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRaw
 }
 
 
+/* DivMasks are used for fast divisibility checks; they preclude
+ * divisibility but don't guarantee it, so we can ignore our extra
+ * indeterminates and use the underlying implementation.
+ */
+
 void PPMonoidNestedImpl::myComputeDivMask(DivMask& dm, const DivMaskRule& DivMaskImpl, ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "computeDivMask in PPMonoidNested");
-  /* DivMaskImpl->myAssignFromExpv(dm, myElem(rawpp), myNumIndets); */
+  const PPMonoidNestedElem * const elem = myElem(rawpp);
+  nestedPPM->myComputeDivMask(dm, DivMaskImpl, elem->nestedRawElem);
 }
 
 
