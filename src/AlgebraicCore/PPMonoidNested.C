@@ -605,7 +605,7 @@ void PPMonoidNestedImpl::myComputeDivMask(DivMask& dm, const DivMaskRule& DivMas
 
 void PPMonoidNestedImpl::myOutputSelf(std::ostream& out) const
 {
-  out << "PPMonoidEv(" << myNumIndets << ", " << myOrd <<")";
+  out << "PPMonoidNested(" << numNestedIndets << "+" << numExtraIndets << ", " << myOrd <<")";
 }
 
 
