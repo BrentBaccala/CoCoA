@@ -115,9 +115,7 @@ namespace CoCoA
   void GPair::myComplete()
   {
     const SparsePolyRing P = owner(myOrdPoly);
-    std::vector<long> expv;
-    exponents(expv, PP(myLCMwMask));
-    myOrdPoly = monomial(P, 1, expv);
+    myOrdPoly = monomial(P, 1, PP(myLCMwMask));
     myWDeg = wdeg(PP(myLCMwMask));
     mySugar = NewSugar(*this);
     //  myStdDeg=GRI.TmpStdDeg(PP(myLCMwMask));  // ANNA is this used??
