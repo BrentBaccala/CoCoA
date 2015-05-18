@@ -374,7 +374,7 @@ bool PPMonoidRingExpImpl::myIsCoprime(ConstRawPtr rawpp1, ConstRawPtr rawpp2) co
   const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (! IsZero(expv1->exponents[i]) != 0 && ! IsZero(expv2->exponents[i])) return false;
+    if (! IsZero(expv1->exponents[i]) && ! IsZero(expv2->exponents[i])) return false;
 
   return true;
 }
