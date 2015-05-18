@@ -6,7 +6,9 @@ using namespace std;
 
 /* PPMonoidRingExpImpl
  *
- * A PPMonoid whose exponents are elements in a ring that is also an ordered domain.
+ * A PPMonoid whose exponents are elements in a ring that is also an
+ * ordered domain.  Only "positive" exponents are allowed (positive in
+ * the sense that they compare greater than zero).
  */
 
 class PPMonoidRingExpImpl;
