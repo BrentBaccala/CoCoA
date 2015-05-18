@@ -354,6 +354,21 @@ void PPMonoidNestedImpl::myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long 
 }
 
 
+void PPMonoidNestedImpl::myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem EXP) const  // assumes exp >= 0
+{
+  PPMonoidNestedElem * const elem = myElem(rawpp);
+  const PPMonoidNestedElem * const elem1 = myElem(rawpp1);
+
+  nestedPPM->myPowerRingElem(elem->nestedRawElem, elem1->nestedRawElem, EXP);
+
+  for (long i = 0; i < numExtraIndets; ++i) {
+    if (elem->exponents[i] != 0) {
+      CoCoA_ERROR(ERR::BadArg, "power(pp,e)");
+    }
+  }
+}
+
+
 bool PPMonoidNestedImpl::myIsOne(ConstRawPtr rawpp) const
 {
   const PPMonoidNestedElem * const elem = myElem(rawpp);
@@ -555,6 +570,17 @@ long PPMonoidNestedImpl::myExponent(ConstRawPtr rawpp, long indet) const
 void PPMonoidNestedImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const
 {
   EXP = myExponent(rawpp, indet);
+}
+
+void PPMonoidNestedImpl::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long indet) const
+{
+  const PPMonoidNestedElem * const elem = myElem(rawpp);
+
+  if (indet < numNestedIndets) {
+    nestedPPM->myRingElemExponent(EXP, elem->nestedRawElem, indet);
+  } else {
+    EXP = elem->exponents[indet - numNestedIndets];
+  }
 }
 
 

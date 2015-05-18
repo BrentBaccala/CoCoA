@@ -84,6 +84,7 @@ public:
   void myLcm(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const;   ///< pp = lcm(pp1,pp2)
   void myRadical(RawPtr rawpp, ConstRawPtr rawpp1) const;                   ///< pp = radical(pp1)
   void myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long exp) const;   ///< pp = pp1^exp, assumes exp >= 0
+  void myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem EXP) const; ///< pp = pp1^EXP (non-integer EXP
 
   bool myIsOne(ConstRawPtr rawpp) const;                                   ///< is pp = 1?
   bool myIsIndet(long& index, ConstRawPtr rawpp) const;                    ///< true iff pp is an indet
@@ -101,6 +102,7 @@ public:
   void myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const;    ///< EXP = exponent of indet in pp
   void myExponents(std::vector<long>& expv, ConstRawPtr rawpp) const;      ///< expv[i] = exponent(pp,i)
   void myBigExponents(std::vector<BigInt>& v, ConstRawPtr rawpp) const;    ///< get exponents, SHOULD BE myExponents ???
+  void myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long i) const; ///< EXP = degree of ith indet in pp
   void myOutputSelf(std::ostream& out) const;                              ///< out << PPM
   // INHERITED DEFINITION of virtual  void myOutput(std::ostream& out, ConstRawPtr rawpp) const;
   void myDebugPrint(std::ostream& out, ConstRawPtr rawpp) const;           ///< print pp in debugging format???
