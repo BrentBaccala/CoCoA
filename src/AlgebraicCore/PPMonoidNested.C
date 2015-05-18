@@ -525,11 +525,8 @@ void PPMonoidNestedImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
 {
   const PPMonoidNestedElem * const elem = myElem(rawpp);
 
-  //degree deg(GradingDim(nestedPPM));
-
   // Only two possibilities: we have shifts and numExtraIndets = GradingDim + 1, or we don't, and numExtraIndets = 1
 
-  //if (numExtraIndets == GradingDim(nestedPPM) + 1) {
   if (numExtraIndets > 1) {
     degree shifts(GradingDim(nestedPPM));
     for (long i=0; i < numExtraIndets-1; ++i) {
@@ -538,8 +535,6 @@ void PPMonoidNestedImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
     nestedPPM->myWDeg(d, elem->nestedRawElem);
     d += shifts;
   }
-
-  // CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidNested");
 }
 
 
