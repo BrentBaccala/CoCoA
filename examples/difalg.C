@@ -432,25 +432,25 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 
 long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  CoCoA_ERROR(ERR::NYI, "myStdDeg in PPMonoidRingExp");
 }
 
 
 void PPMonoidRingExpImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
 {
-  //CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  CoCoA_ERROR(ERR::NYI, "myWDeg in PPMonoidRingExp");
 }
 
 
 int PPMonoidRingExpImpl::myCmpWDeg(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  CoCoA_ERROR(ERR::NYI, "myCmpWDeg in PPMonoidRingExp");
 }
 
 
 int PPMonoidRingExpImpl::myCmpWDegPartial(ConstRawPtr rawpp1, ConstRawPtr rawpp2, long i) const
 {
-  CoCoA_ERROR(ERR::NYI, "PPMonoid comparison in PPMonoidRingExp");
+  CoCoA_ERROR(ERR::NYI, "myCmpWDegPartial comparison in PPMonoidRingExp");
 }
 
 
