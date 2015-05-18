@@ -432,27 +432,27 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 }
 
 
-long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr rawpp) const
+long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr) const
 {
   // Returning zero here makes this act like a ungraded ring
   return 0;
 }
 
 
-void PPMonoidRingExpImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
+void PPMonoidRingExpImpl::myWDeg(degree& d, ConstRawPtr) const
 {
   // This is an ungraded ring.
   CoCoA_ASSERT(GradingDim(d) == 0);
 }
 
 
-int PPMonoidRingExpImpl::myCmpWDeg(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
+int PPMonoidRingExpImpl::myCmpWDeg(ConstRawPtr, ConstRawPtr) const
 {
   CoCoA_ERROR(ERR::NYI, "myCmpWDeg in PPMonoidRingExp");
 }
 
 
-int PPMonoidRingExpImpl::myCmpWDegPartial(ConstRawPtr rawpp1, ConstRawPtr rawpp2, long i) const
+int PPMonoidRingExpImpl::myCmpWDegPartial(ConstRawPtr, ConstRawPtr, long) const
 {
   CoCoA_ERROR(ERR::NYI, "myCmpWDegPartial comparison in PPMonoidRingExp");
 }
@@ -556,7 +556,7 @@ void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRa
 }
 
 
-void PPMonoidRingExpImpl::myComputeDivMask(DivMask& dm, const DivMaskRule& DivMaskImpl, ConstRawPtr rawpp) const
+void PPMonoidRingExpImpl::myComputeDivMask(DivMask&, const DivMaskRule&, ConstRawPtr) const
 {
   // DivMasks are used for "fast" division checks.  We can do nothing here,
   // which forces all division checks to be "slow", i.e. use myIsDivisible()
