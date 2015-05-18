@@ -558,8 +558,8 @@ void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRa
 
 void PPMonoidRingExpImpl::myComputeDivMask(DivMask& dm, const DivMaskRule& DivMaskImpl, ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "computeDivMask in PPMonoidRingExp");
-  /* DivMaskImpl->myAssignFromExpv(dm, myExpv(rawpp), myNumIndets); */
+  // DivMasks are used for "fast" division checks.  We can do nothing here,
+  // which forces all division checks to be "slow", i.e. use myIsDivisible()
 }
 
 
