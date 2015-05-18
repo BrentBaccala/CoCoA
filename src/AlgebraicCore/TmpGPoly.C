@@ -62,9 +62,7 @@ namespace CoCoA
     myWDeg(wdeg(LPP(the_p))),
     mySugar(uninitialized)
   {
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     myIsActive = true;
     //    IamMinimalGen = false;
     myMinimalGenLevel = -1;
@@ -88,9 +86,7 @@ namespace CoCoA
     myWDeg(wdeg(theLPP)),
     mySugar(uninitialized)
   {
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     myIsActive = true;
     //    IamMinimalGen = false;
     myMinimalGenLevel = -1;
@@ -114,9 +110,7 @@ namespace CoCoA
     myWDeg(wdeg(theLPP)),
     mySugar(uninitialized)
   {
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     swap(the_p,myPolyValue);
     myIsActive = true;
     //    IamMinimalGen = false;
@@ -139,9 +133,7 @@ namespace CoCoA
     myWDeg(wdeg(LPP(the_p))),
     mySugar(uninitialized)
   {
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     swap(the_p,myPolyValue);
     myIsActive = true;
     //    IamMinimalGen = false;
@@ -261,8 +253,8 @@ void GPoly::myUpdateLenLPPLCDegComp()
   myLen = NumTerms(myPolyValue);
   if (IsZero(*this)) // the following things are effectively undefined
   {
-    myLPPForDivwMask.myAssign(one(owner(myLPPForDiv())));
     AssignOne(myLPPForOrd);
+    myLPPForDivwMask = myLPPForOrd;
     myLCValue = 0;
 /// JAA BUG???    myWDeg = 0;      // ANNA delete???
     myComponent = 0; // ANNA delete ???
@@ -270,9 +262,7 @@ void GPoly::myUpdateLenLPPLCDegComp()
   else
   {
     myLPPForOrd = LPP(myPoly());//DYN here the new LPP will be computed
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     myLCValue=LC(myPoly());//DYN here the new LC will be computed
     myWDeg = wdeg(myLPPForOrd);
     myComponent = myGRingInfoValue.myComponent(myLPPForDiv());
@@ -334,9 +324,7 @@ clog << "operator+=: result " <<myPoly<< endl;
   {
     // MultPP is in PPM(owner(GPoly))
     myLPPForOrd *= MultPP; // should we make it more efficient?
-    vector<long> expv;
-    exponents(expv, myLPPForOrd);
-    myLPPForDivwMask = expv;
+    myLPPForDivwMask = myLPPForOrd;
     SparsePolyRingPtr(owner(*this))->myMulByPP(raw(myPolyValue), raw(MultPP)); // (..) because of g++ parser bug
     myWDeg = wdeg(myLPPForOrd); // should we make it more efficient?
     mySugar->myMul(MultPP);
@@ -441,9 +429,7 @@ clog << "operator+=: result " <<myPoly<< endl;
       }
       swap(myPolyValue, result);
       myLPPForOrd /= IndetPower(PPM(P), DH_var_index, mc_deg);
-      vector<long> expv;
-      exponents(expv, myLPPForOrd);
-      myLPPForDivwMask = expv;
+      myLPPForDivwMask = myLPPForOrd;
       myWDeg = wdeg(myLPPForOrd);
     }
     // myComponent and myLC... stay the same
@@ -469,9 +455,7 @@ clog << "operator+=: result " <<myPoly<< endl;
       }
       swap(myPolyValue, result);
       myLPPForOrd /= IndetPower(PPM(P), DH_var_index, mc_deg);
-      vector<long> expv;
-      exponents(expv, myLPPForOrd);
-      myLPPForDivwMask = expv;
+      myLPPForDivwMask = myLPPForOrd;
       myWDeg = wdeg(myLPPForOrd);
     }
     // myComponent and myRing... stay the same
