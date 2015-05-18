@@ -565,7 +565,7 @@ void PPMonoidRingExpImpl::myComputeDivMask(DivMask& dm, const DivMaskRule& DivMa
 
 void PPMonoidRingExpImpl::myOutputSelf(std::ostream& out) const
 {
-  out << "PPMonoidEv(" << myNumIndets << ", " << myOrd <<")";
+  out << "PPMonoidRingExp(" << myNumIndets << ", " << myOrd <<")";
 }
 
 
@@ -620,8 +620,10 @@ PPMonoid NewPPMonoidRing(const std::vector<string>& IndetNames, const PPOrdering
  *
  * NOT a homomorphism (Leibniz rule doesn't preserve multiplication)
  *
- * constructor takes a ring and a vector of substitution homomorphisms
- * that tell us how the indeterminates map
+ * Constructor takes a ring and a vector of substitution homomorphisms
+ * that tell us how the indeterminates map.  It's done that way to
+ * make usage syntax easy; we don't actually use the homomorphisms as
+ * homomorphisms.
  */
 
 class Differential {
@@ -709,13 +711,10 @@ public:
   }
 };
 
-/* MyRingElem - extended version of RingElem
+/* OrderedPolyRingElem - a polynomial ring constructed with an ordered coefficient ring
  *
- * 1. constructor MyRingElem(ring, string) as shorthand for RingElem(ring, symbol("string"))
- *
- * 2. Substitution homomorphism created with "x >> y" syntax ("x" must be an indeterminate)
- *    (only polynomial rings and their fraction fields are supported)
- *
+ * Ordering is based on the coefficient of the most significant
+ * monomial, according to the PPMonoid ordering.
  */
 
 class OrderedPolyRingBase : public RingDistrMPolyCleanImpl {
@@ -748,7 +747,6 @@ class OrderedPolyRingBase : public RingDistrMPolyCleanImpl {
 
 SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbol>& IndetNames, const PPOrderingCtor& ord = lex)
 {
-  //return SparsePolyRing(new RingDistrMPolyCleanImpl(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
   return SparsePolyRing(new OrderedPolyRingBase(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
 }
 
