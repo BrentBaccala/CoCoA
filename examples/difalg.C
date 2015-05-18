@@ -434,13 +434,15 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 
 long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "myStdDeg in PPMonoidRingExp");
+  // Returning zero here makes this act like a ungraded ring
+  return 0;
 }
 
 
 void PPMonoidRingExpImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
 {
-  CoCoA_ERROR(ERR::NYI, "myWDeg in PPMonoidRingExp");
+  // This is an ungraded ring.
+  CoCoA_ASSERT(GradingDim(d) == 0);
 }
 
 
