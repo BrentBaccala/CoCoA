@@ -63,6 +63,9 @@ ring element.
 a zero divisor in the ring; if it does fail then an exception is
 thrown (with code ``ERR::DivByZero``).
 
+**Note 3:** Passing a string as the constructor's second argument will automatically
+promote it to a symbol.
+
 You can create a copy of a ring element in the usual way:
  | ``RingElem r(r2);``    | a copy of ``r2``, element of the same ring |
  | ``RingElem r = r2;``   | (alternative syntax, discouraged) |
@@ -312,7 +315,10 @@ Let ``v`` denote a const vector of elements of ``P``.
 - ``deriv(f1, var)``   -- formal derivative of ``f1`` wrt. indet having index ``var``.
 - ``deriv(f1, x)``     -- derivative of ``f1`` w.r.t. ``x``, ``x`` must be an indeterminate
                          (also works for f1 in ``FractionField`` of a ``PolyRing``)
--
+- ``f1 << f2``         -- creates a RingHom mapping f1 (which must be an indeterminate)
+-                         to f2 and leaving all other indeterminates fixed
+- ``f1 << long``       -- creates a RingHom mapping f1 (which must be an indeterminate)
+-                         to the integer's image in the ring
 
 NOTE: to compute the //weighted degree// of a polynomial use the function
 ``wdeg`` defined for ``RingElem`` of a [[SparsePolyRing]] (see below).

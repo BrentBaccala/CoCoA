@@ -23,6 +23,7 @@
 #include "CoCoA/SmartPtrIRC.H"
 #include "CoCoA/assert.H"
 #include "CoCoA/bool3.H"
+#include "CoCoA/symbol.H"
 
 #include "gmp.h"
 
@@ -38,7 +39,6 @@ namespace CoCoA
   class bool3;          // fwd decl -- defined in bool3.H
   class OpenMathOutput; // fwd decl -- defined in OpenMath.H
   class OpenMathInput;  // fwd decl -- defined in OpenMath.H
-  class symbol;         // fwd decl -- defined in symbol.H
   class ideal;          // fwd decl -- defined in ideal.H
   class RingHom;        // fwd decl -- defined in RingHom.H
   class BigInt;         // fwd decl -- defined in BigInt.H
@@ -124,6 +124,7 @@ namespace CoCoA
     RingElem(const ring& R, const BigRat& Q);
     RingElem(const ring& R, const RingElemRawPtr rawx);
     RingElem(const ring& R, const symbol& s);
+    RingElem(const ring& R, const std::string& s);
     RingElem(const ring& R, ConstRefRingElem rhs); // maps rhs into R
     RingElem(const RingElem& copy); // have to define this, default version is unsuitable, cannot be explicit as it is needed in function return
     RingElem(ConstRefRingElem copy); // becomes rather a hassle if made explicit
@@ -295,6 +296,8 @@ namespace CoCoA
   RingElem& operator-=(RingElem&, ConstRefRingElem);
   RingElem& operator*=(RingElem&, ConstRefRingElem);
   RingElem& operator/=(RingElem&, ConstRefRingElem);
+  RingHom operator>>(ConstRefRingElem, ConstRefRingElem);
+  RingHom operator>>(ConstRefRingElem, long);
   std::ostream& operator<<(std::ostream&, ConstRefRingElem);
 //??? see io.H  std::ostream& operator<<(std::ostream&, const std::vector<RingElem>&);
   OpenMathOutput& operator<<(OpenMathOutput& OMOut, ConstRefRingElem);
@@ -549,6 +552,11 @@ namespace CoCoA
 
   inline RingElem::RingElem(const ring& R, RingElemRawPtr rawx):
       RingElemAlias(R, rawx)
+  {}
+
+
+  inline RingElem::RingElem(const ring& R, const std::string& s):
+      RingElem(R, symbol(s))
   {}
 
 

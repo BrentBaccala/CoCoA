@@ -718,56 +718,6 @@ public:
  *
  */
 
-class MyRingElem : public RingElem {
-public:
-  using RingElem::RingElem;
-
-  MyRingElem(ring R, std::string str) : RingElem(R, symbol(str)) {}
-
-  RingHom operator>>(RingElem target) {
-    long index;
-    RingElem indet;
-    ring R;
-
-    if (owner(*this) != owner(target)) {
-      CoCoA_ERROR(ERR::MixedRings, "creating substitution homomorphism");
-    }
-
-    if (IsFractionField(owner(*this)) && IsOne(den(*this))) {
-      indet = num(*this);
-    } else {
-      indet = *this;
-    }
-
-    R = owner(indet);
-    if (! IsPolyRing(R)) {
-      CoCoA_ERROR(ERR::NotPolyRing, "creating substitution homomorphism");
-    }
-    if (! IsIndet(index, indet)) {
-      CoCoA_ERROR(ERR::NotIndet, "creating substitution homomorphism");
-    }
-
-    vector<RingElem> targets = indets(R);
-
-    if (R != owner(target)) {
-      RingHom RtoT = CanonicalHom(R, owner(target));
-      for (auto &v: targets) v = RtoT(v);
-    }
-
-    targets[index] = target;
-
-    if (IsFractionField(owner(*this))) {
-      return InducedHom((FractionField)(owner(*this)), PolyAlgebraHom(R, owner(target), targets));
-    } else {
-      return PolyAlgebraHom(R, owner(target), targets);
-    }
-  }
-
-  RingHom operator>>(long target) {
-    return (*this) >> ZZEmbeddingHom(owner(*this))(target);
-  }
-};
-
 class OrderedPolyRingBase : public RingDistrMPolyCleanImpl {
 
   using RingDistrMPolyCleanImpl::RingDistrMPolyCleanImpl;
@@ -812,7 +762,7 @@ void program()
   ring QQ = RingQQ();
 
   ring ExponentRing = NewOrderedPolyRing(QQ, vector<symbol> {symbol("p")});
-  MyRingElem p(ExponentRing, "p");
+  RingElem p(ExponentRing, "p");
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t",
@@ -820,29 +770,29 @@ void program()
   ring R = NewPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
-  MyRingElem x(K, "x");
-  MyRingElem t(K, "t");
-  MyRingElem z(K, "z");
+  RingElem x(K, "x");
+  RingElem t(K, "t");
+  RingElem z(K, "z");
 
-  MyRingElem N(K, "N");
-  MyRingElem Nx(K, "N_x");
-  MyRingElem Nxx(K, "N_{xx}");
-  MyRingElem Nt(K, "N_t");
+  RingElem N(K, "N");
+  RingElem Nx(K, "N_x");
+  RingElem Nxx(K, "N_{xx}");
+  RingElem Nt(K, "N_t");
 
-  MyRingElem D(K, "D");
-  MyRingElem Dx(K, "D_x");
-  MyRingElem Dxx(K, "D_{xx}");
-  MyRingElem Dt(K, "D_t");
+  RingElem D(K, "D");
+  RingElem Dx(K, "D_x");
+  RingElem Dxx(K, "D_{xx}");
+  RingElem Dt(K, "D_t");
 
-  MyRingElem f(K, "f");
-  MyRingElem fx(K, "f_x");
-  MyRingElem fxx(K, "f_{xx}");
-  MyRingElem ft(K, "f_t");
+  RingElem f(K, "f");
+  RingElem fx(K, "f_x");
+  RingElem fxx(K, "f_{xx}");
+  RingElem ft(K, "f_t");
 
-  MyRingElem q(K, "q");
-  MyRingElem qx(K, "q_x");
-  MyRingElem qxx(K, "q_{xx}");
-  MyRingElem qt(K, "q_t");
+  RingElem q(K, "q");
+  RingElem qx(K, "q_x");
+  RingElem qxx(K, "q_{xx}");
+  RingElem qt(K, "q_t");
 
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx,
@@ -851,7 +801,7 @@ void program()
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1,
 	N >> Nt, D >> Dt, f >> ft, q >> qt});
 
-  MyRingElem e = N/D;
+  RingElem e = N/D;
 
   //RingHom rh = N >> 1;
   //cout << rh << endl;
@@ -864,13 +814,14 @@ void program()
 
   cout << num(dx(dx(e)) - dt(e)) << endl;
 
-  MyRingElem d = (power(f,p) * q);
+  RingElem d = (power(f,p) * q);
 
   cout << d << endl;
   cout << dx(d) << endl;
   cout << power(dx(d),2) << endl;
   cout << dx(dx(d)) << endl;
-  cout << dx(dx(d))/power(f,p-2) << endl;
+
+  cout << (2*power(dx(d),2) - d*dx(dx(d)))/power(f,2*p-2) << endl;
 
 }
 

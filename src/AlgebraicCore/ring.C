@@ -809,6 +809,53 @@ namespace CoCoA
   }
 
 
+  RingHom operator>>(ConstRefRingElem src, ConstRefRingElem target)
+  {
+    if (owner(src) != owner(target)) {
+      CoCoA_ERROR(ERR::MixedRings, "creating substitution homomorphism");
+    }
+
+    RingElem indet;
+
+    if (IsFractionField(owner(src)) && IsOne(den(src))) {
+      indet = num(src);
+    } else {
+      indet = src;
+    }
+
+    const ring& R = owner(indet);
+    long index;
+
+    if (! IsPolyRing(R)) {
+      CoCoA_ERROR(ERR::NotPolyRing, "creating substitution homomorphism");
+    }
+    if (! IsIndet(index, indet)) {
+      CoCoA_ERROR(ERR::NotIndet, "creating substitution homomorphism");
+    }
+
+    vector<RingElem> targets = indets(R);
+
+    if (R != owner(target)) {
+      RingHom RtoT = CanonicalHom(R, owner(target));
+      for (auto &v: targets) v = RtoT(v);
+    }
+
+    targets[index] = target;
+
+    if (IsFractionField(owner(src))) {
+      return InducedHom((FractionField)(owner(src)), PolyAlgebraHom(R, owner(target), targets));
+    } else {
+      return PolyAlgebraHom(R, owner(target), targets);
+    }
+  }
+
+
+  RingHom operator>>(ConstRefRingElem src, long target)
+  {
+    return src >> ZZEmbeddingHom(owner(src))(target);
+  }
+
+
   std::ostream& operator<<(std::ostream& out, ConstRefRingElem x)
   {
     owner(x)->myOutput(out, raw(x));
