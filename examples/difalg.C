@@ -763,8 +763,8 @@ void program()
   RingElem p(ExponentRing, "p");
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
-	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t",
-	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t"}, lex, ExponentRing);
+	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
+	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
   ring R = NewPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
