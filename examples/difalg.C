@@ -750,6 +750,37 @@ SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbo
   return SparsePolyRing(new OrderedPolyRingBase(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
 }
 
+RingElem minExponent(RingElem in, RingElem indet)
+{
+  RingElem poly;
+  long index;
+  bool valid = false;
+  RingElem result;
+
+  if (IsFractionField(owner(indet))) {
+    CoCoA_ASSERT(IsOne(den(indet)));
+    CoCoA_ASSERT(IsIndet(index, num(indet)));
+  } else {
+    CoCoA_ASSERT(IsIndet(index, indet));
+  }
+
+  if (IsFractionField(owner(in))) {
+    CoCoA_ASSERT(IsOne(den(in)));
+    poly = num(in);
+  } else {
+    poly = in;
+  }
+
+  for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
+    RingElem myexp = RingElemExponent(PP(it), index);
+    if (!valid || (myexp < result)) {
+      result = myexp;
+    }
+  }
+
+  return result;
+}
+
 void program()
 {
   GlobalManager CoCoAFoundations;
@@ -824,6 +855,11 @@ void program()
   cout << (power(f,p)) /power(f,2*p) << endl;
   cout << (power(f,p-1))/power(f,2*p) << endl;
   cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
+
+  RingElem eq = num(dx(dx(N/d)) - dt(N/d));
+
+  cout << eq << endl;
+  cout << minExponent(eq, f) << endl;
 
 }
 
