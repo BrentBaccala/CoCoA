@@ -107,6 +107,16 @@ namespace CoCoA
   }
 
 
+  RingElemAlias::operator long() const {
+    BigInt N;
+    long n;
+    if (!IsInteger(N, *this) || !IsConvertible(n, N)) {
+      CoCoA_ERROR(ERR::BadConvert, "long(RingElem)");
+    } else {
+      return n;
+    }
+  }
+
   //----------------------------------------------------------------------
   // Default definitions of some virtual functions.
 

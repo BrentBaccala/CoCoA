@@ -93,6 +93,7 @@ namespace CoCoA
     RingElemAlias(const ring& R, RingElemConstRawPtr rawx);
     // default copy ctor works OK
     // default dtor works OK  -- deliberately NOT virtual (see documentation)
+    explicit operator long() const;
   private: // disable assignment
     RingElemAlias& operator=(const RingElemAlias& rhs); // NEVER DEFINED -- assignment disabled
   protected:
