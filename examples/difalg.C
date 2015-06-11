@@ -764,8 +764,7 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 
   void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
     long modified_indet;
-    const PPMonoid * exponent_PPM;
-    const ring * exponent_ring;
+    RingElem exponent_RI_indet;
     long exponent_indet;
     long min_constant_term;
     bool have_modified_indet = false;
@@ -782,8 +781,6 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 	   * seen in previous exponents (if any).
 	   */
 	  long a=1,b=0;
-	  exponent_PPM = & owner(PP(it));
-	  exponent_ring = & owner(exp);
 	  for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
 	    long i;
 	    if (IsOne(PP(expit))) {
@@ -797,6 +794,8 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 	      /* at term - throws conversion exception if it isn't a long */
 	      a = long(coeff(expit));
 	      exponent_indet = i;
+	      //exponent_RI_indet = monomial(owner(exp), coeff(expit), PP(expit));
+	      exponent_RI_indet = monomial(owner(exp), 1, PP(expit));
 	    }
 	  }
 
@@ -891,6 +890,7 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
     }
 
     RingElem GCD = gcd(newx, newy);
+    SparsePolyRing P(this);
 
     myAssignZero(rawlhs);
 
@@ -900,12 +900,13 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 	if (i != modified_indet) {
 	  newPP *= IndetPower(myPPM(), i, exponent(PP(it), i));
 	} else {
-	  RingElem exp(*exponent_ring, exponent(PP(it), i));
-	  exp += monomial(*exponent_ring, exponent(PP(it), NumIndets(myPPM())), indet(*exponent_PPM, exponent_indet));
+	  //RingElem exp(*exponent_ring, exponent(PP(it), i));
+	  //exp += monomial(*exponent_ring, exponent(PP(it), NumIndets(myPPM())), indet(*exponent_PPM, exponent_indet));
+	  RingElem exp = exponent(PP(it), NumIndets(myPPM())) * exponent_RI_indet + exponent(PP(it), i) + min_constant_term * exponent(PP(it), NumIndets(myPPM()));
 	  newPP *= power(indet(myPPM(), i), exp);
 	}
       }
-      myAdd(rawlhs, rawlhs, raw(monomial(NewPR, coeff(it), newPP)));
+      myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
     }
 
   }
