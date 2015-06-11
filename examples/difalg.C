@@ -750,6 +750,172 @@ SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbo
   return SparsePolyRing(new OrderedPolyRingBase(CoeffRing, NewPPMonoidEv(IndetNames, ord)));
 }
 
+/* PowerPolyRingBase - a polynomial ring whose exponents are polynomials
+ *
+ * It's not a Noetherian ring, so the Buchberger algorithm can run
+ * indefinitely.  I patch up the GCD calculation to get something that
+ * works by replacing f^p with a new variable g, computing the GCD
+ * using the standard algorithm, then substituting back.
+ */
+
+class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
+
+  using RingDistrMPolyCleanImpl::RingDistrMPolyCleanImpl;
+
+  void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
+    long modified_indet;
+    const PPMonoid * exponent_PPM;
+    const ring * exponent_ring;
+    long exponent_indet;
+    long min_constant_term;
+    bool have_modified_indet = false;
+
+    /* XXX get both x and y */
+    for (SparsePolyIter it=myBeginIter(rawx); !IsEnded(it); ++it) {
+      for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
+	RingElem exp = RingElemExponent(PP(it), indet);
+	BigInt N;
+	if (! IsInteger(N, exp)) {
+	  /* exp is a RingElem in PPM's exponent ring.  We expect it
+	   * to be a polynomial in the form at+b.  Begin by extracing
+	   * a and b, and ensuring that t is the same indeterminate
+	   * seen in previous exponents (if any).
+	   */
+	  long a=1,b=0;
+	  exponent_PPM = & owner(PP(it));
+	  exponent_ring = & owner(exp);
+	  for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
+	    long i;
+	    if (IsOne(PP(expit))) {
+	      /* b term - throws conversion exception if it isn't a long */
+	      b = long(coeff(expit));
+	    } else if (!IsIndet(i, PP(expit))) {
+	      CoCoA_ERROR(ERR::NYI, "exponent not of form at+b in PowerPolyRing GCD");
+	    } else if (have_modified_indet && (exponent_indet != i)) {
+	      CoCoA_ERROR(ERR::NYI, "multiple indeterminates in exponent in PowerPolyRing GCD");
+	    } else {
+	      /* at term - throws conversion exception if it isn't a long */
+	      a = long(coeff(expit));
+	      exponent_indet = i;
+	    }
+	  }
+
+	  /* we track the minimum constant term, so if both f^p and f^(p-1)
+	   * appear, we'll use g=f^(p-1) and write f^p as fg.  What about
+	   * f^(2p-2)?  Then we want to use g=f^(p-1).  f^(2p-3) requires
+	   * g=f^(p-2).  f^(2p+3) requires f^(p+1).
+	   */
+
+	  if (a > 1) {
+	    if ((b < 0) && (b/a)*a != b) {
+	      b = (b/a) - 1;
+	    } else {
+	      b = (b/a);
+	    }
+	  }
+
+	  if (have_modified_indet) {
+	    CoCoA_ASSERT(modified_indet == indet);
+	    if (b < min_constant_term) {
+	      min_constant_term = b;
+	    }
+	  } else {
+	    have_modified_indet = true;
+	    modified_indet = indet;
+	    min_constant_term = b;
+	  }
+	}
+      }
+    }
+
+    /* If we didn't find an exponent that has to be modified, use our
+     * underlying GCD implementation.
+     */
+
+    if (! have_modified_indet) {
+      RingDistrMPolyCleanImpl::myGcd(rawlhs, rawx, rawy);
+      return;
+    }
+
+    /* Otherwise, construct a new ring with a newly appended indeterminate,
+     * map our two arguments into the new ring, and compute their GCD.
+     */
+
+    const std::vector<symbol> IndetNames = NewSymbols(NumIndets(myPPM()) + 1);
+    PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
+    SparsePolyRing NewPR(NewPolyRing(myCoeffRing(), NewPPM));
+    RingElem newx(NewPR), newy(NewPR);
+
+    for (SparsePolyIter it=myBeginIter(rawx); !IsEnded(it); ++it) {
+      PPMonoidElem newPP(NewPPM);
+      for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
+	if (indet != modified_indet) {
+	  newPP *= IndetPower(NewPPM, indet, exponent(PP(it), indet));
+	} else {
+	  RingElem exp = RingElemExponent(PP(it), indet);
+	  long a=0, b=0;
+	  for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
+	    if (IsOne(PP(expit))) {
+	      b = long(coeff(expit));
+	    } else {
+	      a = long(coeff(expit));
+	    }
+	  }
+	  newPP *= IndetPower(NewPPM, indet, b - a*min_constant_term);
+	  newPP *= IndetPower(NewPPM, NumIndets(myPPM()), a);
+	}
+      }
+      newx += monomial(NewPR, coeff(it), newPP);
+    }
+
+    for (SparsePolyIter it=myBeginIter(rawy); !IsEnded(it); ++it) {
+      PPMonoidElem newPP(NewPPM);
+      for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
+	if (indet != modified_indet) {
+	  newPP *= IndetPower(NewPPM, indet, exponent(PP(it), indet));
+	} else {
+	  RingElem exp = RingElemExponent(PP(it), indet);
+	  long a=0, b=0;
+	  for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
+	    if (IsOne(PP(expit))) {
+	      b = long(coeff(expit));
+	    } else {
+	      a = long(coeff(expit));
+	    }
+	  }
+	  newPP *= IndetPower(NewPPM, indet, b - a*min_constant_term);
+	  newPP *= IndetPower(NewPPM, NumIndets(myPPM()), a);
+	}
+      }
+      newy += monomial(NewPR, coeff(it), newPP);
+    }
+
+    RingElem GCD = gcd(newx, newy);
+
+    myAssignZero(rawlhs);
+
+    for (SparsePolyIter it=BeginIter(GCD); !IsEnded(it); ++it) {
+      PPMonoidElem newPP(myPPM());
+      for (long i=0; i < NumIndets(myPPM()); i ++) {
+	if (i != modified_indet) {
+	  newPP *= IndetPower(myPPM(), i, exponent(PP(it), i));
+	} else {
+	  RingElem exp(*exponent_ring, exponent(PP(it), i));
+	  exp += monomial(*exponent_ring, exponent(PP(it), NumIndets(myPPM())), indet(*exponent_PPM, exponent_indet));
+	  newPP *= power(indet(myPPM(), i), exp);
+	}
+      }
+      myAdd(rawlhs, rawlhs, raw(monomial(NewPR, coeff(it), newPP)));
+    }
+
+  }
+};
+
+SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
+  return SparsePolyRing(new PowerPolyRingBase(CoeffRing, PPM));
+}
+
+
 RingElem minExponent(RingElem in, RingElem indet)
 {
   RingElem poly;
@@ -796,7 +962,8 @@ void program()
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
-  ring R = NewPolyRing(ExponentRing, PPM);
+  //ring R = NewPolyRing(ExponentRing, PPM);
+  ring R = NewPowerPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
   RingElem x(K, "x");
