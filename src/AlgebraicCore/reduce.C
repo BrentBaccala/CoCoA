@@ -100,7 +100,9 @@ degree HereForProfilingOnlyWDeg(ConstRefPPMonoidElem cofactor1)
     GRingInfo GRI(theReductors.myGRingInfo());
     //    const PPWithMask pm(ActiveLPP(F), GRI.myDivMaskRule());
     PPWithMask pm(GRI.myPPM(), GRI.myDivMaskRule());
-    pm = ActiveLPP(F);
+    vector<long> expv;
+    exponents(expv, ActiveLPP(F));
+    pm = expv;
     return FindReducer(pm, GRI.myComponent(PP(pm)), theReductors);
   }
 
