@@ -910,6 +910,8 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
 }
 
 
+/* Return the smallest exponent with which an indeterminate appears in a polynomial */
+
 RingElem minExponent(RingElem in, RingElem indet)
 {
   RingElem poly;
@@ -935,6 +937,40 @@ RingElem minExponent(RingElem in, RingElem indet)
     RingElem myexp = RingElemExponent(PP(it), index);
     if (!valid || (myexp < result)) {
       result = myexp;
+    }
+  }
+
+  return result;
+}
+
+/* Returns the factor by which an indeterminate appears to its minimal power */
+
+RingElem minCoeff(RingElem in, RingElem myindet)
+{
+  RingElem poly;
+  long index;
+
+  if (IsFractionField(owner(myindet))) {
+    CoCoA_ASSERT(IsOne(den(myindet)));
+    CoCoA_ASSERT(IsIndet(index, num(myindet)));
+  } else {
+    CoCoA_ASSERT(IsIndet(index, myindet));
+  }
+
+  if (IsFractionField(owner(in))) {
+    CoCoA_ASSERT(IsOne(den(in)));
+    poly = num(in);
+  } else {
+    poly = in;
+  }
+
+  RingElem minexp = minExponent(in, myindet);
+  RingElem result(owner(poly));
+
+  for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
+    RingElem myexp = RingElemExponent(PP(it), index);
+    if (myexp == minexp) {
+      result += monomial(owner(poly), coeff(it), PP(it)/power(indet(owner(PP(it)), index), minexp));
     }
   }
 
@@ -1021,6 +1057,7 @@ void program()
 
   cout << eq << endl;
   cout << minExponent(eq, f) << endl;
+  cout << minCoeff(eq, f) << endl;
 
 }
 
