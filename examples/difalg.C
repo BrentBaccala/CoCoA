@@ -1060,6 +1060,12 @@ void program()
   cout << minExponent(eq, f) << endl;
   cout << minCoeff(eq, f) << endl;
 
+  d = f * q;
+  eq = num(dx(dx(N/d)) - dt(N/d));
+
+  cout << eq << endl;
+  cout << minExponent(eq, f) << endl;
+  cout << minCoeff(eq, f) << endl;
 }
 
 //----------------------------------------------------------------------
