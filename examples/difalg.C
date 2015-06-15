@@ -1052,6 +1052,7 @@ void program()
   cout << (power(f,p)) /power(f,2*p) << endl;
   cout << (power(f,p-1))/power(f,2*p) << endl;
   cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
+  cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
 
   RingElem eq = num(dx(dx(N/d)) - dt(N/d));
 
