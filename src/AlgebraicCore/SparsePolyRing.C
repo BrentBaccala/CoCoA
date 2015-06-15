@@ -796,7 +796,27 @@ namespace CoCoA
         return;
       }
     }
+
     // From here onwards myCoeffRing is a *FIELD*
+
+    // speed up if one argument is a monomial, in which case gcd is
+    // just the gcd of the PPs.
+
+    if (myIsMonomial(rawg)) {
+      // not mySwap, which would swap the contents; I just want to
+      // swap the pointers
+      std::swap(rawf, rawg);
+    }
+    if (myIsMonomial(rawf)) {
+      PPMonoidElem gcdPP=PP(myBeginIter(rawf));
+      for (SparsePolyIter itg=myBeginIter(rawg); !IsEnded(itg) ; ++itg) {
+	gcdPP = gcd(gcdPP, PP(itg));
+      }
+      RingElem ans = monomial(P, 1, gcdPP);
+      mySwap(rawlhs, raw(ans));
+      return;
+    }
+
     if (myNumIndets() == 1)
     {
       if (characteristic(myCoeffRing()) > 0 && characteristic(myCoeffRing()) <= SmallFpImpl::ourMaxModulus())
