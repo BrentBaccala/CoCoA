@@ -984,9 +984,10 @@ void program()
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
+  ring ZZ = RingZZ();
   ring QQ = RingQQ();
 
-  ring ExponentRing = NewOrderedPolyRing(QQ, vector<symbol> {symbol("p")});
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
   RingElem p(ExponentRing, "p");
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
@@ -1053,6 +1054,13 @@ void program()
   //cout << (power(f,p-1))/power(f,2*p) << endl;
   //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
   //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
+
+  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
+
+  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
+  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << content(num(8*q)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
 
   RingElem eq = num(dx(dx(N/d)) - dt(N/d));
 
