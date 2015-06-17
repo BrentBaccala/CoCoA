@@ -1020,11 +1020,11 @@ void program()
   RingElem qxx(K, "q_{xx}");
   RingElem qt(K, "q_t");
 
-  Differential dx(K, vector<RingHom> {x >> 1, t >> 0,
+  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*(t+1))*z,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx});
 
-  Differential dt(K, vector<RingHom> {x >> 0, t >> 1,
+  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t+1,2))*z,
 	N >> Nt, D >> Dt, f >> ft, q >> qt});
 
   RingElem e = N/D;
@@ -1066,6 +1066,11 @@ void program()
   cout << eq << endl;
   cout << minExponent(eq, f) << endl;
   cout << minCoeff(eq, f) << endl;
+
+  d = power(z,p) * q;
+  eq = num(dx(dx(N/d)) - dt(N/d));
+  cout << eq << endl;
+  cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 }
 
 //----------------------------------------------------------------------
