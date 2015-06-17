@@ -990,27 +990,37 @@ void program()
   ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
   RingElem p(ExponentRing, "p");
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z",
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "T", "T_t",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
   //ring R = NewPolyRing(ExponentRing, PPM);
   ring R = NewPowerPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
+  // x,t are in our field of definition
+  // z = exp(-x^2/(4(t+1)))
   RingElem x(K, "x");
   RingElem t(K, "t");
   RingElem z(K, "z");
 
+  // T is a polynomial in C[t] (doesn't involve x or z)
+  RingElem T(K, "T");
+  RingElem Tt(K, "T_t");
+
+  // N is the numerator
   RingElem N(K, "N");
   RingElem Nx(K, "N_x");
   RingElem Nxx(K, "N_{xx}");
   RingElem Nt(K, "N_t");
 
+  // D is the denominator
   RingElem D(K, "D");
   RingElem Dx(K, "D_x");
   RingElem Dxx(K, "D_{xx}");
   RingElem Dt(K, "D_t");
 
+  // f and q are factors of something.  Typically D=f^p q,
+  // where f is irreducible and q is coprime to f.
   RingElem f(K, "f");
   RingElem fx(K, "f_x");
   RingElem fxx(K, "f_{xx}");
@@ -1022,11 +1032,11 @@ void program()
   RingElem qt(K, "q_t");
 
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*(t+1))*z,
-	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx,
+	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx});
 
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t+1,2))*z,
-	N >> Nt, D >> Dt, f >> ft, q >> qt});
+	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt});
 
   RingElem e = N/D;
 
@@ -1040,6 +1050,8 @@ void program()
   //cout << deriv(power(N,p)*D,N) << endl;
 
   cout << num(dx(dx(e)) - dt(e)) << endl;
+
+  // try an irreducible factor f^p (p >= 2) in denominator
 
   RingElem d = (power(f,p) * q);
 
@@ -1069,6 +1081,7 @@ void program()
   cout << minExponent(eq, f) << endl;
   cout << minCoeff(eq, f) << endl;
 
+  // try a square-free factor f in the denominator 
   d = f * q;
   eq = num(dx(dx(N/d)) - dt(N/d));
 
@@ -1076,7 +1089,9 @@ void program()
   cout << minExponent(eq, f) << endl;
   cout << minCoeff(eq, f) << endl;
 
-  d = power(z,p) * q;
+  // try denominator z^p T where T is a polynomial in t (no x or z)
+
+  d = power(z,p) * T;
   eq = num(dx(dx(N/d)) - dt(N/d));
   cout << eq << endl;
   cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
