@@ -1049,14 +1049,15 @@ void program()
 
   cout << (2*power(dx(d),2) - d*dx(dx(d)))/power(f,2*p-2) << endl;
 
-  cout << (power(f,p)) /power(f,2*p) << endl;
-  cout << (power(f,p-1))/power(f,2*p) << endl;
-  cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
-  cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
+  //cout << (power(f,p)) /power(f,2*p) << endl;
+  //cout << (power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
 
   RingElem eq = num(dx(dx(N/d)) - dt(N/d));
 
   cout << eq << endl;
+  //cout << factor(eq) << endl;
   cout << minExponent(eq, f) << endl;
   cout << minCoeff(eq, f) << endl;
 
