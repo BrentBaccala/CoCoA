@@ -86,7 +86,8 @@ namespace CoCoA
   // head must be non empty & begin with a letter and be comprised of letters or underscore.
   bool symbol::IsValidHead(const std::string& head)
   {
-    if (head.empty() || !IsValidFirstChar(head[0])) return false;
+    //if (head.empty() || !IsValidFirstChar(head[0])) return false;
+    if (head.empty()) return false;
     return true;
     const long n = len(head);
     for (long i=1; i < n; ++i)
