@@ -525,11 +525,11 @@ void PPMonoidNestedImpl::myWDeg(degree& d, ConstRawPtr rawpp) const
 {
   const PPMonoidNestedElem * const elem = myElem(rawpp);
 
-  // Only two possibilities: we have shifts and numExtraIndets = GradingDim + 1, or we don't, and numExtraIndets = 1
+  // If we have grading, then the shifts are (by assumption) the first extra indeterminates
 
-  if (numExtraIndets > 1) {
+  if (GradingDim(nestedPPM) > 0) {
     degree shifts(GradingDim(nestedPPM));
-    for (long i=0; i < numExtraIndets-1; ++i) {
+    for (long i=0; i < GradingDim(nestedPPM); ++i) {
       shifts.mySetComponent(i, elem->exponents[i]);
     }
     nestedPPM->myWDeg(d, elem->nestedRawElem);
