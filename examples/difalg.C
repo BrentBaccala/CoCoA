@@ -1003,12 +1003,14 @@ void program()
   ring ZZ = RingZZ();
   ring QQ = RingQQ();
 
-  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a")});
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i")});
   RingElem p(ExponentRing, "p");
   RingElem a(ExponentRing, "a");
+  RingElem i(ExponentRing, "i");
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "T", "T_t", "(t+1)",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
+	"n_i", "n_{ix}", "n_{ixx}", "n_{it}",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
   //ring R = NewPolyRing(ExponentRing, PPM);
   ring R = NewPowerPolyRing(ExponentRing, PPM);
@@ -1050,12 +1052,19 @@ void program()
   RingElem qxx(K, "q_{xx}");
   RingElem qt(K, "q_t");
 
+  // n_i is one coefficient in a numerator sum
+  RingElem n_i(K, "n_i");
+  RingElem n_ix(K, "n_{ix}");
+  RingElem n_ixx(K, "n_{ixx}");
+  RingElem n_it(K, "n_{it}");
+
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*(t+1))*z, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
-	f >> fx, fx >> fxx, q >> qx, qx >> qxx});
+	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
+	n_i >> n_ix, n_ix >> n_ixx});
 
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t+1,2))*z, tpo >> 1,
-	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt});
+	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n_i >> n_it});
 
   RingElem e = N/D;
 
@@ -1165,6 +1174,56 @@ void program()
   cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+  cout << endl;
+  cout << "try numerator n_i z^i" << endl;
+  cout << endl;
+
+  NN = n_i * power(z,i);
+  d = 1;
+  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << (eq=minCoeff(eq,z)) << endl;
+  cout << "minCoeff(eq, t+1) = " << minCoeff(eq,tpo) << endl;
+
+  cout << endl;
+  cout << "try numerator n_i (t+1)^a z^i" << endl;
+  cout << endl;
+
+  NN = n_i * power(z,i) * power(tpo,a);
+  d = 1;
+  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << (eq=minCoeff(eq,z)) << endl;
+  cout << minCoeff(eq,tpo) << endl;
+
+  cout << endl;
+  cout << "assume i = 1; numerator is n_i (t+1)^a z" << endl;
+  cout << endl;
+
+  NN = n_i * power(z,1) * power(tpo,a);
+  d = 1;
+  cout << (t >> (tpo - 1)) (dx(dx(NN))) << endl;
+  cout << (t >> (tpo - 1)) (dt(NN)) << endl;
+  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << (eq=minCoeff(eq,z)) << endl;
+  cout << minCoeff(eq,tpo) << endl;
+
+  cout << endl;
+  cout << "assume i = 1; numerator is n_i z" << endl;
+  cout << endl;
+
+  NN = n_i * power(z,1);
+  d = 1;
+  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << (eq=minCoeff(eq,z)) << endl;
+  cout << minCoeff(eq,tpo) << endl;
 }
 
 //----------------------------------------------------------------------
