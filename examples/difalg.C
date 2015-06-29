@@ -1058,12 +1058,12 @@ void program()
   RingElem n_ixx(K, "n_{ixx}");
   RingElem n_it(K, "n_{it}");
 
-  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*(t+1))*z, tpo >> 0,
+  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
 	n_i >> n_ix, n_ix >> n_ixx});
 
-  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t+1,2))*z, tpo >> 1,
+  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n_i >> n_it});
 
   RingElem e = N/D;
@@ -1129,19 +1129,19 @@ void program()
   d = power(z,p) * T;
   eq = num(dx(dx(N/d)) - dt(N/d));
   //cout << eq << endl;
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
   cout << endl;
-  cout << "try denominator z^p (t+1)^a T where T is a polynomial in t with no (t+1) factor" << endl;
+  cout << "try denominator z^p t^a T where T is a polynomial in t with no t factor" << endl;
   cout << endl;
 
-  d = power(z,p) * power(tpo, a) * T;
+  d = power(z,p) * power(t, a) * T;
   eq = num(dx(dx(N/d)) - dt(N/d));
   //cout << eq << endl;
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
@@ -1154,24 +1154,24 @@ void program()
   d = power(z,p);
   eq = num(dx(dx(N/d)) - dt(N/d));
   //cout << eq << endl;
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   //cout << minExponent(eq, tpo) << endl;
-  cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
+  cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
   cout << endl;
-  cout << "try denominator z^p with numerator (t+1)^a N where N has no t+1 factor" << endl;
+  cout << "try denominator z^p with numerator t^a N where N has no t factor" << endl;
   cout << endl;
 
   d = power(z,p);
-  RingElem NN = power(tpo,a) * N;
+  RingElem NN = power(t,a) * N;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
   //cout << eq << endl;
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
-  cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
+  cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
@@ -1182,36 +1182,36 @@ void program()
   NN = n_i * power(z,i);
   d = 1;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
-  cout << "minCoeff(eq, t+1) = " << minCoeff(eq,tpo) << endl;
+  cout << "minCoeff(eq, t) = " << minCoeff(eq,t) << endl;
 
   cout << endl;
-  cout << "try numerator n_i (t+1)^a z^i" << endl;
+  cout << "try numerator n_i t^a z^i" << endl;
   cout << endl;
 
-  NN = n_i * power(z,i) * power(tpo,a);
+  NN = n_i * power(z,i) * power(t,a);
   d = 1;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
-  cout << minCoeff(eq,tpo) << endl;
+  cout << minCoeff(eq,t) << endl;
 
   cout << endl;
-  cout << "assume i = 1; numerator is n_i (t+1)^a z" << endl;
+  cout << "assume i = 1; numerator is n_i t^a z" << endl;
   cout << endl;
 
-  NN = n_i * power(z,1) * power(tpo,a);
+  NN = n_i * power(z,1) * power(t,a);
   d = 1;
-  cout << (t >> (tpo - 1)) (dx(dx(NN))) << endl;
-  cout << (t >> (tpo - 1)) (dt(NN)) << endl;
+  //cout << (t >> (tpo - 1)) (dx(dx(NN))) << endl;
+  //cout << (t >> (tpo - 1)) (dt(NN)) << endl;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
-  cout << minCoeff(eq,tpo) << endl;
+  cout << minCoeff(eq,t) << endl;
 
   cout << endl;
   cout << "assume i = 1; numerator is n_i z" << endl;
@@ -1220,10 +1220,10 @@ void program()
   NN = n_i * power(z,1);
   d = 1;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
-  eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
-  cout << minCoeff(eq,tpo) << endl;
+  cout << minCoeff(eq,t) << endl;
 }
 
 //----------------------------------------------------------------------
