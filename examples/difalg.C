@@ -775,7 +775,6 @@ private:
 
   typedef std::map<long, indet_in_exponent> ExponentMap;  /* key is oldring_indet */
 
-  // void myGcd_find_RingElem_exponent(ConstRawPtr raw, bool &found_indet, long &modified_indet, RingElem &exponent_indet, long &min_constant_term) const {
   void myGcd_find_RingElem_exponent(ConstRawPtr raw, ExponentMap& exponentMap) const {
 
     for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
@@ -1003,14 +1002,18 @@ void program()
   ring ZZ = RingZZ();
   ring QQ = RingQQ();
 
-  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i")});
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i"), symbol("b"), symbol("c")});
   RingElem p(ExponentRing, "p");
   RingElem a(ExponentRing, "a");
+  RingElem b(ExponentRing, "b");
+  RingElem c(ExponentRing, "c");
   RingElem i(ExponentRing, "i");
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "T", "T_t", "(t+1)",
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "r", "T", "T_t", "(t+1)",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
+	"n", "n_{x}", "n_{xx}", "n_{t}",
 	"n_i", "n_{ix}", "n_{ixx}", "n_{it}",
+	"n_r", "n_{rx}", "n_{rxx}", "n_{rt}",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
   //ring R = NewPolyRing(ExponentRing, PPM);
   ring R = NewPowerPolyRing(ExponentRing, PPM);
@@ -1018,9 +1021,11 @@ void program()
 
   // x,t are in our field of definition
   // z = exp(-x^2/(4(t+1)))
+  // r = sqrt(t)
   RingElem x(K, "x");
   RingElem t(K, "t");
   RingElem z(K, "z");
+  RingElem r(K, "r");
 
   RingElem tpo(K, "(t+1)");
 
@@ -1052,19 +1057,31 @@ void program()
   RingElem qxx(K, "q_{xx}");
   RingElem qt(K, "q_t");
 
+  RingElem n(K, "n");
+  RingElem n_x(K, "n_{x}");
+  RingElem n_xx(K, "n_{xx}");
+  RingElem n_t(K, "n_{t}");
+
+  RingElem n_r(K, "n_r");
+  RingElem n_rx(K, "n_{rx}");
+  RingElem n_rxx(K, "n_{rxx}");
+  RingElem n_rt(K, "n_{rt}");
+
   // n_i is one coefficient in a numerator sum
   RingElem n_i(K, "n_i");
   RingElem n_ix(K, "n_{ix}");
   RingElem n_ixx(K, "n_{ixx}");
   RingElem n_it(K, "n_{it}");
 
-  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, tpo >> 0,
+  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, r >> 0, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
+	n >> n_x, n_x >> n_xx,
+	n_r >> n_rx, n_rx >> n_rxx,
 	n_i >> n_ix, n_ix >> n_ixx});
 
-  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, tpo >> 1,
-	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n_i >> n_it});
+  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
+	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
 
   RingElem e = N/D;
 
@@ -1167,6 +1184,20 @@ void program()
 
   d = power(z,p);
   RingElem NN = power(t,a) * N;
+  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
+  //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
+  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+  cout << endl;
+  cout << "try denominator z^a with numerator n t^b + n_r t^c r where n and n_r have no t factor" << endl;
+  cout << endl;
+
+  d = power(z,a);
+  NN = power(t,b) * n + power(t,c) * n_r * r;
   eq = num(dx(dx(NN/d)) - dt(NN/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
