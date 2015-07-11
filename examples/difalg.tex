@@ -1,0 +1,658 @@
+
+\documentclass{article}
+
+\usepackage{vmargin}
+\usepackage{times}
+\usepackage{graphics}
+\usepackage{amsmath, amscd, amsxtra, amsthm}
+\usepackage{amssymb}
+\usepackage{comment}
+\usepackage{maxiplot}
+
+\usepackage{supertabular}
+
+\usepackage[cspex,bbgreekl]{mathbbol}
+
+%\setmarginsrb{0.5in}{0.5in}{0.5in}{0.5in}{0.5in}{0.2in}{0pt}{0pt}
+\setmargnohfrb{0.5in}{0.75in}{0.5in}{0.5in}
+
+% These settings are for eReader format.  Comment out for regular format.
+%\setpapersize{A5}
+%\setmargnohfrb{0in}{0in}{0in}{0.1in}
+
+\newcommand{\Lp}[2]{\ensuremath{\text{L}^{#1}(#2)}}
+\newcommand{\T}{\ensuremath{\mathbb{T}}}
+\newcommand{\ip}[2]{\ensuremath{\langle #1, #2\rangle}}
+
+
+%\newcommand{\C}{\ensuremath{\mathbb{C}}}
+\newcommand{\C}{\ensuremath{{\bf C}}}
+\newcommand{\R}{\ensuremath{{\bf R}}}
+\newcommand{\GCD}{\ensuremath{\rm{GCD}}}
+
+\pagestyle{empty}
+
+% Get rid of section numbers
+\def\thesection{}
+
+% Get rid of page numbers
+\def\thepage{}
+
+\begin{document}
+
+\parindent 0pt
+\parskip 12pt
+
+\vskip 0.25in
+
+Let's consider the partial differential equation:
+
+$${{\delta^2}\over{\delta x}^2} \Psi = {\delta\over{\delta t}} \Psi$$
+
+The perspective is that of differential algebra.  We fix a
+differential field, which is a field equipped with one or more
+additional unary operations (derivations), each of which satisfy two
+axioms:
+
+\begin{center}
+   $D(a+b) = Da+Db$
+
+   $D(ab) = (Da)b + a(Db)$
+\end{center}
+
+In this case, we'll use two differential operators ($\delta_x$ and $\delta_t$),
+and I'll often write a derivation as either a subscript ($f_x$ is $\delta_x f$)
+or an apostrophe.
+
+{\bf Definition} A polynomial $f$ is {\it normal} with respect to a
+derivation if it doesn't divide its derivative and {\it special} if it
+does.  For an irreducible polynomial, these are the only cases: either
+$\GCD(f,f')=1$ (normal) or $\GCD(f,f')=f$ (special).  Ordinary
+polynomials are normal.  Bronstein p. 92.
+
+{\bf Lemma} An irreducible normal factor of a polynomial with multiplicity
+$p$ and non-zero derivative appears in the polynomial's derivative
+with multiplicity $p-1$.  {\bf Proof.}  Write the polynomial as $f^p q$, where
+$\GCD(f,q)=1$.  Its derivative is:
+
+$$p f^{p-1} f' q + f^p q' = f^{p-1}(pf'q + fq')$$
+
+$f$ doesn't divide $f'$ (the factor is {\it normal}), and both $f'$
+and $q$ are not zero, so $f$ doesn't divide either $pf'q$ or
+$(pf'q+fq')$.
+
+{\bf Lemma} An irreducible factor of a polynomial with multiplicity
+$p$ and zero derivative appears in the polynomial's derivative with
+multiplicity at least $p$, unless the derivative is zero.  Write the
+polynomial as $f^p q$, where $\GCD(f,q)=1$.  Its derivative is $f^p
+q'$, and while $f$ doesn't factor $q$, it might factor $q'$, or
+$q'$ might be zero.
+
+{\bf Lemma} An irreducible normal factor of a polynomial with multiplicity
+$p$ appears in the polynomial's derivative with multiplicity at least
+$p-1$, unless the derivative is zero.
+
+What field do we use?  Good question!
+
+Let's start with the rational functions in $x$ and $t$ with
+complex coefficients: ${\bf C}(x,t)$.  Are there any solutions
+to $\delta_x^2\Psi = \delta_t\Psi$ in this differential field?
+
+\begin{comment}
+
+No.  Everything in ${\bf C}(x,t)$ can be written uniquely as a ratio
+of polynomials in $x$ and $t$ with GCD 1.  Let's start by considering
+a non-trivial denominator and looking at how it behaves under one of
+our differential operators, say $\delta_x$:
+
+$$\left({n\over d}\right)' = {{n'd - nd'}\over{d^2}}$$
+
+Treating $n$ and $d$ as polynomials in $x$ with coefficients in
+$\C[t]$, we note that $\delta_x$ maps all of these coefficients to
+zero, so $d'$ must have lower degree in $x$ than $d$, so $d$ can't
+divide $d'$, though they might share a common factor (i.e, $x^2$
+doesn't divide $2x$, but they share a common factor of $x$).  Since
+$d$ shares no factors with $n$, $nd'$ shares no more than a subfactor
+with $d^2$, and $nd'/d^2$, unless it is zero, must have its
+denominator $x$-degree greater than $d$'s.  $n'd/d^2 = n'/d$ on the
+other hand, can have a denominator $x$-degree no larger than $d$'s, so
+applying $\delta_x$ to $n/d$ causes the $x$-degree of the denominator to
+increase, unless the denominator didn't involve $x$ at all (the case
+where $nd'$ would be zero).
+
+%Now treating $n$ and $d$ as polynomials in $t$ with coefficients in
+%$\C[x]$, we easily see that applying $\delta_x$ may change around the
+%coefficients, but can't increase the $t$-degree of the denominator (it
+%can only decrease).
+
+I was hoping to now show that $\delta_x$ can't increase the $t$-degree
+of the denominator, but that's not the case, i.e:
+
+$$\delta_x\left({1\over{xt-1}}\right) = -{t\over{(xt-1)^2}}$$
+
+\end{comment}
+
+\begin{comment}
+No.  Let's start by considering how $\delta_x$, when applied to a
+polynomial in ${\bf C}[x,t]$, affects its $x$-degree (the highest
+power of $x$ in its monomials).
+
+Treating $d$ as a polynomial in $x$ with coefficients in
+$\C[t]$, we note that $\delta_x$ maps all of these coefficients to
+zero, so $d'$ must have lower degree in $x$ than $d$, so $d$ can't
+divide $d'$, though they might share a common factor (i.e, $x^2$
+doesn't divide $2x$, but they share a common factor of $x$).
+\end{comment}
+
+Everything in ${\bf C}(x,t)$ can be written uniquely as a ratio of
+polynomials in $x$ and $t$ with GCD 1, so let's consider an arbitrary
+field element $\Psi = n/d$ with $n,d\in\C[x,t]$.  Applying our
+differential operators (I now write $\delta_x n$ as $n_x$):
+
+\[   %Math mode begin
+\begin{maxima}
+f: x/(x^3-3*x+2),     /* Integrating it */
+tex('integrate(f,x)), /* will show its integral... */
+print(``=''),
+tex(integrate(f,x)),  /* ...and the result */
+print(``+K'')
+\end{maxima}
+\]
+
+$$\delta_x {n \over d} = {{n_x d - n d_x}\over{d^2}}$$
+
+$$\delta_x^2 {n \over d} = {{n_{xx} d^2 - n d_{xx} d - 2 n_{x}d_{x}d + 2nd_x^2}\over{d^3}}$$
+
+$$\delta_t {n \over d} = {{n_t d - n d_t}\over{d^2}}$$
+
+If $\Psi = {n \over d}$ satisfies $\delta_x^2 \Psi = \delta_t \Psi$, then we must have:
+
+$$n_{xx} d^2 - n d_{xx} d - 2 n_{x}d_{x}d + 2nd_x^2 = n_t d^2 - n d d_t$$
+
+Rearranging:
+
+$$2nd_x^2 - n d_{xx} d = n_t d^2 - n d d_t - n_{xx} d^2 + 2 n_{x}d_{x}d$$
+
+\begin{comment}
+Notice that $d$ divides everything on the RHS, so it must also divide the LHS.
+We know $\GCD(n,d)=1$, by hypothesis, and we just concluded that
+$d$ can't divide $d_x$, so it can't divide the LHS.  Contradiction.
+\end{comment}
+
+Consider $f$, a single irreducible factor of $d$,
+appearing with multiplicity $p >= 2$, and $f_x \ne 0$, so $\delta_x$ drives
+its order down by one.  $f$ appears in $d_x$ with power $p-1$ and in
+$d_{xx}$ with power $p-2$, and doesn't appear in $n$ at all, since
+$\GCD(d,n)=1$.  Thus, the terms on the LHS have $f$-order exactly
+$2p-2$, while all of the terms on the RHS have $f$-order at least
+$2p-1$ ($2p$, $2p-1$, $2p$, and $2p-1$, plus possible factors in $n$'s
+derivatives, plus another factor in $d_t$ if $f$ does not
+involve $t$):
+
+$$2d_x^2 - d_{xx} d = m f^{2p-1}$$
+
+Now let's expand $d=f^pq$:
+
+$$d = f^p q \qquad d_x = f^{p}q_x +pf^{p -1}f_xq$$
+$$d_x^2 = f^{2p}q_x^{2} +2pf^{2p -1}f_xqq_x +p^{2}f^{2p -2}f_x^{2}q^{2}$$
+$$d_{xx} = f^{p}q_{xx} +2pf^{p -1}f_xq_x +pf^{p -1}f_{xx}q +(p^{2} -p)f^{p -2}f_x^{2}q$$
+
+Substituting into $2d_x^2 - d_{xx} d = m f^{2p-1}$ and cancelling $f^{2p-2}$:
+
+$$-f^{2}qq_{xx} +2f^{2}q_x^{2} +2pff_xqq_x -pff_{xx}q^{2} +(p^{2} +p)f_x^{2}q^{2} = m f$$
+
+$$(p^{2} +p)f_x^{2}q^{2} = m f+f^{2}qq_{xx} -2f^{2}q_x^{2} -2pff_xqq_x +pff_{xx}q^{2}$$
+
+$f$ factors the RHS, but $\GCD(f,q)=1$ and $\GCD(f,f_x)=1$ by
+construction, so the LHS must be zero, $p^2 + p = 0$, implying that
+$p$ is 0 or -1, both of which contradict the assumption that $p \ge
+2$.  So $d$ can have no irreducible factors that involve $x$ and
+appear with power greater than unity.
+
+\begin{comment}
+The leading term in $2nd_x^2 - n d_{xx} d$ is of power $x^{2r-2}$ and
+has coefficient $2r^2 d_r - r(r-1)d_r^2$, so $r^2 + r =0$, and $r$
+must be either $0$ or $-1$.  Obviously it can't be $-1$, what about
+$0$?  Then $d$ would be a polynomial in $t$ that didn't involve $x$.
+\end{comment}
+
+We still have to consider the case of a square-free irreducible factor
+involving $x$.  In this case, we can rearrange like this:
+
+$$2nd_x^2 = n_t d^2 - n d d_t - n_{xx} d^2 + n d_{xx} d + 2 n_{x}d_{x}d$$
+
+Note that $d$ divides the RHS, and a purely square-free factor of $d$
+involving $x$ would not appear in $d_x$ or $n$, so the LHS must be
+zero, which can only occur if either $n=0$ or if $d_x=0$, which
+contradicts the assumption that $d$'s factor involves $x$.
+
+To summarize, we've concluded that either $n=0$ or that $d$ must not
+involve $x$, and thus be a polynomial in $\C[t]$.  In this case, the
+derivatives $d_x$ and $d_{xx}$ vanish from the original equation and it becomes:
+
+$$n_{xx} d^2 = n_t d^2 - n d d_t$$
+
+Cancelling and rearranging:
+
+$$n d_t = n_t d - n_{xx} d$$
+
+$d$ can't divide its own derivative, and $\GCD(n,d)$ is 1 by
+hypothesis, so this equation can only hold if $d_t$ is zero, so $d$
+must be a constant (LHS), and $n_t = n_{xx}$ (RHS).  This can only
+occur if $n$ has the form $ax^2 + 2at + bx +c$, and this, finally, can
+be easily seen to satisfy the original differential equation.
+
+So the only solutions to $\delta_x^2 \Psi = \delta_t \Psi$ in
+$\C(x,t)$ have the form $a(x^2+2t)+bx+c$.
+
+Can we find a different field that contains more solutions to this PDE?
+
+An extension field is the obvious choice.
+
+It's a basic theorem in differential algebra that differentials extend
+in a single unique way into an algebraic extension (Bronstein Theorem
+3.2.3), while transcendental extensions require only that the
+differential be specified for the primitive element that extends the
+field (Bronstein Theorem 3.2.2).
+
+Let's extend $\C(x,t)$ by $r$ (an algebraic) and $z$ (a
+transcendental).  I'll set $r^2 = t$, so its differentials are:
+
+$$\delta_x r = 0 \qquad \delta_t r = {1\over{2r}} $$
+
+
+Since $z$ is transcendental, I can pick (almost) anything for its differentials.  For
+reasons that will become apparent later, let's try
+
+$$\delta_x z = -{{x}\over{2t}} z \qquad \delta_t z = {x^2\over{4t^2}} z$$
+
+Now, is there a solution to $\delta_x^2 \Psi = \delta_t \Psi$ in
+$\C(x,t,r,z)$?  You bet!  Let's try $\Psi = z/r$.
+
+$$\delta_x \Psi = - {xz\over{2rt}}$$
+$$\delta_x^2 \Psi = - {{2zt-x^2z}\over{4rt^2}}$$
+$$\delta_t \Psi =  {{x^2z - 2zt}\over{4rt^2}}$$
+
+So, what's the point?  That I can concoct some screwball extension
+that solves a PDE?  Actually, $z$ is just an exponential that solves
+${{\delta z}\over{\delta y}}=z$ for $y=-x^2/(4t)$, and those weird
+differentials are simply the result of applying the chain rule
+to compute ${{\delta z}\over{\delta x}}$ and ${{\delta z}\over{\delta t}}$.
+Analytically, we would write this solution as:
+
+$$\Psi(x,t) = {e^{-{x^2\over{4t}}}\over{\sqrt{t}}}$$
+
+Later, I'll use differential algebra to show that this is the only
+solution (times an arbitrary constant) in $\C(x,t,r,z)$ not in $\C(x,t)$.
+
+The two main extension types I'm interested in are algebraic
+extensions (since they've been so heavily studied), and ``holonomic''
+extensions of the form ${{\delta z}\over{\delta r}} = f$ for $r$ and
+$f$ arbitrary field elements.  This models first order semilinear ODEs.
+
+Then we can start asking questions like, given a finite number of
+algebraic and holonomic extensions, can we find solutions to a given
+PDE?  This corresponds to asking whether we can solve a PDE by
+breaking it down into algebraic functions and ODEs, so would subsume
+separation of variables as a special case.
+
+How can we deal with boundary conditions?  Well, once we've found all
+solutions to a PDE in a particular extension field, we can then
+restrict them to the boundary (say, $t=1$, in the example above), and
+ask whether they form a basis for whatever function space (typically
+$\text{L}^2$) our boundary condition exists in.  Since exponentials
+(as we saw above) are a simple case of the holonomic extension,
+Fourier analysis would be subsumed as a special case.
+
+It would be nice to have theorems telling us what conditions are
+needed to get a basis set in some extension field, and of course how
+to setup that extension and compute the basis elements.
+
+Is there any hope of proving such theorems?  Well, since we're working
+with algebra, we've got the machinery of algebraic geometry available
+(not something you typically expect in PDE theory).  Reducing modulo
+$p$, for example, is definitely in the mix, though this suggestion
+does has the flavour of an Army captain musing about tactical nukes
+while contemplating an enemy bunker.
+
+If successful, this program should result in a solution technique for
+PDEs that would generalize both Fourier analysis and separation of
+variables, so I think this is quite promising!
+
+
+\vfill\eject
+
+What about the intermediate field $\C(x,t,z)$?  Remember
+
+$$z_x = -{{x}\over{2t}} z \qquad z_t = {x^2\over{4t^2}} z$$
+
+{\bf Lemma}  For all $f \in \C[x,t,z], f \notin \C[x,t] \implies f_x \ne 0$.
+Consider $f = \sum f_i z^i$.  Then:
+
+$$f_x = \sum \left( f_{ix} - {ix\over{2t}} f_i \right) z^i$$
+
+If $f_x = 0$, then each of these terms must be 0.  The $x$-degree of $f_{ix}$
+is one less than the $x$-degree of $f_i$, but the $x$-degree of $xf_i$ is
+one greater than that, so either $i$ or $f_i$ is zero.  So all of the $f_i$
+are zero except $f_0$, but then $f$ would be in $\C[x,t]$.  QED.
+
+Returning to the original problems, we're once again led to consider the equation:
+
+$$n_{xx} d^2 - n d_{xx} d - 2 n_{x}d_{x}d + 2nd_x^2 = n_t d^2 - n d d_t$$
+
+This time, we'll split $d$ into its normal and special components,
+with respect to $\delta_x$:
+
+$$d =d_s d_n$$
+
+This time, we consider an irreducible normal factor $f$ of $d_n$ with
+non-zero $x$-derivative, and use the same logic as before to conclude
+that $f_x$ is zero, so $d_{nx}$ is zero.  By the previous lemma,
+$d_{n}$ must be in $\C[t]$.
+
+Next we attack $d_s$, using Bronstein's Theorem 5.1.2 (p. 130) which
+says that $d_s$ has to be a power of $z$.
+
+$$d=z^a f \qquad f \in \C[t]$$
+
+$$d_x = a z^a f \left( - {x\over{2t}} \right)$$
+
+$$d_{xx} = a^2 z^a f \left( - {x\over{2t}} \right)^2 - a z^a f \left( {1\over{2t}} \right)$$
+
+$$d_t = z^a \left( a {x^2\over{4t^2}} f + f_t\right)$$
+
+Our polynomial equation (after cancelling $f$ and $z^{2a}$, and clearing the denominator) becomes:
+
+$$(a^{2} +a)x^{2}fn +4axftn_x +4ft^{2}n_{xx} -4ft^{2}n_t +2aftn +4f_tt^{2}n = 0$$
+
+This implies that $4f_tt^{2}n$ must be a multiple of $f$, and since $f$ is irreducible and normal,
+and $\gcd(f,n)=1$, this can only occur if $f=t$.
+
+So now let's consider a denominator of the form $z^p t^a f$, where $f$ has no $t$ factor:
+
+$$(p^{2} +p)x^{2}fn +4pxtfn_x +4t^{2}fn_{xx} -4t^{2}fn_t +4t^{2}f_tn +(2p +4a)tfn = 0$$
+
+Again the minimum power of $f$ appears multiplied by $4f_tt^{2}n$, which is a contradiction
+(since there's no $t$ factor in $f$), implying that $f_t$ is zero.
+
+So we've reduced the denominator to the form $z^a$.  Expanding the polynomial equation we get:
+
+$$(a^{2} +a)x^{2}n +4axtn_x +4t^{2}n_{xx} -4t^{2}n_t +2atn = 0$$
+
+Now we look at the powers of $t$ and conclude that $(a^{2}
++a)x^{2}n$ must be a multiple of $t$, implying that the numerator
+must include a $t$ factor.  Expanding that out, we obtain the same
+multiple as before, leading to the conclusion that $a^2+a$ must be
+zero, so $a$ must be 0 or -1.  Since it can't be -1, it must be zero,
+and the denominator is therefore trivial.
+
+Now let's look at the numerator, assume that it has the form $\sum n_i z^i$, where the $n_i$
+are polynomials in $\C[x,t]$.  Expanding out $n_{xx} - n_t = 0$, we obtain:
+
+$$(i^{2} -i)x^{2}n_i -4ixtn_{ix} +4t^{2}n_{ixx} -4t^{2}n_{it} -2itn_i$$
+
+Looking at the powers of $t$, we conclude that $(i^{2} -i)x^{2}n_i$ must be a multiple
+of $t$, so we now try a numerator of the form $\sum n_i t^a z^i$, and again
+conclude that $(i^2-i) x^2 n_i$ must be a multiple of $t$, which implies that $i^2-i=0$
+and thus $i$ is either zero or one.
+
+Our numerator equation for $i=1$ assumes the form:
+
+$$-2n_x x - n + 2 t n_{xx} = 2 t n_t$$
+
+Assuming that $n$ has the form $\sum a_b t^b$, where the $a_b$ are polynomials in
+$\C[x]$, we expand this into:
+
+$$-2\sum x n_{bx} t^b - \sum a_b t^b + 2 \sum a_{b-1xx} t^{b} = 2 \sum b a_b t^b$$
+
+The $b=0$ term becomes $-2xa_{0x} - a_0 = 0$.  Since $a_0$ is a polynomial
+in $\C[x]$, this equation implies that each of its coefficients would have
+to be at least twice itself, which is impossible, so $a_0=0$.  Likewise,
+$a_0=0$ implies that $a_1$'s equation is $-2xa_{1x}-a_1=2a_1$, which is
+likewise impossible.  By induction, $a_b=0$ implies that $a_{b+1}=0$,
+so all of the $a_b$ are zero and there is no $z$ ($i=1$) term in
+the numerator.
+
+The numerator thus reduces to the $i=0$ term, for which $n_{xx}=n_t$
+and we have the same solution set as before: $a(x^2+2t)+bx+c$.
+
+\vfill\eject
+
+We should be able to find more solutions in $\C(x,t,r,z)$, where $r^2=t$.
+
+Let's study this field as the fraction field of the ring
+$\C(x,t,r)[z]$.  This enables us to cleanly analyse $z$ as a monomial
+extension.  Any polynomial in $z$ will have a non-zero $x$-derivative
+(previous lemma), and we've already dealt with the denominator cases for
+normal factors with $f_x \ne 0$, so we once again consider a special
+denominator of the form $z^a$, and a numerator of the form $t^b n +
+t^c n_r r$ where both $n$ and $n_r$ are in $\C(x,t)$.  This leads
+to a pair of equations:
+
+$$(a^{2} +a)x^{2}t^{b}n +4axt^{b +1}n_{x} +4t^{b +2}n_{xx} -4t^{b +2}n_{t} +(2a -4b)t^{b +1}n = 0$$
+
+$$(a^{2} +a)x^{2}t^{c}n_r +4axt^{c +1}n_{rx} +4t^{c +2}n_{rxx} -4t^{c +2}n_{rt} +(2a -4c -2)t^{c +1}n_r = 0$$
+
+Since $t$ can not factor either $n$ or $n_r$, $a^2+a$ must be zero, again
+leading to the conclusion that $z$ does not appear in the denominator.
+
+The numerator analysis, based on $\sum n_i t^a z^i$ is unchanged, leading
+again to the conclusion that $i$ is either zero or one.  The two resulting
+equations are:
+
+\begin{align*}
+n_{xx} = n_t   & \qquad (i=0) \\
+-2n_x x - n + 2 t n_{xx} = 2 t n_t  &  \qquad (i=1)
+\end{align*}
+
+This time our solution space is $\C(x,t,r)$, however.  Assuming $n$
+has the form $n + n_r r$ (remember that no fraction field is needed
+for algebraic extensions), we obtain four equations to be solved in $\C(x,t)$:
+
+\begin{align*}
+n_{xx} = n_t  & \qquad (i=0) \\
+n_r = 2tn_{rxx} -2tn_{rt} & \qquad (i=0; r) \\
+-2xn_{x} +2tn_{xx} -2tn_{t} -n = 0 & \qquad (i=1) \\
+-2xn_{rx} +2tn_{rxx} -2tn_{rt} -2n_r = 0 & \qquad (i=1; r)
+\end{align*}
+
+These four rational equations convert to four polynomial equations:
+
+$$-ndd_{xx} +ndd_t +2nd_x^{2} -2n_xdd_x +n_{xx}d^{2} -n_td^{2} = 0$$
+$$-2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -nd^{2} = 0$$
+$$2xndd_x -2xn_xd^{2} -2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -nd^{2} = 0$$
+$$2xndd_x -2xn_xd^{2} -2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -2nd^{2} = 0$$
+
+The first one we've analysed already; its solutions are $ax^2 + 2at + bx +c$.
+
+Analyzing the remaining three using the techniques already discussed
+(irreducible factors) reveal that their denominator's $x$-derivatives
+are zero.  Setting $d_x$ and $d_{xx}$ to zero, we obtain:
+
+$$2tnd_t +2tn_{xx}d -2tn_td -nd = 0$$
+$$-2xn_xd +2tnd_t +2tn_{xx}d -2tn_td -nd = 0$$
+$$-2xn_xd +2tnd_t +2tn_{xx}d -2tn_td -2nd = 0$$
+
+Considering the next one, we see that $2tnd_t$ must be a multiple of $d$, so we're led to
+consider $t$ as a factor of $d$, i.e, $d=t^a q$:
+
+$$2nt q_t + 2tn_{xx}q -2tn_tq +(2a-1)nq = 0$$
+
+which requires either $2ntq_t$ to be a multiple of $q$ (impossible), or $a={1\over2}$,
+so the second equation has no solution.
+
+The next-to-last equation also requires either $2ntq_t$ to be a multiple of $q$ or $a={1\over2}$, so it's also impossible.
+
+The last equation becomes:
+
+% $$-2xn_xt^aq +2at^anq + 2 t^{a+1} n q_t +2n_{xx}t^{a+1}q -2n_tt^{a+1}q -2nt^aq = 0$$
+
+$$-2xn_xq  + 2 n t q_t +2tn_{xx}q -2tn_tq +(2a-2)nq = 0$$
+
+At first, this appears to require $2ntq_t$ to be a multiple of $q$, but there is another possibility!
+If $n$ and $q$ are both constant, then the equation reduces to:
+
+$$(2a-2)nq = 0$$
+
+which can be satisfied if $a=1$, which means $d=tq$.
+
+In short, we've found another solution: $zr/t$, as expected from analysis.
+The general solution in $\C(x,t,r,z)$ is:
+
+$$a(x^2+2t)+bx+c+d{zr\over t}$$
+
+
+\vfill\eject
+
+\section*{Solving Polynomial Differential Equations}
+
+Often we're confronted with an equation like $n_{xx} = n_t$, where $n$
+is constrained to be a polynomial.  A fair amount is known about
+such equations, but there are still big gaps.
+
+An important result is the Abramov-Petkov\v sek theorem, which proves
+the impossibility of algorithmically solving PDEs in a polynomial ring
+as a straightforward consequence of the undecidability of Hilbert's
+tenth problem.  The proof is based on the close correlation between
+solving polynomial differential equations and solving integer Diophantine
+equations.  Abramov and Petkov\v sek demonstrated a simple
+construction that allows any polynomial equation to be converted
+into a PDE with the property than any polynomial solution to the PDE
+can be trivially lifted to a solution of the original polynomial.
+Thus, any algorithm that could solve arbitrary PDEs in a polynomial
+ring could be used to solve arbitrary Diophantine equations, which
+is impossible (the MRDP theorem).
+
+However, their proof technique suggests to me that the degree of the
+resulting Diophantine equations should be bounded by the order of the
+PDE.  PROOF NEEDED.  If true, then this is good news since Sch\"odinger's
+equation is second order and Cohen's GTM 239 suggests that second
+degree Diophantine equations may be completely solvable.  See
+section 6.3 (p. 341) in GTM 239.
+
+The form of the Diophantine equations can be further restricted.
+Since there are no cross derivatives of the form $\delta^2/\delta x \delta y$,
+there should be no mixed monomials in the Diophantine equations,
+so they can be separated into a linear component (solvable using
+matrix reduction into Hermite normal form) and a sum of squares.
+If the squares all have the same sign, which is likely since
+the second derivatives in Schr\" odinger's equation are invariant
+under exchange of variables, then the equation is of elliptic
+type, meaning that it describes an n-dimensional ellipsoid
+in real space $\R^n$, so its integer solutions are bounded
+and thus computable.  Different values from the linear
+component, however, might lead to an infinite number of
+elliptic quadratics with unbounded total size, and it
+also seems likely that a single PDE could generate an
+infinite number of Diophantine equations.
+
+Systems of partial differential equations have been extensively
+studied in the form of D-modules, and algorithms have been developed
+to find their polynomial and rational solutions in the case of finite
+holonomic rank.  Most of our equations are of infinite rank, however.
+The known D-module algorithms for rational solutions depend on finding
+an algebraic variety (the singular locus), which is basically the
+Zariski closure of the solution's singularities and thus provides
+crucial information about what factors can be present in the
+denominator.  This seems difficult to generalize into transcendental
+extension fields, since the relationship between $x$ and $e^x$, for
+example, is not algebraic.  Futuremore, Tsai's Lemma 2.1.5 states that in
+the infinite rank case, the singular locus is trivial (it's the entire space).
+
+\vfill\eject
+
+\section*{Operating in K[Z[p]]}
+
+Often we need to operate in a monoid ring like $K[Z[p]]$, i.e, a
+polynomial ring whose exponents are polynomials.  For example:
+
+$$x^{2p}+2x^p+1=(x^p+1)^2$$
+
+To order the monomials, an ordering is required on the exponents.  I use a ``high''
+ordering where the coefficient of the highest power determines the comparison to zero.
+\footnote{\tt http://math.arizona.edu/$\sim$rwilliams/math415A-fall2013/Ordered\_Rings\_and\_Fields.pdf}
+Only monoid elements greater than zero are allowed as exponents, so $x^{p-50}$ is
+in $K[Z[p]]$, but $x^{-1}$ is not.
+
+We can't use Buchberger's algorithm directly, because it may not terminate since
+the ring is not Noetherian.
+
+$$(x^p) \subset (x^{p-1}) \subset (x^{p-2}) \subset \cdots$$
+
+is an ascending chain of ideals that never stabilises.
+For the same reason, $K[Z[p]]$ is not a unique factorization domain:
+
+$$x^p = x^{p-10}x^{10} = x^{p-20}x^{20} = \cdots$$
+
+However, $K[Z[p]]$ is a GCD domain.  PROOF NEEDED.
+
+We can compute GCDs (needed for normalisation in the fraction field) using a
+simple modification to Buchberger's algorithm.  Introduce new indeterminates
+for each combination of lower and upper indeterminates.
+
+$$x^p  \to  a$$
+$$x^q  \to  b$$
+$$x^{(p+q)} \to ab$$
+
+This produces new polynomials with only integer exponents.  We can now
+compute a Gr\"obner basis, which is how CoCoA computes GCDs, then map
+the results back into the original ring.
+
+How do we deal with monomials like $x^{p-1}$?  We can't factor it like
+$x^px^{-1}$ because $x^{-1}$ isn't in our ring.  Instead, we map
+$x^{p-1} \to a$ and then write $x^{p-1}$ as $a$ and $x^p$ as $xa$.
+This implies that we can't construct a single derived ring that can
+handle all polynomials in $K[Z[p]]$.  Instead, we construct a
+derived ring for any particular GCD calculation.
+
+The derived ring is Noetherian, but is not isomorphic to $K[Z[p]]$.
+Instead, it is isomorphic to a subring of $K[Z[p]]$ and we can adjust
+the construction so that the subring encompasses any finite number of
+elements from $K[Z[p]]$.
+
+Theorem.  Given a ring R, if every pair of elements from R can be
+embedded in a subring that is a GCD domain, then R is a GCD domain.
+
+\vfill\eject
+
+\section*{Bibliography}
+
+Abramov, Petkov\v sek,
+On Polynomial Solutions of Linear Partial
+Differential and (q-)Difference Equations.  CASC 2012.
+
+\begin{quote}
+Proves the impossibility of algorithmically solving PDEs in a polynomial
+ring as a straightforward consequence of the undecidability
+of Hilbert's tenth problem.
+\end{quote}
+
+Alin Bostan, Thomas Cluzeau, Bruno Salvy.
+Fast Algorithms for Polynomial Solutions
+of Linear Differential Equations. 2005.
+
+\begin{quote}
+{\tt http://specfun.inria.fr/bostan/publications/BoClSa05.pdf}
+
+Explains the construction of the indicial polynomial and its
+use in solving linear ODEs with polynomial coefficients.
+\end{quote}
+
+Saito, Sturmfels, Takayama, Groebner Deformations of Hypergeometric Equations.
+Springer Verlag. 1999.
+
+\begin{quote}
+A standard reference work on D-modules.  Haven't read it because it's
+too expensive.
+\end{quote}
+
+Harrison Tsai.  Algorithms for Algebraic Analysis.  Ph.D. thesis, UC Berkeley, 2000.
+
+\begin{quote}
+One of Sturmfels' students.  The D-module algorithms developed here
+and in the previous reference require the module to be of finite
+holonomic rank, which is generally not the case in the equations
+of interest to us.
+\end{quote}
+
+\end{document}
