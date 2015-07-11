@@ -1113,6 +1113,9 @@ void program()
   //cout << deriv(power(N,p)*D,N) << endl;
 
   cout << num(dx(dx(e)) - dt(e)) << endl;
+  cout << num(2*t*dx(dx(e)) - 2*t*dt(e) - e) << endl;
+  cout << num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e) << endl;
+  cout << num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e) << endl;
 
   cout << endl;
   cout << "try an irreducible factor f^p (p >= 2) in denominator = f^p q" << endl;
@@ -1220,6 +1223,8 @@ void program()
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
+  cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
+  cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
   cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
@@ -1273,6 +1278,103 @@ void program()
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
   cout << minCoeff(eq,t) << endl;
+
+  cout << endl;
+  cout << "numerator is n + n_r r;    n_xx = n_t (i = 0)" << endl;
+  NN = n + n_r * r;
+  eq = num(dx(dx(NN)) - dt(NN));
+  cout << eq << endl;
+
+  cout << endl;
+  cout << "numerator is n + n_r r;    -2n_x x - n + 2 t n_{xx} = 2 t n_t  (i = 1)" << endl;
+  NN = n + n_r * r;
+  eq = num(-2*dx(NN)*x - NN + 2*t*dx(dx(NN)) - 2*t*dt(NN));
+  cout << eq << endl;
+  cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
+  cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
+
+  cout << endl;
+  cout << "equation 1" << endl;
+  cout << "try a square-free factor f in the denominator = f q" << endl;
+  cout << endl;
+
+  d = f * q;
+  e = N/d;
+  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+  cout << endl;
+  cout << "equation 1" << endl;
+  cout << "try a denominator = f t^a q" << endl;
+  cout << endl;
+
+  d = f * power(t,a) * q;
+  e = N/d;
+  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+  cout << endl;
+  cout << "equation 1" << endl;
+  cout << "try a denominator = f^a t^b q" << endl;
+  cout << endl;
+
+  d = power(f,a) * power(t,b) * q;
+  e = N/d;
+  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+
+  cout << endl;
+  cout << "equation 3" << endl;
+  cout << "try a denominator = f t^b q" << endl;
+  cout << endl;
+
+  d = f * power(t,b) * q;
+  e = N/d;
+  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+  cout << endl;
+  cout << "equation 3" << endl;
+  cout << "try a denominator = f^a t^b q" << endl;
+  cout << endl;
+
+  d = power(f,a) * power(t,b) * q;
+  e = N/d;
+  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+
+
+  cout << endl;
+  cout << "equation 4" << endl;
+  cout << "try a denominator = f t^b q" << endl;
+  cout << endl;
+
+  d = f * power(t,b) * q;
+  e = N/d;
+  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+  cout << endl;
+  cout << "equation 4" << endl;
+  cout << "try a denominator = f^a t^b q" << endl;
+  cout << endl;
+
+  d = power(f,a) * power(t,b) * q;
+  e = N/d;
+  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
+
+
+
 }
 
 //----------------------------------------------------------------------
