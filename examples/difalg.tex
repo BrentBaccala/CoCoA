@@ -7,7 +7,6 @@
 \usepackage{amsmath, amscd, amsxtra, amsthm}
 \usepackage{amssymb}
 \usepackage{comment}
-\usepackage{maxiplot}
 
 \usepackage{supertabular}
 
@@ -148,16 +147,6 @@ Everything in ${\bf C}(x,t)$ can be written uniquely as a ratio of
 polynomials in $x$ and $t$ with GCD 1, so let's consider an arbitrary
 field element $\Psi = n/d$ with $n,d\in\C[x,t]$.  Applying our
 differential operators (I now write $\delta_x n$ as $n_x$):
-
-\[   %Math mode begin
-\begin{maxima}
-f: x/(x^3-3*x+2),     /* Integrating it */
-tex('integrate(f,x)), /* will show its integral... */
-print(``=''),
-tex(integrate(f,x)),  /* ...and the result */
-print(``+K'')
-\end{maxima}
-\]
 
 $$\delta_x {n \over d} = {{n_x d - n d_x}\over{d^2}}$$
 
