@@ -42,16 +42,12 @@
 \parindent 0pt
 \parskip 12pt
 
-\vskip 0.25in
+\section*{A Very Brief Introduction to Differential Algebra}
 
-Let's consider the partial differential equation:
-
-$${{\delta^2}\over{\delta x}^2} \Psi = {\delta\over{\delta t}} \Psi$$
-
-The perspective is that of differential algebra.  We fix a
-differential field, which is a field equipped with one or more
-additional unary operations (derivations), each of which satisfy two
-axioms:
+We'll consider
+differential fields (resp. rings), which is are fields (resp. rings)
+equipped with one or more additional unary operations (derivations),
+each of which satisfy two axioms:
 
 \begin{center}
    $D(a+b) = Da+Db$
@@ -59,15 +55,36 @@ axioms:
    $D(ab) = (Da)b + a(Db)$
 \end{center}
 
-In this case, we'll use two differential operators ($\delta_x$ and $\delta_t$),
-and I'll often write a derivation as either a subscript ($f_x$ is $\delta_x f$)
-or an apostrophe.
+I'll often write a derivation as either a subscripted delta ($\delta_x$ instead of $D$),
+a subscripted variable ($f_x$ instead of $Df$ or $\delta_x f$) or an apostrophe
+(if only one derivation is being considered, like in a lemma).
 
-{\bf Definition} A polynomial $f$ is {\it normal} with respect to a
-derivation if it doesn't divide its derivative and {\it special} if it
-does.  For an irreducible polynomial, these are the only cases: either
-$\GCD(f,f')=1$ (normal) or $\GCD(f,f')=f$ (special).  Ordinary
-polynomials are normal.  Bronstein p. 92.
+{\bf Definition} An element $t$ of a differential field $K$ is {\it monomial} over
+a subfield $k \subset K$ w.r.t a derivation $D$ if $t$ is transcendental
+over $k$ and $Dt \in k[t]$.  Bronstein p. 91.
+
+In simpler terms, the derivation of a monomial element is a
+polynomial.  Most common transcendental field extensions are monomial.
+For example, if $t = \ln x$, then $t_x = 1/x$, which is a polynomial
+in $\C(x)[t]$, so $\ln x$ is monomial over rational functions in $x$ with
+respect to derivation by $x$, as is $\exp x$, since if $t=\exp x$,
+then $t_x=t\in \C(x)[t]$.  However, $t=\sqrt x$ is not monomial, even though $t_x
+= t/2x \in \C(x)[t]$, since $\sqrt x$ is not transcendental (it's
+algebraic), nor is $t= \exp(\sqrt x)$ monomial over $\C(x)$ w.r.t. $\delta_x$, since
+$t_x = \sqrt x \exp(\sqrt x) / (2 x) \notin \C(x)[t]$.
+However, $t=\exp(\sqrt x)$ is monomial over $\C(x,\sqrt x)$
+
+
+{\bf Definition} Let $k$ be a differential field extended by a single
+monomial $t$ to form a differential ring $k[t]$.
+A polynomial $f \ in k[t]$ is {\it normal} with respect to a
+derivation $D$ if $\gcd(f,Df)=1$ and {\it special} if $\gcd(f,Df)=f$.
+Bronstein p. 92.
+
+For an irreducible polynomial, these are the only two cases.
+Reducible polynomials can be factored into a normal and a special
+component.  If $Dt$ is constant (the ordinary case), all irreducible
+polynomials in $k[t]$ are normal.
 
 {\bf Lemma} An irreducible normal factor of a polynomial with multiplicity
 $p$ and non-zero derivative appears in the polynomial's derivative
@@ -90,6 +107,17 @@ $q'$ might be zero.
 {\bf Lemma} An irreducible normal factor of a polynomial with multiplicity
 $p$ appears in the polynomial's derivative with multiplicity at least
 $p-1$, unless the derivative is zero.
+
+\vfill\eject
+\section*{A Prototype Problem}
+
+Let's consider a simplified, one-dimensional version of Schr\"odinger's equation:
+
+$${{\delta^2}\over{\delta x}^2} \Psi = {\delta\over{\delta t}} \Psi$$
+
+We'll use two derivations, $\delta_x$ and $\delta_t$, so I'll often
+write the previous equation as $\delta_x^2 \Psi = \delta_t \Psi$
+or $\Psi_{xx} = \Psi_{t}$.
 
 What field do we use?  Good question!
 
@@ -310,6 +338,7 @@ variables, so I think this is quite promising!
 
 
 \vfill\eject
+\section*{Solving $\Psi_{xx}=\Psi_t$ in $\C(x,t,z)$}
 
 What about the intermediate field $\C(x,t,z)$?  Remember
 
@@ -406,6 +435,7 @@ The numerator thus reduces to the $i=0$ term, for which $n_{xx}=n_t$
 and we have the same solution set as before: $a(x^2+2t)+bx+c$.
 
 \vfill\eject
+\section*{Solving $\Psi_{xx}=\Psi_t$ in $\C(x,t,r,z)$}
 
 We should be able to find more solutions in $\C(x,t,r,z)$, where $r^2=t$.
 
@@ -599,12 +629,20 @@ Instead, it is isomorphic to a subring of $K[Z[p]]$ and we can adjust
 the construction so that the subring encompasses any finite number of
 elements from $K[Z[p]]$.
 
-Theorem.  Given a ring R, if every pair of elements from R can be
+Theorem.  (Hopefully) Given a ring R, if every pair of elements from R can be
 embedded in a subring that is a GCD domain, then R is a GCD domain.
+PROOF NEEDED.
 
 \vfill\eject
 
 \section*{Bibliography}
+
+Bronstein, Symbolic Integration I: Transcendental Functions, Springer 2004.
+
+\begin{quote}
+The single most important reference on the use of differential
+algebra to solve differential equations.
+\end{quote}
 
 Abramov, Petkov\v sek,
 On Polynomial Solutions of Linear Partial
