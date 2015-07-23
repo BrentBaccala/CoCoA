@@ -1160,20 +1160,37 @@ void program()
   //cout << minExponent(eq, f) << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
+
+
+
   cout << endl;
-  cout << "try denominator z^p T where T is a polynomial in t (no x or z)" << endl;
+  cout << "try denominator z^p f" << endl;
   cout << endl;
 
-  d = power(z,p) * T;
+  d = power(z,p) * f;
   eq = num(dx(dx(N/d)) - dt(N/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
-  cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
+  cout << "minCoeff(eq, f) = " << minCoeff(eq, f) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
+
   cout << endl;
-  cout << "try denominator z^p t^a T where T is a polynomial in t with no t factor" << endl;
+  cout << "try denominator z^p t^a f" << endl;
+  cout << endl;
+
+  d = power(z,p) * power(t,a) * f;
+  eq = num(dx(dx(N/d)) - dt(N/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " << minCoeff(eq, f) << endl;
+  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+
+  cout << endl;
+  cout << "try denominator z^p t^a T where T_x = 0" << endl;
   cout << endl;
 
   d = power(z,p) * power(t, a) * T;
