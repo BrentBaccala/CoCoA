@@ -1349,8 +1349,7 @@ void program()
   cout << endl;
 
   NN = n_i * power(z,i);
-  d = 1;
-  eq = num(O*(NN/d));
+  eq = num(O*NN);
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1361,8 +1360,7 @@ void program()
   cout << endl;
 
   NN = n_i * power(z,i) * power(t,a);
-  d = 1;
-  eq = num(O*(NN/d));
+  eq = num(O*NN);
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1373,11 +1371,7 @@ void program()
   cout << endl;
 
   NN = n_i * power(z,1) * power(t,a);
-  d = 1;
-  //cout << (t >> (tpo - 1)) (dx(dx(NN))) << endl;
-  //cout << (t >> (tpo - 1)) (dt(NN)) << endl;
-  eq = num(O*(NN/d));
-  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  eq = num(O*NN);
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
   cout << minCoeff(eq,t) << endl;
@@ -1387,9 +1381,7 @@ void program()
   cout << endl;
 
   NN = n_i * power(z,1);
-  d = 1;
-  eq = num(O*(NN/d));
-  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  eq = num(O*NN);
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
   cout << minCoeff(eq,t) << endl;
