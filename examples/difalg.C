@@ -628,11 +628,13 @@ PPMonoid NewPPMonoidRing(const std::vector<string>& IndetNames, const PPOrdering
 
 class Differential {
 
-private:
+public:
 
-  ring R;
+  const ring R;
 
   vector<pair<RingElem, RingElem>> difmap;
+
+private:
 
   void insert(RingElem indet, RingElem result)
   {
@@ -687,7 +689,7 @@ public:
     }
   }
 
-  RingElem operator() (RingElem elem)
+  RingElem operator() (const RingElem elem) const
   {
     BigRat q;
 
@@ -709,7 +711,13 @@ public:
       return result;
     }
   }
+
+  //  const ring& myOwner const { return R; }
 };
+
+ring owner(const Differential& D) {
+  return D.R;
+}
 
 /* OrderedPolyRingElem - a polynomial ring constructed with an ordered coefficient ring
  *
@@ -942,6 +950,78 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
 }
 
 
+/* A Weyl ring promoted to an operator algebra
+ *
+ * A vector of differentials is provided.  All must operate on the
+ * same ring.  The symbols provided to the Weyl algebra must also
+ * exist in that ring.
+ */
+
+class WeylOperatorAlgebra : public RingWeylImpl
+{
+private:
+  const std::vector<Differential> differentials;
+public:
+  WeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<long>& ElimIndets, const std::vector<Differential>& differentials):
+    RingWeylImpl(CoeffRing, names, ElimIndets),
+    differentials(differentials)
+  {
+    const ring R = owner(differentials[0]);
+    for (auto it=differentials.begin(); it != differentials.end(); ++it) {
+      if (owner(*it) != R) {
+	CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra: differentials must map the same ring");
+      }
+    }
+    auto Rsymbols = symbols(R);
+    for (auto it=names.begin(); it != names.end(); ++it) {
+      // if (!any_of(Rsymbols.begin(), Rsymbols.end(), [] a));
+    }
+  }
+
+  RingElem myLeftMul(ConstRawPtr rawx, ConstRefRingElem y) const
+  {
+    RingElem ans(owner(y));
+    long myNumTrueIndets = myNumIndets()/2;
+    std::vector<symbol> SymList;
+
+    mySymbols(SymList);
+
+    if (owner(y) != owner(differentials[0])) {
+      CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra used on wrong ring");
+    }
+    for (auto it=myBeginIter(rawx); !IsEnded(it); ++it) {
+      RingElem term(y);
+      // each term in our operator is in canonical form, so operators are applied first
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	const long Didx = idx + myNumTrueIndets;
+	const long d = exponent(PP(it), Didx);
+
+	for (long i=1; i <= d; ++i) {
+	  term = (differentials[idx])(term);
+	  if (IsZero(term)) break;
+	}
+      }
+      // then multiplication by indets
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	const long d = exponent(PP(it), idx);
+
+	for (long i=1; i <= d; ++i) {
+	  term = term * RingElem(owner(y), SymList[idx]);
+	}
+      }
+      // We assume that the Weyl algebra's coefficient ring can be injected into the target ring
+      ans += CanonicalHom(myCoeffRing(),owner(term))(coeff(it))*term;
+    }
+    return ans;
+  }
+};
+
+SparsePolyRing NewWeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<Differential>& differentials)
+{
+  std::vector<long> ElimIndets;   // empty set
+  return SparsePolyRing(new WeylOperatorAlgebra(CoeffRing, WANAMES(names), ElimIndets, differentials));
+}
+
 /* Return the smallest exponent with which an indeterminate appears in a polynomial */
 
 RingElem minExponent(RingElem in, RingElem indet)
@@ -1091,6 +1171,8 @@ void program()
   RingElem n_ixx(K, "n_{ixx}");
   RingElem n_it(K, "n_{it}");
 
+  // setup our differentials (acting on K) and our Weyl algebra
+
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, r >> 0, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
@@ -1100,6 +1182,15 @@ void program()
 
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
+
+  ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
+
+  RingElem WA_dx(WA, "dx");
+  RingElem WA_dt(WA, "dt");
+
+  // our operator
+
+  RingElem O = WA_dx*WA_dx - WA_dt;
 
   RingElem e = N/D;
 
@@ -1116,6 +1207,10 @@ void program()
   cout << num(2*t*dx(dx(e)) - 2*t*dt(e) - e) << endl;
   cout << num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e) << endl;
   cout << num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e) << endl;
+
+  cout << endl;
+
+  cout << num(O*e) << endl;
 
   cout << endl;
   cout << "try an irreducible factor f^p (p >= 2) in denominator = f^p q" << endl;
@@ -1142,7 +1237,7 @@ void program()
   //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
   //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
 
-  RingElem eq = num(dx(dx(N/d)) - dt(N/d));
+  RingElem eq = num(O*(N/d));
 
   cout << eq << endl;
   //cout << factor(eq) << endl;
@@ -1154,7 +1249,7 @@ void program()
   cout << endl;
 
   d = f * q;
-  eq = num(dx(dx(N/d)) - dt(N/d));
+  eq = num(O*(N/d));
 
   cout << eq << endl;
   //cout << minExponent(eq, f) << endl;
@@ -1168,12 +1263,11 @@ void program()
   cout << endl;
 
   d = power(z,p) * f;
-  eq = num(dx(dx(N/d)) - dt(N/d));
+  eq = num(O*(N/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " << minCoeff(eq, f) << endl;
-  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
 
   cout << endl;
@@ -1181,7 +1275,7 @@ void program()
   cout << endl;
 
   d = power(z,p) * power(t,a) * f;
-  eq = num(dx(dx(N/d)) - dt(N/d));
+  eq = num(O*(N/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
@@ -1194,7 +1288,7 @@ void program()
   cout << endl;
 
   d = power(z,p) * power(t, a) * T;
-  eq = num(dx(dx(N/d)) - dt(N/d));
+  eq = num(O*(N/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
@@ -1207,7 +1301,7 @@ void program()
   cout << endl;
 
   d = power(z,p);
-  eq = num(dx(dx(N/d)) - dt(N/d));
+  eq = num(O*(N/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
@@ -1222,7 +1316,7 @@ void program()
 
   d = power(z,p);
   RingElem NN = power(t,a) * N;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
@@ -1236,7 +1330,7 @@ void program()
 
   d = power(z,a);
   NN = power(t,b) * n + power(t,c) * n_r * r;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
@@ -1252,7 +1346,7 @@ void program()
 
   NN = n_i * power(z,i);
   d = 1;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1264,7 +1358,7 @@ void program()
 
   NN = n_i * power(z,i) * power(t,a);
   d = 1;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1278,7 +1372,7 @@ void program()
   d = 1;
   //cout << (t >> (tpo - 1)) (dx(dx(NN))) << endl;
   //cout << (t >> (tpo - 1)) (dt(NN)) << endl;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1290,7 +1384,7 @@ void program()
 
   NN = n_i * power(z,1);
   d = 1;
-  eq = num(dx(dx(NN/d)) - dt(NN/d));
+  eq = num(O*(NN/d));
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
@@ -1299,7 +1393,7 @@ void program()
   cout << endl;
   cout << "numerator is n + n_r r;    n_xx = n_t (i = 0)" << endl;
   NN = n + n_r * r;
-  eq = num(dx(dx(NN)) - dt(NN));
+  eq = num(O*NN);
   cout << eq << endl;
 
   cout << endl;
