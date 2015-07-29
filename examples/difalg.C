@@ -954,7 +954,9 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
  *
  * A vector of differentials is provided.  All must operate on the
  * same ring.  The symbols provided to the Weyl algebra must also
- * exist in that ring.
+ * exist in that ring.  We assume that CanonicalHom can lift
+ * coefficients from the Weyl algebra's coefficient ring
+ * into the target ring of the differentials.
  */
 
 class WeylOperatorAlgebra : public RingWeylImpl
@@ -1009,8 +1011,8 @@ public:
 	  term = term * RingElem(owner(y), SymList[idx]);
 	}
       }
-      // We assume that the Weyl algebra's coefficient ring can be injected into the target ring
-      ans += CanonicalHom(myCoeffRing(),owner(term))(coeff(it))*term;
+      // inject the Weyl algebra's coefficient ring into the target ring
+      ans += CanonicalHom(myCoeffRing(),owner(y))(coeff(it))*term;
     }
     return ans;
   }
@@ -1185,6 +1187,8 @@ void program()
 
   ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
 
+  RingElem WA_x(WA, "x");
+  RingElem WA_t(WA, "t");
   RingElem WA_dx(WA, "dx");
   RingElem WA_dt(WA, "dt");
 
@@ -1396,10 +1400,13 @@ void program()
   eq = num(O*NN);
   cout << eq << endl;
 
+  // eq = num(-2*dx(NN)*x - NN + 2*t*dx(dx(NN)) - 2*t*dt(NN));
+  O = -2*WA_x*WA_dx - 1 + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt;
+
   cout << endl;
   cout << "numerator is n + n_r r;    -2n_x x - n + 2 t n_{xx} = 2 t n_t  (i = 1)" << endl;
   NN = n + n_r * r;
-  eq = num(-2*dx(NN)*x - NN + 2*t*dx(dx(NN)) - 2*t*dt(NN));
+  eq = num(O*NN);
   cout << eq << endl;
   cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
   cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
@@ -1409,9 +1416,12 @@ void program()
   cout << "try a square-free factor f in the denominator = f q" << endl;
   cout << endl;
 
+  //eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  O = 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
+
   d = f * q;
   e = N/d;
-  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
@@ -1422,7 +1432,7 @@ void program()
 
   d = f * power(t,a) * q;
   e = N/d;
-  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
@@ -1433,10 +1443,13 @@ void program()
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
+
+  //eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
+  O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
 
   cout << endl;
   cout << "equation 3" << endl;
@@ -1445,7 +1458,7 @@ void program()
 
   d = f * power(t,b) * q;
   e = N/d;
-  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
@@ -1456,10 +1469,12 @@ void program()
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
+  //eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
+  O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 2;
 
 
   cout << endl;
@@ -1469,7 +1484,7 @@ void program()
 
   d = f * power(t,b) * q;
   e = N/d;
-  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
@@ -1480,7 +1495,7 @@ void program()
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
+  eq = num(O*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
