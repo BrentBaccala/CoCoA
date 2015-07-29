@@ -219,6 +219,7 @@ namespace CoCoA
     virtual void myAdd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const = 0; ///< lhs = x+y
     virtual void mySub(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const = 0; ///< lhs = x-y
     virtual void myMul(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const = 0; ///< lhs = x*y
+    virtual RingElem myLeftMul(ConstRawPtr rawx, ConstRefRingElem y) const; ///< lhs = x*y if y is in a different ring
     virtual void myDiv(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const = 0; ///< lhs = x/y
     virtual void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const;     ///< lhs = gcd(x,y) if TrueGCDDomain;
     virtual void myLcm(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const;     ///< lhs = lcm(x,y) if TrueGCDDomain;

@@ -198,6 +198,13 @@ namespace CoCoA
   }
 
 
+  // Default defn for myLeftMul: throws MixedRings error.
+  RingElem RingBase::myLeftMul(ConstRawPtr /*rawx*/, ConstRefRingElem /*y*/) const
+  {
+    CoCoA_ERROR(ERR::MixedRings, "RingElem * RingElem");
+  }
+
+
   bool RingBase::myIsInvertible(ConstRawPtr rawx) const
   {
     RingElem junk(ring(this));
@@ -705,8 +712,9 @@ namespace CoCoA
   {
     const ring& Rx = owner(x);
     const ring& Ry = owner(y);
-    if (Rx != Ry)
-      CoCoA_ERROR(ERR::MixedRings, "RingElem * RingElem");
+    if (Rx != Ry) {
+      return Rx->myLeftMul(raw(x), y);
+    }
 
     RingElem ans(Rx);
     Rx->myMul(raw(ans), raw(x), raw(y));
