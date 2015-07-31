@@ -1516,112 +1516,125 @@ void program()
   eq = num(O*NN);
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
-  cout << minCoeff(eq,t) << endl;
-
-  cout << WeylOperatorAlgebraPtr(WA)->factor(eq, n_i) << endl;
+  RingElem O1 = WeylOperatorAlgebraPtr(WA)->factor(eq, n_i);
+  cout << O1 << endl;
 
   cout << endl;
   cout << "numerator is n + n_r r;    n_xx = n_t (i = 0)" << endl;
   NN = n + n_r * r;
   eq = num(O*NN);
   cout << eq << endl;
+  cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
+  cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
+
+  RingElem O0a = WeylOperatorAlgebraPtr(WA)->factor(minCoeff(eq, r), n);
+  RingElem O0b = WeylOperatorAlgebraPtr(WA)->factor((eq - minCoeff(eq, r))/num(r), n_r);
+
+  cout << "O0a = " << O0a << endl;
+  cout << "O0b = " << O0b << endl;
 
   // eq = num(-2*dx(NN)*x - NN + 2*t*dx(dx(NN)) - 2*t*dt(NN));
-  O = -2*WA_x*WA_dx - 1 + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt;
+  //O = -2*WA_x*WA_dx - 1 + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt;
 
   cout << endl;
   cout << "numerator is n + n_r r;    -2n_x x - n + 2 t n_{xx} = 2 t n_t  (i = 1)" << endl;
   NN = n + n_r * r;
-  eq = num(O*NN);
+  eq = num(O1*NN);
   cout << eq << endl;
   cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
   cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
 
+  RingElem O1a = WeylOperatorAlgebraPtr(WA)->factor(minCoeff(eq, r), n);
+  RingElem O1b = WeylOperatorAlgebraPtr(WA)->factor((eq - minCoeff(eq, r))/num(r), n_r);
+
+  cout << "O1a = " << O1a << endl;
+  cout << "O1b = " << O1b << endl;
+
   cout << endl;
-  cout << "equation 1" << endl;
+  cout << "operator 0b" << endl;
   cout << "try a square-free factor f in the denominator = f q" << endl;
   cout << endl;
 
   //eq = num(2*t*dx(dx(e)) - 2*t*dt(e) - e);
-  O = 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
+  //O = 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
 
   d = f * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O0b*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
   cout << endl;
-  cout << "equation 1" << endl;
+  cout << "operator 0b" << endl;
   cout << "try a denominator = f t^a q" << endl;
   cout << endl;
 
   d = f * power(t,a) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O0b*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
   cout << endl;
-  cout << "equation 1" << endl;
+  cout << "operator 0b" << endl;
   cout << "try a denominator = f^a t^b q" << endl;
   cout << endl;
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O0b*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
 
   //eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e);
-  O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
+  //O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 1;
 
   cout << endl;
-  cout << "equation 3" << endl;
+  cout << "operator 1a" << endl;
   cout << "try a denominator = f t^b q" << endl;
   cout << endl;
 
   d = f * power(t,b) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O1a*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
   cout << endl;
-  cout << "equation 3" << endl;
+  cout << "operator 1a" << endl;
   cout << "try a denominator = f^a t^b q" << endl;
   cout << endl;
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O1a*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
   //eq = num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -2*e);
-  O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 2;
+  //O = -2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx - 2*WA_t*WA_dt - 2;
 
 
   cout << endl;
-  cout << "equation 4" << endl;
+  cout << "operator 1b" << endl;
   cout << "try a denominator = f t^b q" << endl;
   cout << endl;
 
   d = f * power(t,b) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O1b*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
   cout << endl;
-  cout << "equation 4" << endl;
+  cout << "operator 1b" << endl;
   cout << "try a denominator = f^a t^b q" << endl;
   cout << endl;
 
   d = power(f,a) * power(t,b) * q;
   e = N/d;
-  eq = num(O*e);
+  eq = num(O1b*e);
   cout << eq << endl;
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
