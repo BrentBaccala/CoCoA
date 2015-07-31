@@ -1068,12 +1068,8 @@ public:
     for (long idx=0; idx < myNumTrueIndets; ++idx) {
       long indet_num;
       injectable_indets *= LPP(RingElem(R, SymList[idx]));
-      // This assert can fail if we have 
-      //CoCoA_ASSERT(IsIndet(indet_num, RingElem(R, SymList[idx])));
-      if (IsIndet(indet_num, RingElem(R, SymList[idx]))) {
-	pullbacks[indet_num] = indet(WA, idx);
-      }
-      //pullback = pullback((RingElem(R, SymList[idx]) >> indet(WA, idx)));
+      CoCoA_ASSERT(IsIndet(indet_num, RingElem(R, SymList[idx])));
+      pullbacks[indet_num] = indet(WA, idx);
     }
 
     RingHom pullback = PolyAlgebraHom(R, WA, pullbacks);
@@ -1134,7 +1130,9 @@ public:
       }
 
       if (idx == myNumTrueIndets) {
-	CoCoA_ERROR(ERR::NYI, "WeylOperatorAlgebra factor failed");
+	//CoCoA_ERROR(ERR::NYI, "WeylOperatorAlgebra factor failed");
+	solution = 0;
+	return solution;
       }
 
     }
@@ -1314,6 +1312,9 @@ void program()
 
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
+
+  // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
+  // unless the operator algebra and the target ring share the same coefficient ring.
 
   //ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
   ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
