@@ -963,10 +963,12 @@ class WeylOperatorAlgebra : public RingWeylImpl
 {
 private:
   const std::vector<Differential> differentials;
+  const std::vector<symbol> SymList;
 public:
   WeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<long>& ElimIndets, const std::vector<Differential>& differentials):
     RingWeylImpl(CoeffRing, names, ElimIndets),
-    differentials(differentials)
+    differentials(differentials),
+    SymList(names)
   {
     const ring R = owner(differentials[0]);
     for (auto it=differentials.begin(); it != differentials.end(); ++it) {
@@ -984,9 +986,6 @@ public:
   {
     RingElem ans(owner(y));
     long myNumTrueIndets = myNumIndets()/2;
-    std::vector<symbol> SymList;
-
-    mySymbols(SymList);
 
     if (owner(y) != owner(differentials[0])) {
       CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra used on wrong ring");
@@ -1016,7 +1015,138 @@ public:
     }
     return ans;
   }
+
+  // Attempt to factor an operator out of a RingElem.  Pass in a
+  // RingElem in the target ring along with an indeterminate in the
+  // target ring.  If successful, returns a RingElem in the Weyl
+  // algebra that operates on the indeterminate to produce the
+  // RingElem.  Otherwise, returns 0.
+  //
+  // It's all heuristics; I don't have a general algorithm.
+  //
+  // Typical use is to factor a polynomial using a Weyl algebra
+  // acting on the polynomial's fraction field.
+
+  RingElem factor(ConstRefRingElem x, ConstRefRingElem arg) const
+  {
+    long myNumTrueIndets = myNumIndets()/2;
+    ring WA = SparsePolyRing(this);
+    RingElem solution(WA);
+
+    ring K = owner(differentials[0]);
+    ring R = owner(x);
+
+    RingHom RtoK = CanonicalHom(R, K);
+
+    if (!(K == R) && !(IsFractionField(K) && (BaseRing(K) == R))) {
+      CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra factor used on wrong ring");
+    }
+
+    if (K == R) {
+      CoCoA_ERROR(ERR::NYI, "WeylOperatorAlgebra factor used on fraction field");
+    }
+
+    if (owner(arg) != K) {
+      CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra factor used on wrong ring");
+    }
+
+    if (owner(arg) != K) {
+      CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra factor used on wrong ring");
+    }
+
+    if (!IsSparsePolyRing(R)) {
+      CoCoA_ERROR(ERR::NYI, "WeylOperatorAlgebra factor used on non-SparsePolyRing");
+    }
+
+    // compute a monoid consisting of just those indets we can inject from
+    // the WeylAlgebra into K/R, and a RingHom that pulls their images
+    // from R back into WA
+
+    PPMonoidElem injectable_indets(PPM(R));
+    vector<RingElem> pullbacks(NumIndets(R), RingElem(WA));
+
+    for (long idx=0; idx < myNumTrueIndets; ++idx) {
+      long indet_num;
+      injectable_indets *= LPP(RingElem(R, SymList[idx]));
+      // This assert can fail if we have 
+      //CoCoA_ASSERT(IsIndet(indet_num, RingElem(R, SymList[idx])));
+      if (IsIndet(indet_num, RingElem(R, SymList[idx]))) {
+	pullbacks[indet_num] = indet(WA, idx);
+      }
+      //pullback = pullback((RingElem(R, SymList[idx]) >> indet(WA, idx)));
+    }
+
+    RingHom pullback = PolyAlgebraHom(R, WA, pullbacks);
+
+    // now we assume that R is a SparsePolyRing and iterate on x's terms
+
+    for (auto it=BeginIter(x); !IsEnded(it); ++it) {
+      RingElem term = myOne();
+      PPMonoidElem pp = PP(it);
+      long idx;
+
+      //cerr << "trying " << coeff(it) << " " << PP(it) <<endl;
+
+      // try each differential at orders 0, 1, and 2
+      for (idx=0; idx < myNumTrueIndets; ++idx) {
+	long order;
+	for (order=0; order <= 2; ++order) {
+
+	  const long Didx = idx + myNumTrueIndets;
+
+	  // compute the differential applied to the indet
+
+	  RingElem target(arg);
+	  for (long i=1; i <= order; ++i) {
+	    target = (differentials[idx])(target);
+	  }
+
+	  if (IsZero(target)) continue;
+
+	  // can we exactly divide the target out of this term?
+
+	  RingElem rem = RtoK(monomial(R, coeff(it), PP(it))) / target;
+	  if (IsOne(den(rem))) {
+	    // if so, then is the remainder composed of only injectable indets?
+	    rem = num(rem);
+	    if (IsMonomial(rem)) {
+	      if (lcm(radical(LPP(rem)), injectable_indets) == injectable_indets) {
+		// yes?  then we've solved this term
+		solution += pullback(rem) * IndetPower(WA, Didx, order);
+		//cerr << "solution is " << solution << endl;
+		break;
+	      }
+	    }
+	  }
+	}
+
+	if (order <= 2) break;
+
+#if 0
+	if (IsFractionField(owner(x))) {
+	  // if we're in a fraction field, see if division yields a polynomial
+	  if (IsOne(den(monomial(owner(x), coeff(it), PP(it)) / target))) break;
+	} else {
+	  // if we're in a polynomial ring, see if division is exact
+	  if (IsDivisible(monomial(owner(x), coeff(it), PP(it)), target)) break;
+	}
+#endif
+      }
+
+      if (idx == myNumTrueIndets) {
+	CoCoA_ERROR(ERR::NYI, "WeylOperatorAlgebra factor failed");
+      }
+
+    }
+
+    return solution;
+  }
 };
+
+const WeylOperatorAlgebra* WeylOperatorAlgebraPtr(const ring& R)
+{
+  return dynamic_cast<const WeylOperatorAlgebra*>(R.myRawPtr());
+}
 
 SparsePolyRing NewWeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<Differential>& differentials)
 {
@@ -1185,7 +1315,8 @@ void program()
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
 
-  ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
+  //ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
+  ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
 
   RingElem WA_x(WA, "x");
   RingElem WA_t(WA, "t");
@@ -1214,6 +1345,7 @@ void program()
 
   cout << endl;
 
+  cout << O << endl;
   cout << num(O*e) << endl;
 
   cout << endl;
@@ -1385,6 +1517,8 @@ void program()
   cout << eq << endl;
   cout << (eq=minCoeff(eq,z)) << endl;
   cout << minCoeff(eq,t) << endl;
+
+  cout << WeylOperatorAlgebraPtr(WA)->factor(eq, n_i) << endl;
 
   cout << endl;
   cout << "numerator is n + n_r r;    n_xx = n_t (i = 0)" << endl;
