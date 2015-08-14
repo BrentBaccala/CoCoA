@@ -399,15 +399,19 @@ $$(a^{2} +a)x^{2}n +4axtn_x +4t^{2}n_{xx} -4t^{2}n_t +2atn = 0$$
 
 Now we look at the powers of $t$ and conclude that $(a^{2}
 +a)x^{2}n$ must be a multiple of $t$, implying that the numerator
-must include a $t$ factor.  Expanding that out, we obtain the same
-multiple as before, leading to the conclusion that $a^2+a$ must be
+must include a $t$ factor.  Setting the numerator to be $t^b n$, and
+leaving the denominator as $z^a$, we obtain:
+
+$$(a^{2} +a)x^{2}t^{b}n +4axt^{b +1}n_x +4t^{b +2}n_{xx} -4t^{b +2}n_t +(2a -4b)t^{b +1}n = 0$$
+
+So, $(a^{2} +a)x^{2}n$ must be zero or a multiple of $t$, which implies that $a^2+a$ must be
 zero, so $a$ must be 0 or -1.  Since it can't be -1, it must be zero,
 and the denominator is therefore trivial.
 
 Now let's look at the numerator, assume that it has the form $\sum n_i z^i$, where the $n_i$
 are polynomials in $\C[x,t]$.  Expanding out $n_{xx} - n_t = 0$, we obtain:
 
-$$(i^{2} -i)x^{2}n_i -4ixtn_{ix} +4t^{2}n_{ixx} -4t^{2}n_{it} -2itn_i$$
+$$\sum_i \left[ (i^{2} -i)x^{2}n_i -4ixtn_{ix} +4t^{2}n_{ixx} -4t^{2}n_{it} -2itn_i \right] z^i = 0$$
 
 Looking at the powers of $t$, we conclude that $(i^{2} -i)x^{2}n_i$ must be a multiple
 of $t$, so we now try a numerator of the form $\sum n_i t^a z^i$, and again

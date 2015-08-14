@@ -1230,6 +1230,8 @@ void program()
   ring ZZ = RingZZ();
   ring QQ = RingQQ();
 
+  // ExponentRing - these are the indeterminates that can appear in powers
+
   ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i"), symbol("b"), symbol("c")});
   RingElem p(ExponentRing, "p");
   RingElem a(ExponentRing, "a");
@@ -1237,19 +1239,22 @@ void program()
   RingElem c(ExponentRing, "c");
   RingElem i(ExponentRing, "i");
 
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "r", "T", "T_t", "(t+1)",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
 	"n", "n_{x}", "n_{xx}", "n_{t}",
 	"n_i", "n_{ix}", "n_{ixx}", "n_{it}",
 	"n_r", "n_{rx}", "n_{rxx}", "n_{rt}",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
-  //ring R = NewPolyRing(ExponentRing, PPM);
   ring R = NewPowerPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
   // x,t are in our field of definition
   // z = exp(-x^2/(4(t+1)))
   // r = sqrt(t)
+
   RingElem x(K, "x");
   RingElem t(K, "t");
   RingElem z(K, "z");
@@ -1301,7 +1306,7 @@ void program()
   RingElem n_ixx(K, "n_{ixx}");
   RingElem n_it(K, "n_{it}");
 
-  // setup our differentials (acting on K) and our Weyl algebra
+  // setup our differentials (acting on K)
 
   Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, r >> 0, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
@@ -1313,10 +1318,10 @@ void program()
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
 
+  // Create a Weyl algebra, with ExponentRing as the coefficient ring.
   // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
   // unless the operator algebra and the target ring share the same coefficient ring.
 
-  //ring WA = NewWeylOperatorAlgebra(QQ, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
   ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
 
   RingElem WA_x(WA, "x");
@@ -1448,11 +1453,11 @@ void program()
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
 
   cout << endl;
-  cout << "try denominator z^p with numerator t^a N where N has no t factor" << endl;
+  cout << "try denominator z^a with numerator t^b N where N has no t factor" << endl;
   cout << endl;
 
-  d = power(z,p);
-  RingElem NN = power(t,a) * N;
+  d = power(z,a);
+  RingElem NN = power(t,b) * N;
   eq = num(O*(NN/d));
   //cout << eq << endl;
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
