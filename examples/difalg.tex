@@ -7,6 +7,7 @@
 \usepackage{amsmath, amscd, amsxtra, amsthm}
 \usepackage{amssymb}
 \usepackage{comment}
+\usepackage{tikz}
 
 \usepackage{supertabular}
 
@@ -582,8 +583,124 @@ extension fields, since the relationship between $x$ and $e^x$, for
 example, is not algebraic.  Futuremore, Tsai's Lemma 2.1.5 states that in
 the infinite rank case, the singular locus is trivial (it's the entire space).
 
-\vfill\eject
+How can we analyse the infinite rank case?  Let's consider a simple
+case: the operator $\delta_x^2 - \delta_t$ acting on $\C[x,t]$.
+Any polynomial in this ring can be expressed in the form $\sum c_{m,n} x^m t^n$,
+so applying the operator we obtain:
 
+$$\sum c_{m,n} m(m-1) x^{m-2} t^n - \sum c_{m,n} n x^m t^{n-1} = 0$$
+
+Changing variables, we can collapse the sums together:
+
+$$\sum c_{m+2,n} (m+2)(m+1) x^m t^n - \sum c_{m,n+1} (n+1) x^m t^n = 0$$
+$$\sum \left[  (m+2)(m+1) c_{m+2,n} -  (n+1) c_{m,n+1} \right] x^m t^n = 0$$
+
+This equation specifies relationships between the various $c_{m,n}$
+coefficients.  For example, the $xt$ term specifies a relationship
+between $c_{3,1}$ and $c_{1,2}$, specifically, $3c_{3,1}=c_{1,2}$.
+The $x^3$ term specifies a relationship between $c_{5,0}$ and $c_{3,1}$,
+$20c_{5,0} = c_{3,1}$.
+If we chart all of the $c_{m,n}$ coefficients, we can graph these
+relationships as follows:
+
+\def\tikzcoefficientgraph{
+\pgftransformscale{0.5}
+%\draw (0,0) -- (5.5,0);
+%\draw (0,0) -- (0,5.5);
+\foreach \x in {0,...,5}
+   \foreach \y in {0,...,5}
+      \draw (\x,\y) node {.};
+
+\foreach \x in {2,...,5}
+   \draw (\x,-1) node [anchor=base] {$x^\x$};
+\draw (1,-1) node [anchor=base] {$x$};
+\draw (0,-1) node [anchor=base] {1};
+\foreach \y in {2,...,5}
+   \draw (-0.5,\y) node {$t^\y$};
+\draw (-0.5,1) node {$t$};
+\draw (-0.5,0) node {1};
+}
+
+\begin{center}
+\begin{tikzpicture}
+
+\tikzcoefficientgraph
+
+\draw (1,2) node {x};
+\draw (3,1) node {x};
+\draw (5,0) node {x};
+\draw (5,0) -- (3,1) -- (1,2);
+
+\end{tikzpicture}
+\end{center}
+
+A dimension can be associated with the differential operator,
+corresponding to the dimensions spanned in the graph.  The example
+shows a one-dimensional operator, spanning a line.  Such an operator
+generates an infinite family of {\it potential} solutions, each
+corresponding to a line of the appropriate slope in the chart.  Two
+subcases arise.  For a line of negative slope, as in the illustrated
+example, boundary conditions exist on both ends of the line, as the
+coefficients must become zero as the line passes out of the first
+quadrant.  These conditions must be satisfied for the potential
+solution to be an actual solution.  In the other case, non-negative
+slope, only one boundary condition exists on each line, and a
+recursion relationship gives rise to an infinite sequence of
+coefficients on each line.  An example is the operator $\delta_x^2+t$,
+which graphs like this:
+
+\begin{center}
+\begin{tikzpicture}
+
+\tikzcoefficientgraph
+
+\draw (1,2) node {x};
+\draw (3,3) node {x};
+\draw (5,4) node {x};
+\draw (5,4) -- (3,3) -- (1,2);
+
+\end{tikzpicture}
+\end{center}
+
+
+For a two-dimensional operator, such as $\delta_x^2+\delta_x-\delta_t$,
+all of the coefficients are linked together and can not be separated.
+For a zero-dimensional operator, such as $x\delta_x + t\delta_t$,
+each coefficient is independent of all others, and a Diophantine
+equation determines if each coefficient is an admissible solution.
+Abramov and Petkov\v sek used zero-dimensional operators to tie
+this problem to Hilbert's tenth problem.
+These two examples are illustrated as follows:
+
+\begin{center}
+\begin{tikzpicture}
+
+\tikzcoefficientgraph
+
+\draw (1,2) node {x};
+\draw (2,1) node {x};
+\draw (3,1) node {x};
+
+\draw (1,2) -- (2,1) -- (3,1) -- (1,2);
+
+\pgftransformscale{2}
+\pgftransformxshift{200}
+
+\tikzcoefficientgraph
+
+\draw (3,3) node {x};
+
+\end{tikzpicture}
+\end{center}
+
+Polynomial rings with more indeterminates give rise to more possibilities.
+Operators can have dimension from zero up to the number of indeterminates.
+Furthermore, operators of intermediate dimension, such as a two-dimensional
+operator acting on a ring with three indeterminates, can have boundary
+conditions in one dimension and infinite recursion in another dimension.
+Also, non-homogeneous equations have not been considered here.
+
+\vfill\eject
 \section*{Operating in K[Z[p]]}
 
 Often we need to operate in a monoid ring like $K[Z[p]]$, i.e, a
