@@ -256,12 +256,16 @@ $$n d_t = n_t d - n_{xx} d$$
 
 $d$ can't divide its own derivative, and $\GCD(n,d)$ is 1 by
 hypothesis, so this equation can only hold if $d_t$ is zero, so $d$
-must be a constant (LHS), and $n_t = n_{xx}$ (RHS).  This can only
-occur if $n$ has the form $ax^2 + 2at + bx +c$, and this, finally, can
-be easily seen to satisfy the original differential equation.
+must be a constant (LHS), and $n_t = n_{xx}$ (RHS).  Analysing
+this equation using the techniques later in this paper
+\footnote{see {\it Solving Polynomial Differential Equations}}
+shows that $n_t = n_{xx}$ admits an infinity of solutions,
+with an infinite basis set:
+
+$$\{1, x, x^2 + 2t, x^3 + 6xt, x^4 + 12 x^2t + 12 t^2, x^5+20x^3t+60xt^2, \ldots\}$$
 
 So the only solutions to $\delta_x^2 \Psi = \delta_t \Psi$ in
-$\C(x,t)$ have the form $a(x^2+2t)+bx+c$.
+$\C(x,t)$ are linear combinations of these polynomials.
 
 Can we find a different field that contains more solutions to this PDE?
 
@@ -437,7 +441,7 @@ so all of the $a_b$ are zero and there is no $z$ ($i=1$) term in
 the numerator.
 
 The numerator thus reduces to the $i=0$ term, for which $n_{xx}=n_t$
-and we have the same solution set as before: $a(x^2+2t)+bx+c$.
+and we have the same solution set as before.
 
 \vfill\eject
 \section*{Solving $\Psi_{xx}=\Psi_t$ in $\C(x,t,r,z)$}
@@ -487,7 +491,7 @@ $$-2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -nd^{2}
 $$2xndd_x -2xn_xd^{2} -2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -nd^{2} = 0$$
 $$2xndd_x -2xn_xd^{2} -2tndd_{xx} +2tndd_t +4tnd_x^{2} -4tn_xdd_x +2tn_{xx}d^{2} -2tn_td^{2} -2nd^{2} = 0$$
 
-The first one we've analysed already; its solutions are $ax^2 + 2at + bx +c$.
+The first one we've analysed already; its solutions are all in $\C(x,t)$.
 
 Analyzing the remaining three using the techniques already discussed
 (irreducible factors) reveal that their denominator's $x$-derivatives
@@ -521,10 +525,7 @@ $$(2a-2)nq = 0$$
 which can be satisfied if $a=1$, which means $d=tq$.
 
 In short, we've found another solution: $zr/t$, as expected from analysis.
-The general solution in $\C(x,t,r,z)$ is:
-
-$$a(x^2+2t)+bx+c+d\frac{zr}{t}$$
-
+This is the only solution in $\C(x,t,r,z) \backslash \C(x,t)$.
 
 \vfill\eject
 
