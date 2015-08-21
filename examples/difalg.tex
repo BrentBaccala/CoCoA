@@ -705,14 +705,104 @@ These two examples are illustrated as follows:
 
 Polynomial rings with more indeterminates give rise to more possibilities.
 Operators can have dimension from zero up to the number of indeterminates.
-Furthermore, operators of intermediate dimension, such as a two-dimensional
-operator acting on a ring with three indeterminates, can have boundary
-conditions in one dimension and infinite recursion in another dimension.
 
-The operator $x^a \delta_x^b$ acts on $c_{m,n} x^m t^n$ to
-produce $m_{(b)} c_{m,n} x^{m-b+a} t^n$, which transforms
-to $(m+b-a)_{(b)} c_{m+b-a,n} x^m t^n$, where $m_{(b)}$ is
-the Pochhammer falling factorial.
+The operator $x^a \delta_x^b$ acts on $c_{m,n} x^m t^n$ to produce
+$m_{(b)} c_{m,n} x^{m-b+a} t^n$, which transforms to $(m+b-a)_{(b)}
+c_{m+b-a,n} x^m t^n$, where $m_{(b)}$ is the Pochhammer falling
+factorial.  Applying this operation on each term in a differential
+operator transforms the operator into a recursion relationship on the
+coefficients.
+
+For example, the operator $\delta_x^2 - \delta_t$ transforms as:
+
+$$\delta_x^2 - \delta_t \Longrightarrow (m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1}$$
+
+Treating $m$ as the horizontal coordinate and $n$ as the vertical, we
+see from this expression that the operator is one-dimensional and has
+slope $-\frac{1}{2}$.  We can characterize the lines by introducing
+$p$ as the $m$-intercept, and thus the highest $x$ power appearing in
+the line's solution polynomial.  Let's also introduce $a$ as an index
+along the line, with $a=0$ corresponding to the point on the $m$-axis,
+and higher values of $a$ moving upwards and left along the line.
+
+Setting $m=p-2a$ and $n=a-1$, we can transform the coefficients and
+their recursion relationship as follows, calling them $d$'s in the new
+numbering system:
+
+$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}$$
+$$c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
+%$$(m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1} = 0 \Longrightarrow (p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
+$$(p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
+
+The new numbering clearly relates coefficients along a single line, as
+evidenced by the $p$ coordinate remaining unchanged through the
+recursion relationship.
+
+Now, in order to have a polynomial and not an infinite sum, we must
+have clear starting and ending points, beyond which the coefficients
+are all zero.  A starting point requires $d_{p,a}$ to be non-zero,
+while $d_{p,a-1}$ is zero, so $a$ must be zero.  Likewise, an ending
+point requires $d_{p,a}$ to be zero, while $d_{p,a-1}$ is non-zero,
+so $(p-2a+2)(p-2a+1)$ must be zero.  Since $p$ and $a$ are both
+integers, this requires (in general) solving Diophantine equations,
+which comes as no surprise by now!
+
+These specific Diophantine equations are easy, though.  $a=0$ is the
+only possible starting point, and the only possible end points are
+$a=\frac{p}{2}+1$, if $p$ is even, or $a=\frac{p+1}{2}$, if $p$ is
+odd.  We also check to ensure that the resulting $m,n$ coordinates
+fall in the first quadrant (they do), to prevent any negative powers
+from appearing in our ``polynomials''.
+
+Therefore, for each value of $p$, we can set the value of $d_{p,0}$
+arbitrarily, and with further values of $d_{p,a}$ being determined
+by the recursion relationship:
+
+$$d_{p,a} = \frac{(p-2a+2)(p-2a+1)}{a} d_{p,a-1}$$
+
+Combining the recursions, we obtain:
+
+$$d_{p,a} = \frac{p(p-1)\cdots(p-2a+2)(p-2a+1)}{a!} d_{p,0} = \frac{p!}{(p-2a)!a!} d_{p,0}$$
+
+Earlier in this paper, I separated the even and odd values of $p$ and presented the solutions as:
+
+$$B_{2i} = \sum_{j=0}^i \frac{(2i)!}{(2i-2j)!j!} x^{2i-2j} t^{j}
+\qquad B_{2i+1} = \sum_{j=0}^i \frac{(2i+1)!}{(2i-2j+1)!j!} x^{2i-2j+1} t^{j}$$
+
+Let's consider another example, the operator $-2x\delta_x - 1 +2t\delta_x^2 - 2t\delta_t$,
+which transforms to the recursion:
+
+$$-2m c_{m,n} - c_{m,n} + 2m(m-1)c_{m-2,n+1} - 2nc_{m,n}$$
+
+In this form, we see clearly that this is a one-dimensional operator, even though it
+has four terms.  Setting $m=p-2a$ and $n=a$, we transform to:
+
+$$(-2p+4a-1-2a)d_{p,a} + 2(p-2a)(p-2a-1)d_{p,a+1}$$
+
+The problem lies in the first factor, $-2p+4a-1-2a$, which can never be zero for
+any integer values of $p$ and $a$, so our ending condition is never satisified.
+Thus, this operator has no polynomial solution in $\C[x,t]$.
+
+For two-term recursions like these two examples, zeroing the
+Diophantine equations provides both necessary and sufficient
+conditions for the recursion to terminate properly.  For higher order
+one-dimensional recursions, this technique provides necessary
+conditions that might not be sufficient.  Consider a three-term
+recursion involving $d_a$, $d_{a+1}$, and $d_{a+2}$.  For the sequence
+to start at $d_b$, $d_{a+2}$'s coefficient must be zero when $a=b-2$,
+since both $d_{b-1}$ and $d_{b-2}$ will be zero.  Likewise, for the
+sequence to end at $d_c$, $d_a$'s coefficient must be zero when $a=c$,
+since $d_{c+1}$ and $d_{c+2}$ both must be zero.  This does not,
+however, ensure that the recursion generates zero values for $d_{c+1}$
+and $d_{c+2}$.
+
+Higher dimension operators are more complex, but the same basic ideas
+apply.  Consider the convex hull of the operator.  Zeroing the
+coefficient of each term on the convex hull produces a Diophantine
+equation that must be satisfied for that point to be in the solution
+set, while all the other points are outside it.
+
+
 
 \vfill\eject
 \section*{Operating in K[Z[p]]}
