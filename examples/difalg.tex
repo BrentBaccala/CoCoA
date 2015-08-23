@@ -719,9 +719,18 @@ $$\delta_x^2 - \delta_t \Longrightarrow (m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1}$$
 
 Treating $m$ as the horizontal coordinate and $n$ as the vertical, we
 see from this expression that the operator is one-dimensional and has
-slope $-\frac{1}{2}$.  We can characterize the lines by introducing
+slope $-\frac{1}{2}$.
+
+Having identified the dimension of the operator, it is now profitable
+to change coordinates into a system that separates dimensions within
+the operator's hyperplane and dimensions orthogonal to it.  Thus, for
+an $m$-dimensional operator in an $n$-dimensional polynomial ring, we
+seek to find $n-m$ dimensions to identify $m$-dimensional hyperplanes,
+and $m$ dimensions within the hyperplanes.
+
+In our example, we can characterize the lines by introducing
 $p$ as the $m$-intercept, and thus the highest $x$ power appearing in
-the line's solution polynomial.  Let's also introduce $a$ as an index
+the line's solution polynomial.  We also introduce $a$ as a coordinate
 along the line, with $a=0$ corresponding to the point on the $m$-axis,
 and higher values of $a$ moving upwards and left along the line.
 
@@ -729,10 +738,11 @@ Setting $m=p-2a$ and $n=a-1$, we can transform the coefficients and
 their recursion relationship as follows, calling them $d$'s in the new
 numbering system:
 
-$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}$$
-$$c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
-%$$(m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1} = 0 \Longrightarrow (p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
-$$(p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
+%$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}$$
+%$$c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
+%$$(p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
+$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}  \qquad c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
+$$(m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1} = 0 \Longrightarrow (p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
 
 The new numbering clearly relates coefficients along a single line, as
 evidenced by the $p$ coordinate remaining unchanged through the
@@ -800,7 +810,40 @@ Higher dimension operators are more complex, but the same basic ideas
 apply.  Consider the convex hull of the operator.  Zeroing the
 coefficient of each term on the convex hull produces a Diophantine
 equation that must be satisfied for that point to be in the solution
-set, while all the other points are outside it.
+set, while all the other points are outside it.  The zeros of the
+Diophantine equations define boundary hyperplanes that the polynomial
+solution must lie within.
+
+Theorem.  (Hopefully) Given any finite set of points on an
+$n$-dimensional integer lattice, an $n$-dimensional convex polytope
+whose vertices also lie on the integer lattice, and a distinguished
+vertex on the convex polytope, an integer translate of the convex
+polytope can be found such that the distinguished vertex lies
+over the only point in the point set that is within the translated
+convex polytope.  PROOF NEEDED.
+
+Furthermore, after changing coordinates as above, we can develop a
+system of Diophantine equations that may be more restrictive than the
+individual equations.  For example, consider a 2-dimensional operator
+with three vertices on its convex hull in a 5-dimensional space.  Each
+vertex generates a Diophantine equation of the form $A(m,n,p,a,b)$
+where $m,n,p$ identify a two-dimensional plane in the 5-dimensional
+space, and $a,b$ identify a point on the plane.  Since any single
+solution must be confined to a single plane, we are led to a
+system of Diophantine equations of the form:
+
+$$A(m,n,p,a,b) = 0$$
+$$B(m,n,p,a',b') = 0$$
+$$C(m,n,p,a'',b'') = 0$$
+
+A simultaneous solution to this system identifies a single plane,
+along with three boundary lines on that plane that confine a
+polynomial solution.  Any single solution confines a finite number of
+points, which can then be tested to see if they can actually be
+assigned values that satisfy the recursion, requiring nothing more
+complicated than solving a system of linear equations with constant
+coefficients.  There may, however, be an infinity of solutions to the
+system of Diophantine equations.
 
 
 
