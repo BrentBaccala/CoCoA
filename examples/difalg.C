@@ -1,6 +1,8 @@
 
 #include "CoCoA/library.H"
 // #include <unordered_map>
+#include <algorithm>
+#include <functional>
 using namespace CoCoA;
 using namespace std;
 
@@ -1153,6 +1155,34 @@ public:
     return b == 0 ? a : long_gcd(b, a % b);
   }
 
+  // I want a class to hold the coordinates of polynomial coefficients.
+  //
+  // Ex: a x^3y^2 term in the solution polynomial (roughly)
+  // corresponds to a coordinate (3,2), except that the coordinates
+  // are actually relative to a base coordinate, (0,0) in this case
+  //
+  // vector<long> doesn't allow me to subtract coordinates
+  // component-wise
+  //
+  // valarray<long> doesn't allow me to compare coordinates
+  // non-component-wise, required for using them as a key in a
+  // std::map
+
+  class coordinate_t : public vector<long>
+  {
+  public:
+
+    using vector::vector;
+
+    coordinate_t const operator-(const coordinate_t &b) const
+    {
+      coordinate_t c;
+      std::transform(this->begin(),this->end(),b.begin(),c.begin(),std::minus<long>());
+      return c;
+    }
+
+  };
+
   list<RingElem> poly_solve(ConstRefRingElem diffop)
   {
     // diffop is a RingElem in the WeylOperatorAlgebra
@@ -1163,10 +1193,10 @@ public:
     // Start by transforming diffop into a recursion relationship on
     // the solution polynomial's coefficients.
 
-    map<vector<long>, RingElem> coefficients;
+    map<coordinate_t, RingElem> coefficients;
 
     for (auto it=BeginIter(diffop); !IsEnded(it); ++it) {
-      vector<long> coefficient_coordinate(myNumTrueIndets);
+      coordinate_t coefficient_coordinate(myNumTrueIndets);
       RingElem coefficient(WA, coeff(it));
 
       // x^a dx^b transforms to (m+b-a)_(b) c[m+b-a]
@@ -1190,10 +1220,6 @@ public:
       }
     }
 
-    if (coefficients.size() > 2) {
-      CoCoA_ERROR(ERR::NYI, "more than two coefficients in poly_solve");
-    }
-
     if (coefficients.size() == 1) {
       CoCoA_ERROR(ERR::NYI, "zero dimensional operator in poly_solve");
     }
@@ -1202,14 +1228,14 @@ public:
       // can't be a zero-dimensional operator; is it one-dimensional?
 
       auto it=coefficients.begin();
-      vector<long> starting_coordinate = it->first;
+      coordinate_t starting_coordinate = it->first;
 
       // use the first two coordinates to compute a slope, and remove
       // its GCD so we can easily tell if other coordinates are on the
       // same line
 
       it ++;
-      vector<long> slope = it->first - starting_coordinate;
+      coordinate_t slope = it->first - starting_coordinate;
       long first_nonzero_coord_index;
 
       for (long idx=0; idx < myNumTrueIndets; ++idx) {
@@ -1235,20 +1261,24 @@ public:
       //
       // coordinate[i] = starting_coordinate + slope * multiple[i]
 
-      //vector<long> multiples(coefficients.size());
+      //coordinate_t multiples(coefficients.size());
       //multiples[0] = 0;
       //multiples[1] = slope_gcd;
 
       int lowest_multiple = 0;
-      vector<long> lowest_multiple_coordinate = starting_coordinate;
+      coordinate_t lowest_multiple_coordinate = starting_coordinate;
       int highest_multiple = slope_gcd;
-      vector<long> highest_multiple_coordinate = it->first;
+      coordinate_t highest_multiple_coordinate = it->first;
 
       // check any remaining coefficients to see if they're on the same line,
       // and compute the multiple if it is
+      //
+      // all we need to remember are the highest and lowest multiples
 
       for (++it; it != coefficients.end(); ++it) {
-	vector<long> difference = it->first - starting_coordinate;
+
+	coordinate_t difference = it->first - starting_coordinate;
+
 	long multiple = difference[first_nonzero_coord_index] / slope[first_nonzero_coord_index];
 	for (long idx=0; idx < myNumTrueIndets; ++idx) {
 	  if (multiple * slope[idx] != difference[idx]) {
