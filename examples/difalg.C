@@ -1139,6 +1139,149 @@ public:
 
     return solution;
   }
+
+  /* Given a differential operator, find a basis for all solutions in C[x,t]
+   *
+   * Returns a list of RingElems in the Weyl algebra's target ring.
+   *
+   * XXX this isn't a good enough return value, as the basis set is often infinite
+   *
+   * Returns a recursion relationship that must be satisfied by the solution polynomials - how?
+   */
+
+  long long_gcd(long a, long b) {
+    return b == 0 ? a : long_gcd(b, a % b);
+  }
+
+  list<RingElem> poly_solve(ConstRefRingElem diffop)
+  {
+    // diffop is a RingElem in the WeylOperatorAlgebra
+    ring WA = owner(diffop);
+    long myNumTrueIndets = NumIndets(WA)/2;
+    indets(WA);
+
+    // Start by transforming diffop into a recursion relationship on
+    // the solution polynomial's coefficients.
+
+    map<vector<long>, RingElem> coefficients;
+
+    for (auto it=BeginIter(diffop); !IsEnded(it); ++it) {
+      vector<long> coefficient_coordinate(myNumTrueIndets);
+      RingElem coefficient(WA, coeff(it));
+
+      // x^a dx^b transforms to (m+b-a)_(b) c[m+b-a]
+      // where _(b) is Pochhammer falling factorial
+
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	long exp = exponent(PP(it), idx);
+	long Dexp = exponent(PP(it), idx + myNumTrueIndets);
+
+	coefficient_coordinate[idx] = Dexp - exp;
+
+	for (long m=0; m < Dexp; m++) {
+	  coefficient *= indet(WA, idx) + (Dexp - exp - m);
+	}
+      }
+
+      if (coefficients.count(coefficient_coordinate) == 0) {
+	coefficients[coefficient_coordinate] = coefficient;
+      } else {
+	coefficients[coefficient_coordinate] = coefficients[coefficient_coordinate] + coefficient;
+      }
+    }
+
+    if (coefficients.size() > 2) {
+      CoCoA_ERROR(ERR::NYI, "more than two coefficients in poly_solve");
+    }
+
+    if (coefficients.size() == 1) {
+      CoCoA_ERROR(ERR::NYI, "zero dimensional operator in poly_solve");
+    }
+
+    if (coefficients.size() > 1) {
+      // can't be a zero-dimensional operator; is it one-dimensional?
+
+      auto it=coefficients.begin();
+      vector<long> starting_coordinate = it->first;
+
+      // use the first two coordinates to compute a slope, and remove
+      // its GCD so we can easily tell if other coordinates are on the
+      // same line
+
+      it ++;
+      vector<long> slope = it->first - starting_coordinate;
+      long first_nonzero_coord_index;
+
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	if (slope[idx] != 0) {
+	  first_nonzero_coord_index = idx;
+	  break;
+	}
+      }
+
+      long slope_gcd = labs(slope[first_nonzero_coord_index]);
+
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	if (slope[idx] != 0) {
+	  slope_gcd = long_gcd(slope_gcd, labs(slope[idx]));
+	}
+      }
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	slope[idx] = slope[idx] / slope_gcd;
+      }
+
+      // if the coefficients all lie on the same line, associate with
+      // each one a multiple of the slope, so that
+      //
+      // coordinate[i] = starting_coordinate + slope * multiple[i]
+
+      //vector<long> multiples(coefficients.size());
+      //multiples[0] = 0;
+      //multiples[1] = slope_gcd;
+
+      int lowest_multiple = 0;
+      vector<long> lowest_multiple_coordinate = starting_coordinate;
+      int highest_multiple = slope_gcd;
+      vector<long> highest_multiple_coordinate = it->first;
+
+      // check any remaining coefficients to see if they're on the same line,
+      // and compute the multiple if it is
+
+      for (++it; it != coefficients.end(); ++it) {
+	vector<long> difference = it->first - starting_coordinate;
+	long multiple = difference[first_nonzero_coord_index] / slope[first_nonzero_coord_index];
+	for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	  if (multiple * slope[idx] != difference[idx]) {
+	    CoCoA_ERROR(ERR::NYI, "operator dimension greater than one in poly_solve");
+	  }
+	}
+	//multiples[i] = multiple;
+	if (multiple < lowest_multiple) {
+	  lowest_multiple = multiple;
+	  lowest_multiple_coordinate = it->first;
+	}
+	if (multiple > highest_multiple) {
+	  highest_multiple = multiple;
+	  highest_multiple_coordinate = it->first;
+	}
+      }
+
+      // Now we know for sure that we've got a one-dimensional operator
+
+      // We want to change variables into a system that separates a
+      // coordinate along the line with coordinate orthogonal to it,
+      // but I'll skip this step as unnecessary.
+
+      // The coefficients of the lowest and highest multiple give
+      // Diophantine equations that must be solvable for the operator
+      // to have a solution.
+
+      // DiophantineSolvable(coefficients[lowest_multiple_coordinate]);
+      // DiophantineSolvable(coefficients[highest_multiple_coordinate]);
+
+    }
+  }
+
 };
 
 const WeylOperatorAlgebra* WeylOperatorAlgebraPtr(const ring& R)
