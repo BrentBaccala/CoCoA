@@ -952,7 +952,18 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
 }
 
 
-/* Algorithm to compute a matrix's Smith normal form */
+/* Smith Normal Form
+ *
+ * Algorithm to compute a matrix's Smith normal form ported from
+ * A. Bigatti <bigatti@dima.unige.it> S. DeFrancisci's CoCoA 4.6
+ * version.
+ *
+ * Current version only works on integer matrices.
+ *
+ * For input matrix M, return a SmithRecord L with L.M in SNF and
+ *
+ *   L.M = L.U * M * L.V
+ */
 
 class SmithRecord {
 public:
@@ -963,21 +974,14 @@ public:
   const long NR;
   const long NC;
 
-  SmithRecord(matrix& U, matrix& M, matrix& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
-						 NR(NumRows(M)), NC(NumCols(M)) {}
-  SmithRecord(const ConstMatrixView& U, matrix& M, const ConstMatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
-						 NR(NumRows(M)), NC(NumCols(M)) {}
-
-  SmithRecord(const ConstMatrixView& U, const MatrixView& M, const ConstMatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
-						 NR(NumRows(M)), NC(NumCols(M)) {}
-
-  SmithRecord(MatrixView& U, MatrixView& M, MatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
-						 NR(NumRows(M)), NC(NumCols(M)) {}
+  SmithRecord(const ConstMatrixView& U, const ConstMatrixView& M, const ConstMatrixView& V)
+    : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
+      NR(NumRows(M)), NC(NumCols(M)) {}
 };
 
 // LMinInII find the smallest element in the submatrix with row and
-// col indices greater than or equal to i, and returns a record with
-// the minimum element exchanged into entry (i,i)
+// col indices greater than or equal to i, and modifies the matrix
+// to exchange the minimum element into entry (i,i)
 
 RingElem FirstNonZero(matrix M, int I)
 {
@@ -1052,6 +1056,8 @@ void LMinInII(SmithRecord& L, int I, bool Pol)
 }
 
 
+// PDiv and PMod currently only work for integer RingElems
+
 RingElem PDiv(ConstRefRingElem x, ConstRefRingElem y)
 {
   BigInt X, Y;
@@ -1079,6 +1085,8 @@ RingElem PMod(ConstRefRingElem x, ConstRefRingElem y)
 
   return RingElem(owner(x), X%Y);
 }
+
+// RecDiag transforms the matrix into diagonal form
 
 void RecDiag(SmithRecord& L, int I, bool Pol)
 {
@@ -1122,6 +1130,9 @@ void RecDiag(SmithRecord& L, int I, bool Pol)
     RecDiag(L, I, Pol);
   }
 }
+
+// Matrix is in diagonal form; adjust the diagonal so it satisfies the
+// SNF divisibility condition.
 
 void LSuperDiag(SmithRecord& L, int I, bool Pol)
 {
@@ -1229,8 +1240,6 @@ SmithRecord SmithFactor(matrix A)
   const ConstMatrixView IdNR = IdentityMat(RingOf(A), NR);
   const ConstMatrixView IdNC = IdentityMat(RingOf(A), NC);
 
-  matrix A1 = A;
-
   // An ordering is required.  Polynomial rings order by degree,
   // integer rings order by comparison.
 
@@ -1273,7 +1282,7 @@ void testSmithFactor(void)
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
-#if 1
+#if 0
   // invariant factors 2,6,12
 
   int C_matrix[3][3] = {{ 2, 4, 4},
