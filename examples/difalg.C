@@ -981,8 +981,8 @@ public:
 
 RingElem FirstNonZero(matrix M, int I)
 {
-  for (int IP = I; IP <= NumRows(M); ++ IP) {
-    for (int JP = I; JP <= NumCols(M); ++ JP) {
+  for (int IP = I; IP < NumRows(M); ++ IP) {
+    for (int JP = I; JP < NumCols(M); ++ JP) {
       if (! IsZero(M(IP, JP))) return M(IP, JP);
     }
   }
@@ -996,8 +996,8 @@ pair<int,int> PosMinAbs(matrix M, int I)
 
   int MinI = -1;
   int MinJ = -1;
-  for (int IP = I; IP <= NumRows(M); ++ IP) {
-    for (int JP = I; JP <= NumCols(M); ++ JP) {
+  for (int IP = I; IP < NumRows(M); ++ IP) {
+    for (int JP = I; JP < NumCols(M); ++ JP) {
       if (! IsZero(M(IP,JP)) && abs(M(IP,JP))<MinM) {
 	MinM = abs(M(IP,JP));
 	MinI = IP;
@@ -1015,8 +1015,8 @@ pair<int,int> PosMinDeg(matrix M, int I)
 
   int MinI = -1;
   int MinJ = -1;
-  for (int IP = I; IP <= NumRows(M); ++ IP) {
-    for (int JP = I; JP <= NumCols(M); ++ JP) {
+  for (int IP = I; IP < NumRows(M); ++ IP) {
+    for (int JP = I; JP < NumCols(M); ++ JP) {
       if (! IsZero(M(IP,JP)) && deg(M(IP,JP))<MinDeg) {
 	MinDeg = deg(M(IP,JP));
 	MinI = IP;
@@ -1063,24 +1063,24 @@ RingElem PDiv(ConstRefRingElem x, ConstRefRingElem y)
     CoCoA_ERROR(ERR::BadConvert, "Non-integer matrix in SmithNormalForm");
   }
 
-  return RingElem(owner(x), x/y);
+  return RingElem(owner(x), X/Y);
 }
 
 void RecDiag(SmithRecord& L, int I, bool Pol)
 {
   // assumiamo che la matrice abbia NR <= NC
-  if (I > L.NR) return;
+  if (I >= L.NR) return;
 
   LMinInII(L,I,Pol);
 
   if (IsZero(L.M(I,I))) return;
 
   // lavora sulla i-ma riga
-  for (int J = I+1; J <= L.NC; J++) {
+  for (int J = I+1; J < L.NC; J++) {
     while (! IsZero(L.M(I,J))) {
       RingElem Q = PDiv(L.M(I,J),L.M(I,I));
-      L.M->myAddColMul(I,J,-Q);
-      L.V->myAddColMul(I,J,-Q);
+      L.M->myAddColMul(J,I,-Q);
+      L.V->myAddColMul(J,I,-Q);
       // cerca il nuovo minimo
       LMinInII(L,I,Pol);
     }
@@ -1089,7 +1089,7 @@ void RecDiag(SmithRecord& L, int I, bool Pol)
   // lavora sulla i-ma colonna
   int IR = I+1;
   bool OK = true;
-  while ((IR <= L.NR) && OK) {
+  while ((IR < L.NR) && OK) {
     if (! IsZero(L.M(IR,I))) {
       RingElem Q1 = PDiv(L.M(IR,I),L.M(I,I));
       L.M->myAddRowMul(IR,I,-Q1);
@@ -1247,25 +1247,38 @@ SmithRecord SmithFactor(matrix A)
 
   if (NR <= NC) {
     SmithRecord L(IdNR, A, IdNC);
-    RecDiag(L, 1, Pol);
+    RecDiag(L, 0, Pol);
     // LSuperDiag(L,1,Pol)
     return L;
   } else {
     SmithRecord LT(IdNC, transpose(A), IdNR);
-    RecDiag(LT, 1, Pol);
+    RecDiag(LT, 0, Pol);
     // LSuperDiag(LT,1,Pol)
     SmithRecord L(transpose(L.V), transpose(L.M), transpose(L.U));
     return L;
   }
 }
 
+#if 0
 // convention: a function containing a "new" should be named "New.."
-matrix NewMatrixFromC(ring R, int cmat[3][3])
+matrix NewMatrixFromC(ring R, int (&cmat)[3][3])
 {
   matrix M(NewDenseMat(R,3,3));
   
   for (int i=0; i < 3; ++i)
     for (int j=0; j < 3; ++j)
+      SetEntry(M, i, j, cmat[i][j]);
+  return M;
+}
+#endif
+
+// convention: a function containing a "new" should be named "New.."
+template<size_t n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
+{
+  matrix M(NewDenseMat(R,n,n));
+  
+  for (int i=0; i < n; ++i)
+    for (int j=0; j < n; ++j)
       SetEntry(M, i, j, cmat[i][j]);
   return M;
 }
@@ -1277,17 +1290,27 @@ void testSmithFactor(void)
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
+#if 0
   int C_matrix[3][3] = {{ 2, 4, 4},
                         {-6, 6, 12},
                         {10,-4,-16}};
+#endif
 
-  matrix M_Q(NewMatrixFromC(RingQQ(), C_matrix));
+  int C_matrix[4][4] = {{ 6, 111, -36, 6},
+                        { 5,-672, 210, 74},
+                        { 0,-255,  81, 24},
+                        {-7, 255, -81,-10}};
 
-  cout << M_Q << endl;
+  matrix M_Z(NewMatrixFromC(RingZZ(), C_matrix));
 
-  SmithRecord L = SmithFactor(M_Q);
+  cout << M_Z << endl;
+
+  SmithRecord L = SmithFactor(M_Z);
 
   cout << L.M << endl;
+  cout << L.U << endl;
+  cout << L.V << endl;
+  cout << L.U * M_Z * L.V << endl;
 }
 
 /* A Weyl ring promoted to an operator algebra
