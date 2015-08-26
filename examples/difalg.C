@@ -960,87 +960,156 @@ public:
   matrix M;
   matrix V;
 
-  SmithRecord(matrix& U, matrix& M, matrix& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)) {}
+  const long NR;
+  const long NC;
+
+  SmithRecord(matrix& U, matrix& M, matrix& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
+						 NR(NumRows(M)), NC(NumCols(M)) {}
+  SmithRecord(const ConstMatrixView& U, matrix& M, const ConstMatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
+						 NR(NumRows(M)), NC(NumCols(M)) {}
+
+  SmithRecord(const ConstMatrixView& U, const MatrixView& M, const ConstMatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
+						 NR(NumRows(M)), NC(NumCols(M)) {}
+
+  SmithRecord(MatrixView& U, MatrixView& M, MatrixView& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)),
+						 NR(NumRows(M)), NC(NumCols(M)) {}
 };
-
-void SmithFactor(matrix A)
-{
-  const long NR = NumRows(A);
-  const long NC = NumCols(A);
-  const matrix IdNR = IdentityMat(RingOf(A), NR);
-  const matrix IdNC = IdentityMat(RingOf(A), NC);
-
-  matrix A1 = A;
-
-  // integer or polynomial?
-  N = SeIntOPol(A1,NR,NC);
-  A1 = N[1];
-  bool Pol = N[2];
-
-  if (NR <= NC) {
-    L = RecDiag([IdNR, A1, IdNC], 1, Pol);
-  } else {
-    LT = RecDiag([IdNC,Transposed(A1),IdNR],1, Pol); 
-    L = [Transposed(LT[3]),Transposed(LT[2]),Transposed(LT[1])];
-  }
-  //Return Record(U=L[1], V=L[3], Smith=L[2]);
-}
 
 // LMinInII find the smallest element in the submatrix with row and
 // col indices greater than or equal to i, and returns a record with
 // the minimum element exchanged into entry (i,i)
 
-void RecDiag(SmithRecord L, int I, bool Pol)
+RingElem FirstNonZero(matrix M, int I)
+{
+  for (int IP = I; IP <= NumRows(M); ++ IP) {
+    for (int JP = I; JP <= NumCols(M); ++ JP) {
+      if (! IsZero(M(IP, JP))) return M(IP, JP);
+    }
+  }
+  return RingElem(RingOf(M));
+}
+
+pair<int,int> PosMinAbs(matrix M, int I)
+{
+  RingElem MinM = abs(FirstNonZero(M, I))+1;
+  if (IsOne(MinM)) return pair<int,int>(I,I);
+
+  int MinI = -1;
+  int MinJ = -1;
+  for (int IP = I; IP <= NumRows(M); ++ IP) {
+    for (int JP = I; JP <= NumCols(M); ++ JP) {
+      if (! IsZero(M(IP,JP)) && abs(M(IP,JP))<MinM) {
+	MinM = abs(M(IP,JP));
+	MinI = IP;
+	MinJ = JP;
+      }
+    }
+  }
+  return pair<int,int>(MinI, MinJ);
+}
+
+pair<int,int> PosMinDeg(matrix M, int I)
+{
+  long MinDeg = deg(FirstNonZero(M, I))+1;
+  if (MinDeg == 1) return pair<int,int>(I,I);
+
+  int MinI = -1;
+  int MinJ = -1;
+  for (int IP = I; IP <= NumRows(M); ++ IP) {
+    for (int JP = I; JP <= NumCols(M); ++ JP) {
+      if (! IsZero(M(IP,JP)) && deg(M(IP,JP))<MinDeg) {
+	MinDeg = deg(M(IP,JP));
+	MinI = IP;
+	MinJ = JP;
+      }
+    }
+  }
+  return pair<int,int>(MinI, MinJ);
+}
+
+void LMinInII(SmithRecord& L, int I, bool Pol)
+{
+  pair<int,int> p;
+
+  if (Pol) {
+    p = PosMinDeg(L.M, I);
+  } else {
+    p = PosMinAbs(L.M, I);
+  }
+
+  int IL = p.first;
+  int JL = p.second;
+
+  if (IL != I) {
+    SwapRows(L.M, I, IL);
+    SwapRows(L.U, I, IL);
+  }
+
+  if (JL != I) {
+    SwapCols(L.M, I, JL);
+    SwapCols(L.V, I, JL);
+  }
+}
+
+
+RingElem PDiv(ConstRefRingElem x, ConstRefRingElem y)
+{
+  BigInt X, Y;
+
+  if (! IsInteger(X, x)) {
+    CoCoA_ERROR(ERR::BadConvert, "Non-integer matrix in SmithNormalForm");
+  }
+  if (! IsInteger(Y, y)) {
+    CoCoA_ERROR(ERR::BadConvert, "Non-integer matrix in SmithNormalForm");
+  }
+
+  return RingElem(owner(x), x/y);
+}
+
+void RecDiag(SmithRecord& L, int I, bool Pol)
 {
   // assumiamo che la matrice abbia NR <= NC
-  U = L[1];  M = L[2];  V = L[3];
-  NR = Len(M);  NC = Len(M[1]);
-  if (I>NR) {
-    return LSuperDiag([U,M,V],1,Pol);
-  }
-  Mlist = LMinInII(M,I,Pol);
-  U = Mlist[1]*U;
-  M = Mlist[2];
-  V = V*Mlist[3];
-  if (IsZero(M(I,I))) {
-    return LSuperDiag([U,M,V],1,Pol);
-  }
+  if (I > L.NR) return;
+
+  LMinInII(L,I,Pol);
+
+  if (IsZero(L.M(I,I))) return;
+
   // lavora sulla i-ma riga
-  for (J = I+1; J <= NC; J++) {
-    while (! IsZero(M(I,J))) {
-      Q = PDiv(M[I,J],M[I,I]);
-      M->myAddColMul(I,J,-Q);
-      V->myAddColMul(I,J,-Q);
+  for (int J = I+1; J <= L.NC; J++) {
+    while (! IsZero(L.M(I,J))) {
+      RingElem Q = PDiv(L.M(I,J),L.M(I,I));
+      L.M->myAddColMul(I,J,-Q);
+      L.V->myAddColMul(I,J,-Q);
       // cerca il nuovo minimo
-      Mlist = LMinInII(M,I,Pol);
-      U = Mlist[1]*U;
-      M = Mlist[2];
-      V = V*Mlist[3];
+      LMinInII(L,I,Pol);
     }
   }
 
   // lavora sulla i-ma colonna
-  IR = I+1;
+  int IR = I+1;
   bool OK = true;
-  while (IR<=NR && OK) {
-    if (! IsZero(M(IR,I))) {
-      Q1 = PDiv(M[IR,I],M[I,I]);
-      M->myAddRowMul(IR,I,-Q1);
-      U->myAddRowMul(IR,I,-Q1);
+  while ((IR <= L.NR) && OK) {
+    if (! IsZero(L.M(IR,I))) {
+      RingElem Q1 = PDiv(L.M(IR,I),L.M(I,I));
+      L.M->myAddRowMul(IR,I,-Q1);
+      L.U->myAddRowMul(IR,I,-Q1);
     }
-    if (! IsZero(M(IR,I))) {
+    if (! IsZero(L.M(IR,I))) {
       OK = false;
     }
-    IR = IR+1;
+    IR ++;
   }
 
   // chiamata ricorsiva
   if (OK) {
-    return RecDiag([U,M,V], I+1, Pol);
+    RecDiag(L, I+1, Pol);
   } else {
-    return RecDiag([U,M,V], I, Pol);
+    RecDiag(L, I, Pol);
   }
 }
+
+#if 0
 
 void LSuperDiag(LD, I, Pol)
 {
@@ -1153,6 +1222,72 @@ void LSuperDiag(LD, I, Pol)
   } else {
     return LSuperDiag([U,M,V], I,Pol);
   }
+}
+
+#endif
+
+SmithRecord SmithFactor(matrix A)
+{
+  const long NR = NumRows(A);
+  const long NC = NumCols(A);
+  const ConstMatrixView IdNR = IdentityMat(RingOf(A), NR);
+  const ConstMatrixView IdNC = IdentityMat(RingOf(A), NC);
+
+  matrix A1 = A;
+
+  // An ordering is required.  Polynomial rings order by degree,
+  // integer rings order by comparison.
+
+  //bool Pol = IsPolyRing(RingOf(A));
+
+  // always use integer algorithm for right now, as we might
+  // be in a polynomial ring with only integer elements
+
+  bool Pol = false;
+
+  if (NR <= NC) {
+    SmithRecord L(IdNR, A, IdNC);
+    RecDiag(L, 1, Pol);
+    // LSuperDiag(L,1,Pol)
+    return L;
+  } else {
+    SmithRecord LT(IdNC, transpose(A), IdNR);
+    RecDiag(LT, 1, Pol);
+    // LSuperDiag(LT,1,Pol)
+    SmithRecord L(transpose(L.V), transpose(L.M), transpose(L.U));
+    return L;
+  }
+}
+
+// convention: a function containing a "new" should be named "New.."
+matrix NewMatrixFromC(ring R, int cmat[3][3])
+{
+  matrix M(NewDenseMat(R,3,3));
+  
+  for (int i=0; i < 3; ++i)
+    for (int j=0; j < 3; ++j)
+      SetEntry(M, i, j, cmat[i][j]);
+  return M;
+}
+
+void testSmithFactor(void)
+{
+  GlobalManager CoCoAFoundations;
+
+  cout << boolalpha; // so that bools print out as true/false
+  cout << TeX;
+
+  int C_matrix[3][3] = {{ 2, 4, 4},
+                        {-6, 6, 12},
+                        {10,-4,-16}};
+
+  matrix M_Q(NewMatrixFromC(RingQQ(), C_matrix));
+
+  cout << M_Q << endl;
+
+  SmithRecord L = SmithFactor(M_Q);
+
+  cout << L.M << endl;
 }
 
 /* A Weyl ring promoted to an operator algebra
@@ -2030,7 +2165,8 @@ int main()
 {
   try
   {
-    program();
+    //program();
+    testSmithFactor();
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)
