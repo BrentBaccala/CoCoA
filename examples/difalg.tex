@@ -719,7 +719,8 @@ $$\delta_x^2 - \delta_t \Longrightarrow (m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1}$$
 
 Treating $m$ as the horizontal coordinate and $n$ as the vertical, we
 see from this expression that the operator is one-dimensional and has
-slope $-\frac{1}{2}$.
+slope $-\frac{1}{2}$, since it contains the points $(m+2,n)$ and
+$(m,n+1)$.
 
 Having identified the dimension of the operator, it is now profitable
 to change coordinates into a system that separates dimensions within
@@ -738,14 +739,14 @@ Setting $m=p-2a$ and $n=a-1$, we can transform the coefficients and
 their recursion relationship as follows, calling them $d$'s in the new
 numbering system:
 
-%$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}$$
+%$$c_{m,n+1} = c_{p-2a,a} = d_{p,a}$$
 %$$c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
 %$$(p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
-$$c_{m+2,n} = c_{p-2a,a} = d_{p,a}  \qquad c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
+$$c_{m,n+1} = c_{p-2a,a} = d_{p,a}  \qquad c_{m+2,n} = c_{p-2(a-1),a-1} = d_{p,a-1}$$
 $$(m+2)(m+1)c_{m+2,n} - (n+1)c_{m,n+1} = 0 \Longrightarrow (p-2a+2)(p-2a+1) d_{p,a-1} = a d_{p,a}$$
 
 The new numbering clearly relates coefficients along a single line, as
-evidenced by the $p$ coordinate remaining unchanged through the
+evidenced by the $p$ subscript remaining unchanged through the
 recursion relationship.
 
 Now, in order to have a polynomial and not an infinite sum, we must
