@@ -952,6 +952,209 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
 }
 
 
+/* Algorithm to compute a matrix's Smith normal form */
+
+class SmithRecord {
+public:
+  matrix U;
+  matrix M;
+  matrix V;
+
+  SmithRecord(matrix& U, matrix& M, matrix& V) : U(NewDenseMat(U)), M(NewDenseMat(M)), V(NewDenseMat(V)) {}
+};
+
+void SmithFactor(matrix A)
+{
+  const long NR = NumRows(A);
+  const long NC = NumCols(A);
+  const matrix IdNR = IdentityMat(RingOf(A), NR);
+  const matrix IdNC = IdentityMat(RingOf(A), NC);
+
+  matrix A1 = A;
+
+  // integer or polynomial?
+  N = SeIntOPol(A1,NR,NC);
+  A1 = N[1];
+  bool Pol = N[2];
+
+  if (NR <= NC) {
+    L = RecDiag([IdNR, A1, IdNC], 1, Pol);
+  } else {
+    LT = RecDiag([IdNC,Transposed(A1),IdNR],1, Pol); 
+    L = [Transposed(LT[3]),Transposed(LT[2]),Transposed(LT[1])];
+  }
+  //Return Record(U=L[1], V=L[3], Smith=L[2]);
+}
+
+// LMinInII find the smallest element in the submatrix with row and
+// col indices greater than or equal to i, and returns a record with
+// the minimum element exchanged into entry (i,i)
+
+void RecDiag(SmithRecord L, int I, bool Pol)
+{
+  // assumiamo che la matrice abbia NR <= NC
+  U = L[1];  M = L[2];  V = L[3];
+  NR = Len(M);  NC = Len(M[1]);
+  if (I>NR) {
+    return LSuperDiag([U,M,V],1,Pol);
+  }
+  Mlist = LMinInII(M,I,Pol);
+  U = Mlist[1]*U;
+  M = Mlist[2];
+  V = V*Mlist[3];
+  if (IsZero(M(I,I))) {
+    return LSuperDiag([U,M,V],1,Pol);
+  }
+  // lavora sulla i-ma riga
+  for (J = I+1; J <= NC; J++) {
+    while (! IsZero(M(I,J))) {
+      Q = PDiv(M[I,J],M[I,I]);
+      M->myAddColMul(I,J,-Q);
+      V->myAddColMul(I,J,-Q);
+      // cerca il nuovo minimo
+      Mlist = LMinInII(M,I,Pol);
+      U = Mlist[1]*U;
+      M = Mlist[2];
+      V = V*Mlist[3];
+    }
+  }
+
+  // lavora sulla i-ma colonna
+  IR = I+1;
+  bool OK = true;
+  while (IR<=NR && OK) {
+    if (! IsZero(M(IR,I))) {
+      Q1 = PDiv(M[IR,I],M[I,I]);
+      M->myAddRowMul(IR,I,-Q1);
+      U->myAddRowMul(IR,I,-Q1);
+    }
+    if (! IsZero(M(IR,I))) {
+      OK = false;
+    }
+    IR = IR+1;
+  }
+
+  // chiamata ricorsiva
+  if (OK) {
+    return RecDiag([U,M,V], I+1, Pol);
+  } else {
+    return RecDiag([U,M,V], I, Pol);
+  }
+}
+
+void LSuperDiag(LD, I, Pol)
+{
+  U = LD[1];
+  M = LD[2];
+  V = LD[3];
+  NR = Len(M);
+  NC = Len(M[1]);
+  if (I+1>NR) {
+    return [U,M,V];
+  }
+  M->myAddRowMul(I,I+1,1);
+  U->myAddRowMul(I,I+1,1);
+  Mlist = LMinInII(M,I,Pol);
+
+  U = Mlist[1]*U;
+  M = Mlist[2];
+  V = V*Mlist[3];
+
+  if (IsZero(M(I,I))) {
+    return [U,M,V];
+  }
+  //rende monico M[I,I] o cambia segno a colonna I
+  if (Pol) {
+    X = 1/LC(M(I,I));
+  } else {
+    X = Sgn(M(I,I));
+  }
+  if (X != 1) {
+    M->myColMul(I,X);
+    V->myColMul(I,X);
+  }
+
+  // lavora sulla i-ma riga
+  while (! IsZero(M(I,I+1))) {
+    //rende monico M[I,I+1] o cambia segno a colonna I+1
+    if (Pol) {
+      X = 1/LC(M(I,I+1));
+    } else {
+      X = Sgn(M(I,I+1));
+    }
+    if (X != 1) {
+      M->myAddColMul(I,I+1,X);
+      V->myAddColMul(I,I+1,X);
+    }
+
+    Q = PDiv(M[I,I+1],M[I,I]);
+    M->myAddColMul(I, I+1, -Q);
+    V->myAddColMul(I, I+1, -Q);
+    Mlist = LMinInII(M,I,Pol); //cerca il nuovo minimo
+    U = Mlist[1]*U;
+    M = Mlist[2];
+    V = V*Mlist[3];
+    //rende monico M[I,I] o cambia segno a colonna I
+    if (Pol) {
+      X = 1/LC(M(I,I));
+    } else {
+      X = Sgn(M(I,I));
+    }
+    if (X != 1) {
+      M->myColMul(I,X);
+      V->myColMul(I,X);
+    }
+  }
+
+  // lavora sull'elemento diagonale utilizzando l'i-ma colonna
+  IR = I+1;
+  bool OK = true;
+  while (IR<=NR && OK) {
+    if (! IsZero(M(IR,I))) {
+      //rende monico M[IR,I] oppure cambia segno a M[IR,I]
+      if (Pol) {
+	X = 1/LC(M(IR,I));
+      } else {
+	X = Sgn(M(IR,I));
+      }
+      if (X != 1) {
+	M->myRowMul(IR, X);
+	U->myRowMul(IR, X);
+      }
+
+      Q1 = PDiv(M[IR,I],M[I,I]);
+      M->myAddRowMul(IR, I, -Q1);
+      U->myAddRowMul(IR, I, -Q1);
+    }
+    if (! IsZero(M(IR,I))) {
+      OK = false;
+    }
+    if (Pol) {
+      X = 1/LC(M(IR,IR));
+    } else {
+      X = Sgn(M(IR,IR));
+    }
+    if (X != 1) {
+      // XXX should this be myRowMul?
+      M->myColMul(IR,X);
+      V->myColMul(IR,X);
+    }
+    IR = IR+1;
+  }
+
+  // chiamata ricorsiva
+  if (OK) {
+    S = LSuperDiag([U,M,V],I+1,Pol);
+    if (PMod(S[2][I+1,I+1],S[2][I,I])==0) {
+      return S;
+    } else {
+      return LSuperDiag(S,I,Pol);
+    }
+  } else {
+    return LSuperDiag([U,M,V], I,Pol);
+  }
+}
+
 /* A Weyl ring promoted to an operator algebra
  *
  * A vector of differentials is provided.  All must operate on the
