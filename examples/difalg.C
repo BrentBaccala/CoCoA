@@ -1066,6 +1066,20 @@ RingElem PDiv(ConstRefRingElem x, ConstRefRingElem y)
   return RingElem(owner(x), X/Y);
 }
 
+RingElem PMod(ConstRefRingElem x, ConstRefRingElem y)
+{
+  BigInt X, Y;
+
+  if (! IsInteger(X, x)) {
+    CoCoA_ERROR(ERR::BadConvert, "Non-integer matrix in SmithNormalForm");
+  }
+  if (! IsInteger(Y, y)) {
+    CoCoA_ERROR(ERR::BadConvert, "Non-integer matrix in SmithNormalForm");
+  }
+
+  return RingElem(owner(x), X%Y);
+}
+
 void RecDiag(SmithRecord& L, int I, bool Pol)
 {
   // assumiamo che la matrice abbia NR <= NC
@@ -1109,122 +1123,104 @@ void RecDiag(SmithRecord& L, int I, bool Pol)
   }
 }
 
-#if 0
-
-void LSuperDiag(LD, I, Pol)
+void LSuperDiag(SmithRecord& L, int I, bool Pol)
 {
-  U = LD[1];
-  M = LD[2];
-  V = LD[3];
-  NR = Len(M);
-  NC = Len(M[1]);
-  if (I+1>NR) {
-    return [U,M,V];
-  }
-  M->myAddRowMul(I,I+1,1);
-  U->myAddRowMul(I,I+1,1);
-  Mlist = LMinInII(M,I,Pol);
+  RingElem X;
 
-  U = Mlist[1]*U;
-  M = Mlist[2];
-  V = V*Mlist[3];
+  if (I+1 >= L.NR) return;
 
-  if (IsZero(M(I,I))) {
-    return [U,M,V];
-  }
+  L.M->myAddRowMul(I,I+1,RingElem(RingOf(L.M),1));
+  L.U->myAddRowMul(I,I+1,RingElem(RingOf(L.M),1));
+  LMinInII(L,I,Pol);
+
+  if (IsZero(L.M(I,I))) return;
+
   //rende monico M[I,I] o cambia segno a colonna I
   if (Pol) {
-    X = 1/LC(M(I,I));
+    //X = 1/LC(M(I,I));
   } else {
-    X = Sgn(M(I,I));
+    X = RingElem(RingOf(L.M), sign(L.M(I,I)));
   }
-  if (X != 1) {
-    M->myColMul(I,X);
-    V->myColMul(I,X);
+  if (! IsOne(X)) {
+    L.M->myColMul(I,X);
+    L.V->myColMul(I,X);
   }
 
   // lavora sulla i-ma riga
-  while (! IsZero(M(I,I+1))) {
+  while (! IsZero(L.M(I,I+1))) {
     //rende monico M[I,I+1] o cambia segno a colonna I+1
     if (Pol) {
-      X = 1/LC(M(I,I+1));
+      //X = 1/LC(M(I,I+1));
     } else {
-      X = Sgn(M(I,I+1));
+      X = RingElem(RingOf(L.M), sign(L.M(I,I+1)));
     }
-    if (X != 1) {
-      M->myAddColMul(I,I+1,X);
-      V->myAddColMul(I,I+1,X);
+    if (! IsOne(X)) {
+      L.M->myAddColMul(I,I+1,X);
+      L.V->myAddColMul(I,I+1,X);
     }
 
-    Q = PDiv(M[I,I+1],M[I,I]);
-    M->myAddColMul(I, I+1, -Q);
-    V->myAddColMul(I, I+1, -Q);
-    Mlist = LMinInII(M,I,Pol); //cerca il nuovo minimo
-    U = Mlist[1]*U;
-    M = Mlist[2];
-    V = V*Mlist[3];
+    RingElem Q = PDiv(L.M(I,I+1),L.M(I,I));
+    L.M->myAddColMul(I+1, I, -Q);
+    L.V->myAddColMul(I+1, I, -Q);
+    LMinInII(L,I,Pol); //cerca il nuovo minimo
+
     //rende monico M[I,I] o cambia segno a colonna I
     if (Pol) {
-      X = 1/LC(M(I,I));
+      //X = 1/LC(M(I,I));
     } else {
-      X = Sgn(M(I,I));
+      X = RingElem(RingOf(L.M), sign(L.M(I,I)));
     }
-    if (X != 1) {
-      M->myColMul(I,X);
-      V->myColMul(I,X);
+    if (! IsOne(X)) {
+      L.M->myColMul(I,X);
+      L.V->myColMul(I,X);
     }
   }
 
   // lavora sull'elemento diagonale utilizzando l'i-ma colonna
-  IR = I+1;
+  int IR = I+1;
   bool OK = true;
-  while (IR<=NR && OK) {
-    if (! IsZero(M(IR,I))) {
+  while ((IR<L.NR) && OK) {
+    if (! IsZero(L.M(IR,I))) {
       //rende monico M[IR,I] oppure cambia segno a M[IR,I]
       if (Pol) {
-	X = 1/LC(M(IR,I));
+	//X = 1/LC(M(IR,I));
       } else {
-	X = Sgn(M(IR,I));
+	X = RingElem(RingOf(L.M), sign(L.M(IR,I)));
       }
-      if (X != 1) {
-	M->myRowMul(IR, X);
-	U->myRowMul(IR, X);
+      if (! IsOne(X)) {
+	L.M->myRowMul(IR, X);
+	L.U->myRowMul(IR, X);
       }
 
-      Q1 = PDiv(M[IR,I],M[I,I]);
-      M->myAddRowMul(IR, I, -Q1);
-      U->myAddRowMul(IR, I, -Q1);
+      RingElem Q1 = PDiv(L.M(IR,I),L.M(I,I));
+      L.M->myAddRowMul(IR, I, -Q1);
+      L.U->myAddRowMul(IR, I, -Q1);
     }
-    if (! IsZero(M(IR,I))) {
+    if (! IsZero(L.M(IR,I))) {
       OK = false;
     }
     if (Pol) {
-      X = 1/LC(M(IR,IR));
+      //X = 1/LC(M(IR,IR));
     } else {
-      X = Sgn(M(IR,IR));
+      X = RingElem(RingOf(L.M), sign(L.M(IR,IR)));
     }
-    if (X != 1) {
-      // XXX should this be myRowMul?
-      M->myColMul(IR,X);
-      V->myColMul(IR,X);
+    if (! IsOne(X)) {
+      L.M->myColMul(IR,X);
+      L.V->myColMul(IR,X);
     }
     IR = IR+1;
   }
 
   // chiamata ricorsiva
   if (OK) {
-    S = LSuperDiag([U,M,V],I+1,Pol);
-    if (PMod(S[2][I+1,I+1],S[2][I,I])==0) {
-      return S;
-    } else {
-      return LSuperDiag(S,I,Pol);
+    LSuperDiag(L,I+1,Pol);
+    if (! IsZero(PMod(L.M(I+1,I+1),L.M(I,I)))) {
+      LSuperDiag(L,I,Pol);
     }
   } else {
-    return LSuperDiag([U,M,V], I,Pol);
+    LSuperDiag(L,I,Pol);
   }
 }
-
-#endif
 
 SmithRecord SmithFactor(matrix A)
 {
@@ -1248,29 +1244,16 @@ SmithRecord SmithFactor(matrix A)
   if (NR <= NC) {
     SmithRecord L(IdNR, A, IdNC);
     RecDiag(L, 0, Pol);
-    // LSuperDiag(L,1,Pol)
+    LSuperDiag(L, 0, Pol);
     return L;
   } else {
     SmithRecord LT(IdNC, transpose(A), IdNR);
     RecDiag(LT, 0, Pol);
-    // LSuperDiag(LT,1,Pol)
+    LSuperDiag(LT, 0, Pol);
     SmithRecord L(transpose(L.V), transpose(L.M), transpose(L.U));
     return L;
   }
 }
-
-#if 0
-// convention: a function containing a "new" should be named "New.."
-matrix NewMatrixFromC(ring R, int (&cmat)[3][3])
-{
-  matrix M(NewDenseMat(R,3,3));
-  
-  for (int i=0; i < 3; ++i)
-    for (int j=0; j < 3; ++j)
-      SetEntry(M, i, j, cmat[i][j]);
-  return M;
-}
-#endif
 
 // convention: a function containing a "new" should be named "New.."
 template<size_t n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
@@ -1290,16 +1273,21 @@ void testSmithFactor(void)
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
-#if 0
+#if 1
+  // invariant factors 2,6,12
+
   int C_matrix[3][3] = {{ 2, 4, 4},
                         {-6, 6, 12},
                         {10,-4,-16}};
-#endif
+#else
 
-  int C_matrix[4][4] = {{ 6, 111, -36, 6},
+  // invariant factors 1,3,21,0
+
+  int C_matrix[4][4] = {{-6, 111, -36, 6},
                         { 5,-672, 210, 74},
                         { 0,-255,  81, 24},
                         {-7, 255, -81,-10}};
+#endif
 
   matrix M_Z(NewMatrixFromC(RingZZ(), C_matrix));
 
