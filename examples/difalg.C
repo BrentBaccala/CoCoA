@@ -1310,6 +1310,83 @@ void testSmithFactor(void)
   cout << L.U * M_Z * L.V << endl;
 }
 
+/* Given a element in a polynomial ring, determine if it has any
+ * integer solutions.
+ */
+
+bool DiophantineSolvable(ConstRefRingElem x)
+{
+  const factorization<RingElem> FacInfo = factor(x);
+  const vector<RingElem>& IrredFacs = FacInfo.myFactors();
+  const int NumIrredFacs = len(IrredFacs);
+
+  CoCoA_ASSERT(IsSparsePolyRing(owner(x)));
+
+  // Factor the polynomial and consider each factor individually.
+
+  for (int i = 0; i != NumIrredFacs; ++i)
+  {
+    //cout << IrredFacs[i] << endl;
+
+    matrix M(NewDenseMat(CoeffRing(owner(x)), 1, NumIndets(owner(x))));
+    matrix C(NewDenseMat(CoeffRing(owner(x)), 1, 1));
+
+
+    // Is this a linear factor?
+
+    // If so, it is in the form ax + by + cz + ... 
+
+    for (auto it=BeginIter(IrredFacs[i]); !IsEnded(it); ++it) {
+      long idx;
+
+      if (IsOne(PP(it))) {
+	// constant term
+	SetEntry(C, 0, 0, -coeff(it));
+      } else if (! IsIndet(idx, PP(it))) {
+	CoCoA_ERROR(ERR::NYI, "DiophantineSolvable: non-linear factor");
+      } else {
+	// linear term of form ax
+	SetEntry(M, 0, idx, coeff(it));
+      }
+    }
+
+    SmithRecord L = SmithFactor(M);
+    matrix D = L.U * C;
+
+    if (IsDivisible(D(0,0), L.M(0,0))) {
+      // this factor can be solved with integers, so the whole equation can be, too
+      return true;
+    }
+  }
+
+  // none of the factors could be solved with integers
+  return false;
+}
+
+void testDiophantineSolvable(void)
+{
+  GlobalManager CoCoAFoundations;
+
+  cout << boolalpha; // so that bools print out as true/false
+  cout << TeX;
+
+  ring R = NewOrderedPolyRing(RingZZ(), vector<symbol> {symbol("a"), symbol("b"), symbol("c"), symbol("m"), symbol("n")});
+  RingElem a(R, "a");
+  RingElem b(R, "b");
+  RingElem c(R, "c");
+  RingElem m(R, "m");
+  RingElem n(R, "n");
+
+  RingElem t1 = (m+2)*(m+1);
+  RingElem t2 = 2*m + 2*a - 1;
+
+  CoCoA_ASSERT(DiophantineSolvable(t1));
+  CoCoA_ASSERT(! DiophantineSolvable(t2));
+
+  //cout << DiophantineSolvable(t1) << endl;
+  //cout << DiophantineSolvable(t2) << endl;
+}
+
 /* A Weyl ring promoted to an operator algebra
  *
  * A vector of differentials is provided.  All must operate on the
@@ -1509,7 +1586,7 @@ public:
    * Returns a recursion relationship that must be satisfied by the solution polynomials - how?
    */
 
-  long long_gcd(long a, long b) {
+  long long_gcd(long a, long b) const {
     return b == 0 ? a : long_gcd(b, a % b);
   }
 
@@ -1534,14 +1611,14 @@ public:
 
     coordinate_t const operator-(const coordinate_t &b) const
     {
-      coordinate_t c;
+      coordinate_t c(size());
       std::transform(this->begin(),this->end(),b.begin(),c.begin(),std::minus<long>());
       return c;
     }
 
   };
 
-  list<RingElem> poly_solve(ConstRefRingElem diffop)
+  RingElem poly_solve(ConstRefRingElem diffop) const
   {
     // diffop is a RingElem in the WeylOperatorAlgebra
     ring WA = owner(diffop);
@@ -1664,9 +1741,13 @@ public:
       // Diophantine equations that must be solvable for the operator
       // to have a solution.
 
-      // DiophantineSolvable(coefficients[lowest_multiple_coordinate]);
-      // DiophantineSolvable(coefficients[highest_multiple_coordinate]);
+      if (! DiophantineSolvable(coefficients[lowest_multiple_coordinate])
+	  || ! DiophantineSolvable(coefficients[highest_multiple_coordinate])) {
+	return zero(RingQQ());
+      }
 
+      // XXX fix this to return an actual recursion
+      return one(RingQQ());
     }
   }
 
@@ -1863,6 +1944,8 @@ void program()
   // our operator
 
   RingElem O = WA_dx*WA_dx - WA_dt;
+
+  cout << WeylOperatorAlgebraPtr(WA)->poly_solve(O) << endl;
 
   RingElem e = N/D;
 
@@ -2186,7 +2269,8 @@ int main()
   try
   {
     //program();
-    testSmithFactor();
+    //testSmithFactor();
+    testDiophantineSolvable();
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)
