@@ -279,7 +279,8 @@ namespace CoCoA
       factorization<RingElem> FactorizationInQQx = factor(FinQQx);
       const vector<RingElem>& FacsInQQx = FactorizationInQQx.myFactors();
       vector<RingElem> FacsInP;
-      const RingElem ContentInP = CoeffEmbeddingHom(P)(num(FactorizationInQQx.myRemainingFactor()));
+      CoCoA_ASSERT(IsConstant(FactorizationInQQx.myRemainingFactor()));
+      const RingElem ContentInP = CoeffEmbeddingHom(P)(num(LC(FactorizationInQQx.myRemainingFactor())));
       RingHom psi = PolyRingHom(QQx, P, QQEmbeddingHom(RingZZ()), indets(P)); // maps QQ[x,y,z] --> ZZ[x,y,z]
       const long NumFacs = len(FacsInQQx);
       for (long i=0; i < NumFacs; ++i)
