@@ -1616,6 +1616,17 @@ public:
       return c;
     }
 
+    // convert coordinate to a comma separated string
+
+    operator std::string() const
+    {
+      std::string str;
+      for (auto it=begin(); it != end(); ++it) {
+	if (it != begin()) str += ",";
+	str += std::to_string(*it);
+      }
+      return str;
+    }
   };
 
   RingElem poly_solve(ConstRefRingElem diffop) const
@@ -1623,7 +1634,7 @@ public:
     // diffop is a RingElem in the WeylOperatorAlgebra
     ring WA = owner(diffop);
     long myNumTrueIndets = NumIndets(WA)/2;
-    indets(WA);
+    ring CoeffRing = NewPolyRing(RingZZ(), myNumTrueIndets);
 
     // Start by transforming diffop into a recursion relationship on
     // the solution polynomial's coefficients.
@@ -1632,7 +1643,13 @@ public:
 
     for (auto it=BeginIter(diffop); !IsEnded(it); ++it) {
       coordinate_t coefficient_coordinate(myNumTrueIndets);
-      RingElem coefficient(WA, coeff(it));
+      BigInt N;
+
+      if (! IsInteger(N, coeff(it))) {
+	CoCoA_ERROR(ERR::BadConvert, "Non-integer coefficient in Weyl algebra poly_solve");
+      }
+
+      RingElem coefficient(CoeffRing, N);
 
       // x^a dx^b transforms to (m+b-a)_(b) c[m+b-a]
       // where _(b) is Pochhammer falling factorial
@@ -1644,7 +1661,7 @@ public:
 	coefficient_coordinate[idx] = Dexp - exp;
 
 	for (long m=0; m < Dexp; m++) {
-	  coefficient *= indet(WA, idx) + (Dexp - exp - m);
+	  coefficient *= indet(CoeffRing, idx) + (Dexp - exp - m);
 	}
       }
 
@@ -1659,96 +1676,110 @@ public:
       CoCoA_ERROR(ERR::NYI, "zero dimensional operator in poly_solve");
     }
 
-    if (coefficients.size() > 1) {
-      // can't be a zero-dimensional operator; is it one-dimensional?
+    // can't be a zero-dimensional operator; is it one-dimensional?
 
-      auto it=coefficients.begin();
-      coordinate_t starting_coordinate = it->first;
+    auto it=coefficients.begin();
+    coordinate_t starting_coordinate = it->first;
 
-      // use the first two coordinates to compute a slope, and remove
-      // its GCD so we can easily tell if other coordinates are on the
-      // same line
+    // use the first two coordinates to compute a slope, and remove
+    // its GCD so we can easily tell if other coordinates are on the
+    // same line
 
-      it ++;
-      coordinate_t slope = it->first - starting_coordinate;
-      long first_nonzero_coord_index;
+    it ++;
+    coordinate_t slope = it->first - starting_coordinate;
+    long first_nonzero_coord_index;
 
-      for (long idx=0; idx < myNumTrueIndets; ++idx) {
-	if (slope[idx] != 0) {
-	  first_nonzero_coord_index = idx;
-	  break;
-	}
+    for (long idx=0; idx < myNumTrueIndets; ++idx) {
+      if (slope[idx] != 0) {
+	first_nonzero_coord_index = idx;
+	break;
       }
-
-      long slope_gcd = labs(slope[first_nonzero_coord_index]);
-
-      for (long idx=0; idx < myNumTrueIndets; ++idx) {
-	if (slope[idx] != 0) {
-	  slope_gcd = long_gcd(slope_gcd, labs(slope[idx]));
-	}
-      }
-      for (long idx=0; idx < myNumTrueIndets; ++idx) {
-	slope[idx] = slope[idx] / slope_gcd;
-      }
-
-      // if the coefficients all lie on the same line, associate with
-      // each one a multiple of the slope, so that
-      //
-      // coordinate[i] = starting_coordinate + slope * multiple[i]
-
-      //coordinate_t multiples(coefficients.size());
-      //multiples[0] = 0;
-      //multiples[1] = slope_gcd;
-
-      int lowest_multiple = 0;
-      coordinate_t lowest_multiple_coordinate = starting_coordinate;
-      int highest_multiple = slope_gcd;
-      coordinate_t highest_multiple_coordinate = it->first;
-
-      // check any remaining coefficients to see if they're on the same line,
-      // and compute the multiple if it is
-      //
-      // all we need to remember are the highest and lowest multiples
-
-      for (++it; it != coefficients.end(); ++it) {
-
-	coordinate_t difference = it->first - starting_coordinate;
-
-	long multiple = difference[first_nonzero_coord_index] / slope[first_nonzero_coord_index];
-	for (long idx=0; idx < myNumTrueIndets; ++idx) {
-	  if (multiple * slope[idx] != difference[idx]) {
-	    CoCoA_ERROR(ERR::NYI, "operator dimension greater than one in poly_solve");
-	  }
-	}
-	//multiples[i] = multiple;
-	if (multiple < lowest_multiple) {
-	  lowest_multiple = multiple;
-	  lowest_multiple_coordinate = it->first;
-	}
-	if (multiple > highest_multiple) {
-	  highest_multiple = multiple;
-	  highest_multiple_coordinate = it->first;
-	}
-      }
-
-      // Now we know for sure that we've got a one-dimensional operator
-
-      // We want to change variables into a system that separates a
-      // coordinate along the line with coordinate orthogonal to it,
-      // but I'll skip this step as unnecessary.
-
-      // The coefficients of the lowest and highest multiple give
-      // Diophantine equations that must be solvable for the operator
-      // to have a solution.
-
-      if (! DiophantineSolvable(coefficients[lowest_multiple_coordinate])
-	  || ! DiophantineSolvable(coefficients[highest_multiple_coordinate])) {
-	return zero(RingQQ());
-      }
-
-      // XXX fix this to return an actual recursion
-      return one(RingQQ());
     }
+
+    long slope_gcd = labs(slope[first_nonzero_coord_index]);
+
+    for (long idx=0; idx < myNumTrueIndets; ++idx) {
+      if (slope[idx] != 0) {
+	slope_gcd = long_gcd(slope_gcd, labs(slope[idx]));
+      }
+    }
+    for (long idx=0; idx < myNumTrueIndets; ++idx) {
+      slope[idx] = slope[idx] / slope_gcd;
+    }
+
+    // if the coefficients all lie on the same line, associate with
+    // each one a multiple of the slope, so that
+    //
+    // coordinate[i] = starting_coordinate + slope * multiple[i]
+
+    //coordinate_t multiples(coefficients.size());
+    //multiples[0] = 0;
+    //multiples[1] = slope_gcd;
+
+    int lowest_multiple = 0;
+    coordinate_t lowest_multiple_coordinate = starting_coordinate;
+    int highest_multiple = slope_gcd;
+    coordinate_t highest_multiple_coordinate = it->first;
+
+    // check any remaining coefficients to see if they're on the same line,
+    // and compute the multiple if it is
+    //
+    // all we need to remember are the highest and lowest multiples
+
+    for (++it; it != coefficients.end(); ++it) {
+
+      coordinate_t difference = it->first - starting_coordinate;
+
+      long multiple = difference[first_nonzero_coord_index] / slope[first_nonzero_coord_index];
+      for (long idx=0; idx < myNumTrueIndets; ++idx) {
+	if (multiple * slope[idx] != difference[idx]) {
+	  CoCoA_ERROR(ERR::NYI, "operator dimension greater than one in poly_solve");
+	}
+      }
+      //multiples[i] = multiple;
+      if (multiple < lowest_multiple) {
+	lowest_multiple = multiple;
+	lowest_multiple_coordinate = it->first;
+      }
+      if (multiple > highest_multiple) {
+	highest_multiple = multiple;
+	highest_multiple_coordinate = it->first;
+      }
+    }
+
+    // Now we know for sure that we've got a one-dimensional operator
+
+    // We want to change variables into a system that separates a
+    // coordinate along the line with coordinate orthogonal to it,
+    // but I'll skip this step as unnecessary.
+
+    // The coefficients of the lowest and highest multiple give
+    // Diophantine equations that must be solvable for the operator
+    // to have a solution.
+
+    if (! DiophantineSolvable(coefficients[lowest_multiple_coordinate])
+	|| ! DiophantineSolvable(coefficients[highest_multiple_coordinate])) {
+      return zero(RingQQ());
+    }
+
+    // now construct a ring with symbols for each coefficient, use
+    // it to construct the recursion relation, and return it
+
+    vector<symbol> coefficient_symbols;
+
+    for (it=coefficients.begin(); it != coefficients.end(); ++it) {
+      coefficient_symbols.push_back(symbol("c_{" + (std::string)(it->first) + "}"));
+    }
+
+    ring RecursionRing = NewPolyRing(CoeffRing, coefficient_symbols);
+    RingElem recursion(RecursionRing);
+
+    int idx=0;
+    for (it=coefficients.begin(); it != coefficients.end(); ++it, ++idx) {
+      recursion += CoeffEmbeddingHom(RecursionRing)(it->second) * indet(RecursionRing, idx);
+    }
+
+    return recursion;
   }
 
 };
@@ -1946,6 +1977,7 @@ void program()
   RingElem O = WA_dx*WA_dx - WA_dt;
 
   cout << WeylOperatorAlgebraPtr(WA)->poly_solve(O) << endl;
+  cout << WeylOperatorAlgebraPtr(WA)->poly_solve(-2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx -2*WA_t*WA_dt -1) << endl;
 
   RingElem e = N/D;
 
@@ -2268,9 +2300,9 @@ int main()
 {
   try
   {
-    //program();
+    program();
     //testSmithFactor();
-    testDiophantineSolvable();
+    //testDiophantineSolvable();
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)
