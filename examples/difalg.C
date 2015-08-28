@@ -1684,15 +1684,25 @@ public:
     }
   };
 
+  // Transform diffop into a recursion relationship on the solution
+  // polynomial's coefficients, returning 0 if we can determine that
+  // the recursion can't finitely terminate, and would thus be
+  // unsuitable for a polynomial.
+
   RingElem poly_solve(ConstRefRingElem diffop) const
   {
     // diffop is a RingElem in the WeylOperatorAlgebra
     ring WA = owner(diffop);
     long myNumTrueIndets = NumIndets(WA)/2;
-    ring CoeffRing = NewPolyRing(RingZZ(), myNumTrueIndets);
 
-    // Start by transforming diffop into a recursion relationship on
-    // the solution polynomial's coefficients.
+    // The coefficients will involve powers of the exponents, i.e, x^m
+    // differentiates into m x^(m-1) and thus 'm' is in the
+    // coefficient.  Create CoeffRing with an indet (like 'm') for
+    // each indet in the Weyl algebra.
+
+    // XXX we're currently restricted to integer coefficients
+
+    ring CoeffRing = NewPolyRing(RingZZ(), myNumTrueIndets);
 
     map<coordinate_t, RingElem> coefficients;
 
@@ -1836,6 +1846,16 @@ public:
 
     return recursion;
   }
+
+#if 0
+  RingElem rat_solve(ConstRefRingElem diffop) const
+  {
+    // diffop is a RingElem in the WeylOperatorAlgebra
+    ring WA = owner(diffop);
+    long myNumTrueIndets = NumIndets(WA)/2;
+
+  }
+#endif
 
 };
 
