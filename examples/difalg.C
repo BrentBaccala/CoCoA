@@ -951,6 +951,53 @@ SparsePolyRing NewPowerPolyRing(const ring& CoeffRing, const PPMonoid& PPM) {
   return SparsePolyRing(new PowerPolyRingBase(CoeffRing, PPM));
 }
 
+void testPowerPolyRing(void)
+{
+  ring ZZ = RingZZ();
+  ring QQ = RingQQ();
+
+  // ExponentRing - these are the indeterminates that can appear in powers
+
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
+  RingElem p(ExponentRing, "p");
+
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q"}, lex, ExponentRing);
+  ring R = NewPowerPolyRing(ExponentRing, PPM);
+  ring K = NewFractionField(R);
+
+  RingElem f(K, "f");
+  RingElem t(K, "t");
+  RingElem q(K, "q");
+
+  //cout << power(f,p)/f << endl;
+  //cout << (power(f,p)) /power(f,2*p) << endl;
+  //cout << (power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
+
+  CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
+  CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
+  CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
+  CoCoA_ASSERT((power(f,p) + power(f,p-1)) / power(f,2*p) == (f+1) / power(f,p+1));
+  CoCoA_ASSERT((power(f,2*p) - 1) / (power(f,p) - 1) == power(f,p) + 1);
+
+  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
+
+  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
+  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << " " << content(num(8*q)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+
+  CoCoA_ASSERT(gcd(num(32*t*t + 64*t + 32), num(8*q)) == 8);
+  CoCoA_ASSERT(gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) == 32);
+
+  //cout << deriv(power(f,p),f) << endl;
+
+  CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
+}
 
 /* Smith Normal Form
  *
@@ -1275,39 +1322,52 @@ template<size_t n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
   return M;
 }
 
-void testSmithFactor(void)
+template<size_t n> matrix NewDiagMatrixFromC(ring R, int (&cmat)[n])
 {
-  GlobalManager CoCoAFoundations;
+  matrix M(NewDenseMat(R,n,n));
+  
+  for (int i=0; i < n; ++i)
+    SetEntry(M, i, i, cmat[i]);
+  return M;
+}
 
-  cout << boolalpha; // so that bools print out as true/false
-  cout << TeX;
+// Give a test matrix and its invariant factors, check Smith Normal Form
 
-#if 0
-  // invariant factors 2,6,12
+template<size_t n> void testOneSmithFactor(int (&M_int)[n][n], int (&F_int)[n])
+{
+  matrix M_Z(NewMatrixFromC(RingZZ(), M_int));
+  matrix F_Z(NewDiagMatrixFromC(RingZZ(), F_int));
 
-  int C_matrix[3][3] = {{ 2, 4, 4},
-                        {-6, 6, 12},
-                        {10,-4,-16}};
-#else
-
-  // invariant factors 1,3,21,0
-
-  int C_matrix[4][4] = {{-6, 111, -36, 6},
-                        { 5,-672, 210, 74},
-                        { 0,-255,  81, 24},
-                        {-7, 255, -81,-10}};
-#endif
-
-  matrix M_Z(NewMatrixFromC(RingZZ(), C_matrix));
-
-  cout << M_Z << endl;
+  // cout << M_Z << endl;
 
   SmithRecord L = SmithFactor(M_Z);
 
-  cout << L.M << endl;
-  cout << L.U << endl;
-  cout << L.V << endl;
-  cout << L.U * M_Z * L.V << endl;
+  //cout << L.M << endl;
+  //cout << L.U << endl;
+  //cout << L.V << endl;
+  //cout << L.U * M_Z * L.V << endl;
+
+  CoCoA_ASSERT(L.M == F_Z);
+  CoCoA_ASSERT(L.U * M_Z * L.V == L.M);
+}
+
+void testSmithFactor(void)
+{
+  // two test matrices and their invariant factors
+
+  int matrix1[3][3] = {{ 2, 4, 4},
+		       {-6, 6, 12},
+		       {10,-4,-16}};
+  int factors1[3] = {2,6,12};
+
+  int matrix2[4][4] = {{-6, 111, -36, 6},
+		       { 5,-672, 210, 74},
+		       { 0,-255,  81, 24},
+		       {-7, 255, -81,-10}};
+  int factors2[4] = {1,3,21,0};
+
+  testOneSmithFactor(matrix1, factors1);
+  testOneSmithFactor(matrix2, factors2);
 }
 
 /* Given a element in a polynomial ring, determine if it has any
@@ -1365,11 +1425,6 @@ bool DiophantineSolvable(ConstRefRingElem x)
 
 void testDiophantineSolvable(void)
 {
-  GlobalManager CoCoAFoundations;
-
-  cout << boolalpha; // so that bools print out as true/false
-  cout << TeX;
-
   ring R = NewOrderedPolyRing(RingZZ(), vector<symbol> {symbol("a"), symbol("b"), symbol("c"), symbol("m"), symbol("n")});
   RingElem a(R, "a");
   RingElem b(R, "b");
@@ -1865,8 +1920,6 @@ RingElem minCoeff(RingElem in, RingElem myindet)
 
 void program()
 {
-  GlobalManager CoCoAFoundations;
-
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
@@ -1981,15 +2034,6 @@ void program()
 
   RingElem e = N/D;
 
-  //RingHom rh = N >> 1;
-  //cout << rh << endl;
-  //cout << rh(e) << endl;
-
-  //cout << power(x,p)/x << endl;
-  //cout << dx(power(x,p)*D) << endl;
-  //cout << deriv(power(x,p)*D,x) << endl;
-  //cout << deriv(power(N,p)*D,N) << endl;
-
   cout << num(dx(dx(e)) - dt(e)) << endl;
   cout << num(2*t*dx(dx(e)) - 2*t*dt(e) - e) << endl;
   cout << num(-2*x*dx(e) + 2*t*dx(dx(e)) -2*t*dt(e) -e) << endl;
@@ -2012,18 +2056,6 @@ void program()
   //cout << dx(dx(d)) << endl;
 
   //cout << (2*power(dx(d),2) - d*dx(dx(d)))/power(f,2*p-2) << endl;
-
-  //cout << (power(f,p)) /power(f,2*p) << endl;
-  //cout << (power(f,p-1))/power(f,2*p) << endl;
-  //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
-  //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
-
-  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
-
-  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
-  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << content(num(8*q)) << endl;
-  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
-  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
 
   RingElem eq = num(O*(N/d));
 
@@ -2298,11 +2330,14 @@ void program()
 // Use main() to handle any uncaught exceptions and warn the user about them.
 int main()
 {
+  GlobalManager CoCoAFoundations;
+
   try
   {
+    testPowerPolyRing();
+    testSmithFactor();
+    testDiophantineSolvable();
     program();
-    //testSmithFactor();
-    //testDiophantineSolvable();
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)
