@@ -1974,6 +1974,32 @@ RingElem minCoeff(RingElem in, RingElem myindet)
   return result;
 }
 
+/* This variant of minCoeff doesn't require the indeterminate to be
+ * specified, instead searching all of the indeterminates to find
+ * those with monomial minimum coefficients.  It isn't as useful as I
+ * thought it would be, because we need to limit our attention to
+ * those indeterminates that are irreducible, and we currently have no
+ * way to tell which they are.
+ */
+
+void minCoeff2(RingElem in)
+{
+  vector<RingElem> targets;
+
+  if (IsFractionField(owner(in))) {
+    targets = indets(BaseRing(owner(in)));
+  } else {
+    targets = indets(owner(in));
+  }
+
+  for (auto it=targets.begin(); it != targets.end(); ++ it) {
+    RingElem result = minCoeff(in, *it);
+    if (IsMonomial(result)) {
+      cout << "minCoeff(eq," << *it << ") = " << result << endl;
+    }
+  }
+}
+
 void program()
 {
   cout << boolalpha; // so that bools print out as true/false
