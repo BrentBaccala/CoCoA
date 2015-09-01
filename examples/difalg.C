@@ -626,6 +626,12 @@ PPMonoid NewPPMonoidRing(const std::vector<string>& IndetNames, const PPOrdering
  * that tell us how the indeterminates map.  It's done that way to
  * make usage syntax easy; we don't actually use the homomorphisms as
  * homomorphisms.
+ *
+ * A Differential can be modified, because it's sometimes useful to
+ * use some of the indeterminates in the differential to define other
+ * indeterminates.  For example, if z = exp(n/d), then dx(z) = z
+ * dx(n/d), which would have to expanded by hand if we couldn't define
+ * dx's action on n and d before defining it's action on z.
  */
 
 class Differential {
@@ -689,6 +695,36 @@ public:
 	}
       }
     }
+  }
+
+  void update(RingElem source, ConstRefRingElem target)
+  {
+    RingHom ItoT = IdentityHom(R);
+
+    if ((owner(source) != R) || (owner(target) != R)) {
+      CoCoA_ERROR(ERR::MixedRings, "Differential update source or target in wrong ring");
+    }
+
+    if (IsFractionField(R)) {
+      if (! IsOne(den(source))) {
+	CoCoA_ERROR(ERR::NotIndet, "Differential update");
+      }
+      source = num(source);
+    }
+    if (! IsIndet(source)) {
+      CoCoA_ERROR(ERR::NotIndet, "Differential update");
+    }
+
+    // if a mapping already exists for this indet, replace it
+    for (auto it = difmap.begin(); it != difmap.end(); ++ it) {
+      if (it->first == source) {
+	it->second = target;
+	return;
+      }
+    }
+
+    // otherwise, insert a new mapping
+    insert(source, target);
   }
 
   RingElem operator() (const RingElem elem) const
@@ -1963,6 +1999,8 @@ void program()
 	"n", "n_{x}", "n_{xx}", "n_{t}",
 	"n_i", "n_{ix}", "n_{ixx}", "n_{it}",
 	"n_r", "n_{rx}", "n_{rxx}", "n_{rt}",
+	"n_e", "n_{ex}", "n_{exx}", "n_{et}",
+	"d_e", "d_{ex}", "d_{exx}", "d_{et}",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
   ring R = NewPowerPolyRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
@@ -2016,6 +2054,18 @@ void program()
   RingElem n_rxx(K, "n_{rxx}");
   RingElem n_rt(K, "n_{rt}");
 
+  // numerator and denominator of exponent in z = e^(n/d)
+
+  RingElem n_e(K, "n_e");
+  RingElem n_ex(K, "n_{ex}");
+  RingElem n_exx(K, "n_{exx}");
+  RingElem n_et(K, "n_{et}");
+
+  RingElem d_e(K, "d_e");
+  RingElem d_ex(K, "d_{ex}");
+  RingElem d_exx(K, "d_{exx}");
+  RingElem d_et(K, "d_{et}");
+
   // n_i is one coefficient in a numerator sum
   RingElem n_i(K, "n_i");
   RingElem n_ix(K, "n_{ix}");
@@ -2024,15 +2074,22 @@ void program()
 
   // setup our differentials (acting on K)
 
-  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, z >> -x/(2*t)*z, r >> 0, tpo >> 0,
+  Differential dx(K, vector<RingHom> {x >> 1, t >> 0, r >> 0, tpo >> 0,
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
 	n >> n_x, n_x >> n_xx,
 	n_r >> n_rx, n_rx >> n_rxx,
 	n_i >> n_ix, n_ix >> n_ixx});
 
-  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, z >> power(x,2)/(4*power(t,2))*z, r >> r/(2*t), tpo >> 1,
+  Differential dt(K, vector<RingHom> {x >> 0, t >> 1, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
+
+  RingElem z_exp = -x*x/(4*t);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  //cout << dx(z) << endl;
 
   // Create a Weyl algebra, with ExponentRing as the coefficient ring.
   // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
@@ -2049,8 +2106,8 @@ void program()
 
   RingElem O = WA_dx*WA_dx - WA_dt;
 
-  cout << WeylOperatorAlgebraPtr(WA)->poly_solve(O) << endl;
-  cout << WeylOperatorAlgebraPtr(WA)->poly_solve(-2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx -2*WA_t*WA_dt -1) << endl;
+  // cout << WeylOperatorAlgebraPtr(WA)->poly_solve(O) << endl;
+  // cout << WeylOperatorAlgebraPtr(WA)->poly_solve(-2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx -2*WA_t*WA_dt -1) << endl;
 
   RingElem e = N/D;
 
@@ -2149,6 +2206,16 @@ void program()
   cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+#if 0
+  cout << endl;
+  cout << "try denominator z^p with numerator d_e^b N" << endl;
+  cout << endl;
+
+  eq = num(O*((power(d_e,b) * N)/power(z,p)));
+  cout << eq << endl;
+  cout << "minCoeff(eq, d_e) = " << minCoeff(eq, d_e) << endl;
+#endif
 
   cout << endl;
   cout << "try denominator z^a with numerator t^b N where N has no t factor" << endl;
