@@ -2008,22 +2008,22 @@ void program()
   cout << boolalpha; // so that bools print out as true/false
   cout << TeX;
 
-  ring ZZ = RingZZ();
-  ring QQ = RingQQ();
+  const ring ZZ = RingZZ();
+  const ring QQ = RingQQ();
 
   // ExponentRing - these are the indeterminates that can appear in powers
 
-  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i"), symbol("b"), symbol("c")});
-  RingElem p(ExponentRing, "p");
-  RingElem a(ExponentRing, "a");
-  RingElem b(ExponentRing, "b");
-  RingElem c(ExponentRing, "c");
-  RingElem i(ExponentRing, "i");
+  const ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i"), symbol("b"), symbol("c")});
+  const RingElem p(ExponentRing, "p");
+  const RingElem a(ExponentRing, "a");
+  const RingElem b(ExponentRing, "b");
+  const RingElem c(ExponentRing, "c");
+  const RingElem i(ExponentRing, "i");
 
   // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
   // along with its fraction field.
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "r", "T", "T_t", "(t+1)",
+  const PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "r", "T", "T_t", "(t+1)",
 	"f", "f_x", "f_{xx}", "f_t", "q", "q_x", "q_{xx}", "q_t",
 	"n", "n_{x}", "n_{xx}", "n_{t}",
 	"n_i", "n_{ix}", "n_{ixx}", "n_{it}",
@@ -2031,75 +2031,75 @@ void program()
 	"n_e", "n_{ex}", "n_{exx}", "n_{et}",
 	"d_e", "d_{ex}", "d_{exx}", "d_{et}",
 	"N", "N_x", "N_{xx}", "N_t", "D", "D_x", "D_{xx}", "D_t"}, lex, ExponentRing);
-  ring R = NewPowerPolyRing(ExponentRing, PPM);
-  ring K = NewFractionField(R);
+  const ring R = NewPowerPolyRing(ExponentRing, PPM);
+  const ring K = NewFractionField(R);
 
   // x,t are in our field of definition
   // z = exp(-x^2/(4(t+1)))
   // r = sqrt(t)
 
-  RingElem x(K, "x");
-  RingElem t(K, "t");
-  RingElem z(K, "z");
-  RingElem r(K, "r");
+  const RingElem x(K, "x");
+  const RingElem t(K, "t");
+  const RingElem z(K, "z");
+  const RingElem r(K, "r");
 
-  RingElem tpo(K, "(t+1)");
+  const RingElem tpo(K, "(t+1)");
 
   // T is a polynomial in C[t] (doesn't involve x or z)
-  RingElem T(K, "T");
-  RingElem Tt(K, "T_t");
+  const RingElem T(K, "T");
+  const RingElem Tt(K, "T_t");
 
   // N is the numerator
-  RingElem N(K, "N");
-  RingElem Nx(K, "N_x");
-  RingElem Nxx(K, "N_{xx}");
-  RingElem Nt(K, "N_t");
+  const RingElem N(K, "N");
+  const RingElem Nx(K, "N_x");
+  const RingElem Nxx(K, "N_{xx}");
+  const RingElem Nt(K, "N_t");
 
   // D is the denominator
-  RingElem D(K, "D");
-  RingElem Dx(K, "D_x");
-  RingElem Dxx(K, "D_{xx}");
-  RingElem Dt(K, "D_t");
+  const RingElem D(K, "D");
+  const RingElem Dx(K, "D_x");
+  const RingElem Dxx(K, "D_{xx}");
+  const RingElem Dt(K, "D_t");
 
   // f and q are factors of something.  Typically D=f^p q,
   // where f is irreducible and q is coprime to f.
-  RingElem f(K, "f");
-  RingElem fx(K, "f_x");
-  RingElem fxx(K, "f_{xx}");
-  RingElem ft(K, "f_t");
+  const RingElem f(K, "f");
+  const RingElem fx(K, "f_x");
+  const RingElem fxx(K, "f_{xx}");
+  const RingElem ft(K, "f_t");
 
-  RingElem q(K, "q");
-  RingElem qx(K, "q_x");
-  RingElem qxx(K, "q_{xx}");
-  RingElem qt(K, "q_t");
+  const RingElem q(K, "q");
+  const RingElem qx(K, "q_x");
+  const RingElem qxx(K, "q_{xx}");
+  const RingElem qt(K, "q_t");
 
-  RingElem n(K, "n");
-  RingElem n_x(K, "n_{x}");
-  RingElem n_xx(K, "n_{xx}");
-  RingElem n_t(K, "n_{t}");
+  const RingElem n(K, "n");
+  const RingElem n_x(K, "n_{x}");
+  const RingElem n_xx(K, "n_{xx}");
+  const RingElem n_t(K, "n_{t}");
 
-  RingElem n_r(K, "n_r");
-  RingElem n_rx(K, "n_{rx}");
-  RingElem n_rxx(K, "n_{rxx}");
-  RingElem n_rt(K, "n_{rt}");
+  const RingElem n_r(K, "n_r");
+  const RingElem n_rx(K, "n_{rx}");
+  const RingElem n_rxx(K, "n_{rxx}");
+  const RingElem n_rt(K, "n_{rt}");
 
   // numerator and denominator of exponent in z = e^(n/d)
 
-  RingElem n_e(K, "n_e");
-  RingElem n_ex(K, "n_{ex}");
-  RingElem n_exx(K, "n_{exx}");
-  RingElem n_et(K, "n_{et}");
+  const RingElem n_e(K, "n_e");
+  const RingElem n_ex(K, "n_{ex}");
+  const RingElem n_exx(K, "n_{exx}");
+  const RingElem n_et(K, "n_{et}");
 
-  RingElem d_e(K, "d_e");
-  RingElem d_ex(K, "d_{ex}");
-  RingElem d_exx(K, "d_{exx}");
-  RingElem d_et(K, "d_{et}");
+  const RingElem d_e(K, "d_e");
+  const RingElem d_ex(K, "d_{ex}");
+  const RingElem d_exx(K, "d_{exx}");
+  const RingElem d_et(K, "d_{et}");
 
   // n_i is one coefficient in a numerator sum
-  RingElem n_i(K, "n_i");
-  RingElem n_ix(K, "n_{ix}");
-  RingElem n_ixx(K, "n_{ixx}");
-  RingElem n_it(K, "n_{it}");
+  const RingElem n_i(K, "n_i");
+  const RingElem n_ix(K, "n_{ix}");
+  const RingElem n_ixx(K, "n_{ixx}");
+  const RingElem n_it(K, "n_{it}");
 
   // setup our differentials (acting on K)
 
@@ -2127,16 +2127,18 @@ void program()
   // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
   // unless the operator algebra and the target ring share the same coefficient ring.
 
-  ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential *> {&dx, &dt});
+  const ring WA = NewWeylOperatorAlgebra(ExponentRing,
+					 vector<symbol> {symbol("x"), symbol("t")},
+					 vector<Differential *> {&dx, &dt});
 
-  RingElem WA_x(WA, "x");
-  RingElem WA_t(WA, "t");
-  RingElem WA_dx(WA, "dx");
-  RingElem WA_dt(WA, "dt");
+  const RingElem WA_x(WA, "x");
+  const RingElem WA_t(WA, "t");
+  const RingElem WA_dx(WA, "dx");
+  const RingElem WA_dt(WA, "dt");
 
   // our operator
 
-  RingElem O = WA_dx*WA_dx - WA_dt;
+  const RingElem O = WA_dx*WA_dx - WA_dt;
 
   // cout << WeylOperatorAlgebraPtr(WA)->poly_solve(O) << endl;
   // cout << WeylOperatorAlgebraPtr(WA)->poly_solve(-2*WA_x*WA_dx + 2*WA_t*WA_dx*WA_dx -2*WA_t*WA_dt -1) << endl;
