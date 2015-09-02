@@ -1480,27 +1480,30 @@ void testDiophantineSolvable(void)
 
 /* A Weyl ring promoted to an operator algebra
  *
- * A vector of differentials is provided.  All must operate on the
- * same ring.  The symbols provided to the Weyl algebra must also
- * exist in that ring.  We assume that CanonicalHom can lift
- * coefficients from the Weyl algebra's coefficient ring
- * into the target ring of the differentials.
+ * A vector of pointers to Differentials is provided.  All must
+ * operate on the same ring.  The symbols provided to the Weyl algebra
+ * must also exist in that ring.  We assume that CanonicalHom can lift
+ * coefficients from the Weyl algebra's coefficient ring into the
+ * target ring of the differentials.
+ *
+ * We use POINTERS to Differentials because Differentials can be
+ * modified (maybe not a very good idea)...
  */
 
 class WeylOperatorAlgebra : public RingWeylImpl
 {
 private:
-  const std::vector<Differential> differentials;
+  const std::vector<Differential *> differentials;
   const std::vector<symbol> SymList;
 public:
-  WeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<long>& ElimIndets, const std::vector<Differential>& differentials):
+  WeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<long>& ElimIndets, const std::vector<Differential *>& differentials):
     RingWeylImpl(CoeffRing, names, ElimIndets),
     differentials(differentials),
     SymList(names)
   {
-    const ring R = owner(differentials[0]);
+    const ring R = owner(*differentials[0]);
     for (auto it=differentials.begin(); it != differentials.end(); ++it) {
-      if (owner(*it) != R) {
+      if (owner(**it) != R) {
 	CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra: differentials must map the same ring");
       }
     }
@@ -1515,7 +1518,7 @@ public:
     RingElem ans(owner(y));
     long myNumTrueIndets = myNumIndets()/2;
 
-    if (owner(y) != owner(differentials[0])) {
+    if (owner(y) != owner(*differentials[0])) {
       CoCoA_ERROR(ERR::MixedRings, "WeylOperatorAlgebra used on wrong ring");
     }
     for (auto it=myBeginIter(rawx); !IsEnded(it); ++it) {
@@ -1526,7 +1529,7 @@ public:
 	const long d = exponent(PP(it), Didx);
 
 	for (long i=1; i <= d; ++i) {
-	  term = (differentials[idx])(term);
+	  term = (*differentials[idx])(term);
 	  if (IsZero(term)) break;
 	}
       }
@@ -1561,7 +1564,7 @@ public:
     ring WA = SparsePolyRing(this);
     RingElem solution(WA);
 
-    ring K = owner(differentials[0]);
+    ring K = owner(*differentials[0]);
     ring R = owner(x);
 
     RingHom RtoK = CanonicalHom(R, K);
@@ -1622,7 +1625,7 @@ public:
 
 	  RingElem target(arg);
 	  for (long i=1; i <= order; ++i) {
-	    target = (differentials[idx])(target);
+	    target = (*differentials[idx])(target);
 	  }
 
 	  if (IsZero(target)) continue;
@@ -1900,7 +1903,7 @@ const WeylOperatorAlgebra* WeylOperatorAlgebraPtr(const ring& R)
   return dynamic_cast<const WeylOperatorAlgebra*>(R.myRawPtr());
 }
 
-SparsePolyRing NewWeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<Differential>& differentials)
+SparsePolyRing NewWeylOperatorAlgebra(const ring& CoeffRing, const std::vector<symbol>& names, const std::vector<Differential *>& differentials)
 {
   std::vector<long> ElimIndets;   // empty set
   return SparsePolyRing(new WeylOperatorAlgebra(CoeffRing, WANAMES(names), ElimIndets, differentials));
@@ -2104,24 +2107,27 @@ void program()
 	N >> Nx, Nx >> Nxx, D >> Dx, Dx >> Dxx, T >> 0,
 	f >> fx, fx >> fxx, q >> qx, qx >> qxx,
 	n >> n_x, n_x >> n_xx,
+	n_e >> n_ex, n_ex >> n_exx,
 	n_r >> n_rx, n_rx >> n_rxx,
-	n_i >> n_ix, n_ix >> n_ixx});
+	n_i >> n_ix, n_ix >> n_ixx,
+	d_e >> d_ex, d_ex >> d_exx});
 
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, r >> r/(2*t), tpo >> 1,
-	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_r >> n_rt, n_i >> n_it});
+	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_e >> n_et, n_r >> n_rt, n_i >> n_it, d_e >> d_et});
 
-  RingElem z_exp = -x*x/(4*t);
+  //RingElem z_exp = -x*x/(4*t);
+  RingElem z_exp = n_e/d_e;
 
   dx.update(z, z*dx(z_exp));
   dt.update(z, z*dt(z_exp));
 
-  //cout << dx(z) << endl;
+  cout << dx(z) << endl;
 
   // Create a Weyl algebra, with ExponentRing as the coefficient ring.
   // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
   // unless the operator algebra and the target ring share the same coefficient ring.
 
-  ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential> {dx, dt});
+  ring WA = NewWeylOperatorAlgebra(ExponentRing, vector<symbol> {symbol("x"), symbol("t")}, vector<Differential *> {&dx, &dt});
 
   RingElem WA_x(WA, "x");
   RingElem WA_t(WA, "t");
