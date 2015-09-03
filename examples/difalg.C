@@ -2298,7 +2298,7 @@ void program()
   //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
   cout << eq << endl;
   cout << "minCoeff(eq, r) = " << minCoeff(eq, r) << endl;
-  cout << "eq - minCoeff(eq, r) = " << (eq - minCoeff(eq, r))/num(r) << endl;
+  cout << "eq - minCoeff(eq, r) = " << (eq = (eq - minCoeff(eq, r))/num(r)) << endl;
   cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
