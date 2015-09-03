@@ -839,8 +839,8 @@ private:
     for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
       for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
 	RingElem exp = RingElemExponent(PP(it), indet);
-	BigInt N;
-	if (! IsInteger(N, exp)) {
+
+	if (! IsInteger(exp)) {
 	  /* exp is a RingElem in PPM's exponent ring.  We expect it
 	   * to be a linear polynomial.  One of the linear terms (the
 	   * last one processed) is adjusted to ensure that negative

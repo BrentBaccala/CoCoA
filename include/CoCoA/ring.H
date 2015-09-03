@@ -632,6 +632,12 @@ namespace CoCoA
     return R->IamOrderedDomain();
   }
 
+  inline bool IsInteger(ConstRefRingElem x)
+  {
+    BigInt N;
+    return IsInteger(N, x);
+  }
+
   //??? bool contains(const RingBase& big_ring, const RingBase& little_ring);
 
 
