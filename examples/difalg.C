@@ -1940,7 +1940,7 @@ RingElem minExponent(RingElem in, RingElem indet)
   for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
     RingElem myexp = RingElemExponent(PP(it), index);
     if (valid && !IsInteger(myexp - minexp)) {
-      CoCoA_ERROR(ERR::NYI, "incompatible exponents in minCoeff");
+      CoCoA_ERROR(ERR::NYI, "incompatible exponents in minExponent");
     }
     if (!valid || (myexp < minexp)) {
       minexp = myexp;
