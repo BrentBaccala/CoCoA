@@ -1909,14 +1909,19 @@ SparsePolyRing NewWeylOperatorAlgebra(const ring& CoeffRing, const std::vector<s
   return SparsePolyRing(new WeylOperatorAlgebra(CoeffRing, WANAMES(names), ElimIndets, differentials));
 }
 
-/* Return the smallest exponent with which an indeterminate appears in a polynomial */
+/* Return the smallest exponent with which an indeterminate appears in a polynomial.
+ *
+ * WARNING!  Exponents can be incomparable.  For example, we can't
+ * tell if f^p has smaller power than f^2 without knowing something
+ * about p.
+ */
 
 RingElem minExponent(RingElem in, RingElem indet)
 {
   RingElem poly;
   long index;
   bool valid = false;
-  RingElem result;
+  RingElem minexp;
 
   if (IsFractionField(owner(indet))) {
     CoCoA_ASSERT(IsOne(den(indet)));
@@ -1934,16 +1939,24 @@ RingElem minExponent(RingElem in, RingElem indet)
 
   for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
     RingElem myexp = RingElemExponent(PP(it), index);
-    if (!valid || (myexp < result)) {
-      result = myexp;
+    if (valid && !IsInteger(myexp - minexp)) {
+      CoCoA_ERROR(ERR::NYI, "incompatible exponents in minCoeff");
+    }
+    if (!valid || (myexp < minexp)) {
+      minexp = myexp;
       valid = true;
     }
   }
 
-  return result;
+  return minexp;
 }
 
-/* Returns the factor by which an indeterminate appears to its minimal power */
+/* Returns the factor by which an indeterminate appears to its minimal power.
+ *
+ * WARNING!  Exponents can be incomparable.  For example, we can't
+ * tell if f^p has smaller power than f^2 without knowing something
+ * about p.
+ */
 
 RingElem minCoeff(RingElem in, RingElem myindet)
 {
@@ -1964,11 +1977,20 @@ RingElem minCoeff(RingElem in, RingElem myindet)
     poly = in;
   }
 
-  RingElem minexp = minExponent(in, myindet);
+  bool valid = false;
+  RingElem minexp;
   RingElem result(owner(poly));
 
   for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
     RingElem myexp = RingElemExponent(PP(it), index);
+    if (valid && !IsInteger(myexp - minexp)) {
+      CoCoA_ERROR(ERR::NYI, "incompatible exponents in minCoeff");
+    }
+    if (!valid || (myexp < minexp)) {
+      minexp = myexp;
+      valid = true;
+      result = 0;
+    }
     if (myexp == minexp) {
       result += monomial(owner(poly), coeff(it), PP(it)/power(indet(owner(PP(it)), index), minexp));
     }
