@@ -2137,8 +2137,8 @@ void program()
   Differential dt(K, vector<RingHom> {x >> 0, t >> 1, r >> r/(2*t), tpo >> 1,
 	N >> Nt, D >> Dt, T >> Tt, f >> ft, q >> qt, n >> n_t, n_e >> n_et, n_r >> n_rt, n_i >> n_it, d_e >> d_et});
 
-  //RingElem z_exp = -x*x/(4*t);
-  RingElem z_exp = n_e/d_e;
+  RingElem z_exp = -x*x/(4*t);
+  //RingElem z_exp = n_e/d_e;
 
   dx.update(z, z*dx(z_exp));
   dt.update(z, z*dt(z_exp));
@@ -2262,16 +2262,6 @@ void program()
   cout << "minCoeff(eq, t) = " << minCoeff(eq, t) << endl;
   //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
   //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
-
-#if 0
-  cout << endl;
-  cout << "try denominator z^p with numerator d_e^b N" << endl;
-  cout << endl;
-
-  eq = num(O*((power(d_e,b) * N)/power(z,p)));
-  cout << eq << endl;
-  cout << "minCoeff(eq, d_e) = " << minCoeff(eq, d_e) << endl;
-#endif
 
   cout << endl;
   cout << "try denominator z^a with numerator t^b N where N has no t factor" << endl;
@@ -2466,6 +2456,103 @@ void program()
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
 
+
+  cout << endl;
+  cout << "try denominator z^p f^a q   with z = exp(n_e / (f^b d_e))" << endl;
+  cout << endl;
+
+  z_exp = n_e/(power(f,b)*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p) * power(f,a) * q;
+  //d = power(z,p) * q;
+  eq = num(O*(N/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << "minCoeff(eq, f) = " << minCoeff(eq, f) << endl;
+  //cout << "minCoeff(eq, D) = " << minCoeff(eq, D) << endl;
+
+
+  cout << endl;
+  cout << "try denominator z^p T^a q   with z = exp(n_e / (T^b d_e)) where T_x = 0" << endl;
+  cout << endl;
+
+  z_exp = n_e/(power(T,b)*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p) * power(T, a) * q;
+  eq = num(O*(N/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
+  cout << "eq - minCoeff(eq, T) = " << (eq - num(T)*minCoeff(eq, T))/num(T) << endl;
+  minCoeff2((eq - num(T)*minCoeff(eq, T))/num(T));
+  // XXX this factor() call doesn't work
+  //cout << factor(minCoeff(eq,T)).myFactors() << endl;
+  //cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
+  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+  cout << endl;
+  cout << "try denominator z^p T^a q   with z = exp(n_e / (T d_e)) where T_x = 0" << endl;
+  cout << endl;
+
+  z_exp = n_e/(T*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p) * power(T, a) * q;
+  eq = num(O*(N/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  cout << eq << endl;
+  cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
+  cout << "eq - minCoeff(eq, T) = " << (eq - num(T)*minCoeff(eq, T))/num(T) << endl;
+  minCoeff2((eq - num(T)*minCoeff(eq, T))/num(T));
+  // XXX this factor() call doesn't work
+  //cout << factor(minCoeff(eq,T)).myFactors() << endl;
+  //cout << "minCoeff(eq, t+1) = " << minCoeff(eq, tpo) << endl;
+  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+  cout << endl;
+  cout << "try denominator z^p   with z = exp(n_e / (f^a d_e))" << endl;
+  cout << endl;
+
+  z_exp = n_e/(power(f,a)*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  //cout << "dx(z) = " << dx(z) << endl;
+  //cout << "dt(z) = " << dt(z) << endl;
+
+  d = power(z,p);
+  eq = num(O*(N/d));
+  //cout << eq << endl;
+  //eq = (t >> (tpo - 1)) (CanonicalHom(R,K)(eq));
+  //cout << "NUM: " << eq << endl;
+  //cout << "DEN: " << den(O*(N/d)) << endl;
+  //cout << minExponent(eq, tpo) << endl;
+  cout << "minCoeff(eq, f) = " << minCoeff(eq, f) << endl;
+  //minCoeff2(eq);
+  //cout << "minCoeff(eq, T) = " << minCoeff(eq, T) << endl;
+  //cout << den(dx(dx(N/d)) - dt(N/d)) << endl;
+
+#if 0
+  cout << endl;
+  cout << "try denominator z^p with numerator d_e^b N" << endl;
+  cout << endl;
+
+  eq = num(O*((power(d_e,b) * N)/power(z,p)));
+  cout << eq << endl;
+  cout << "minCoeff(eq, d_e) = " << minCoeff(eq, d_e) << endl;
+#endif
 
 }
 
