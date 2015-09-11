@@ -2467,6 +2467,51 @@ void program()
 
 
   cout << endl;
+  cout << "try denominator z^p    with z = exp(n_e / d_e)" << endl;
+  cout << endl;
+
+  z_exp = n_e/d_e;
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p);
+  eq = num(O*(N/d));
+  cout << eq << endl;
+  minCoeff2(eq);
+
+
+  cout << endl;
+  cout << "try denominator z^p    with z = exp(n_e / f^a d_e)" << endl;
+  cout << endl;
+
+  z_exp = n_e/(power(f,a)*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p);
+  eq = num(O*(N/d));
+  cout << eq << endl;
+  //minCoeff2(eq);
+
+
+  cout << endl;
+  cout << "try denominator z^p    with z = exp(n_e / T^a d_e)" << endl;
+  cout << endl;
+
+  z_exp = n_e/(power(T,a)*d_e);
+
+  dx.update(z, z*dx(z_exp));
+  dt.update(z, z*dt(z_exp));
+
+  d = power(z,p);
+  eq = num(O*(N/d));
+  cout << eq << endl;
+  minCoeff2(eq);
+
+
+  cout << endl;
   cout << "try denominator z^p f^a q   with z = exp(n_e / (f^b d_e))" << endl;
   cout << endl;
 
