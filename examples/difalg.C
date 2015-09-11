@@ -2209,6 +2209,15 @@ void program()
   cout << "minCoeff(eq, f) = " <<minCoeff(eq, f) << endl;
 
 
+  cout << endl;
+  cout << "try N/Tq where T_x = 0" << endl;
+  cout << endl;
+
+  eq = num(O*(N/(T*q)));
+
+  cout << eq << endl;
+  cout << "minCoeff(eq, T) = " <<minCoeff(eq, T) << endl;
+
 
 
   cout << endl;
