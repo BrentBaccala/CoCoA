@@ -112,7 +112,8 @@ $p-1$, unless the derivative is zero.
 \vfill\eject
 \section*{A Prototype Problem}
 
-Let's consider a simplified, one-dimensional version of Schr\"odinger's equation:
+%Let's consider a simplified, one-dimensional version of Schr\"odinger's equation:
+Let's consider the one-dimensional heat equation:
 
 $$\frac{\delta^2}{\delta x^2} \Psi = \frac{\delta}{\delta t} \Psi$$
 
@@ -537,7 +538,37 @@ In short, we've found another solution: $zr/t$, as expected from analysis.
 This is the only solution in $\C(x,t,r,z) \backslash \C(x,t)$.
 
 \vfill\eject
+\section*{Solving $\Psi_{xx}=\Psi_t$ with a free exponential}
 
+In previous sections, I took $z=\exp(-\frac{x^2}{4t})$, but this
+requires too cleaver a guess to be useful as a general technique.
+What happens if we relax this relationship, assume only that $z$ is an
+exponential of some element in $\C(x,t)$, and look for solutions in
+$\C(x,t,z)$?
+
+We begin our analysis as before by concluding that there can be no
+normal irreducible factors in the solution's denominator, so next
+let's consider a solution of the form $\frac{n}{z^p}$, with an
+exponential of the form $z=\exp(\frac{n_e}{f^a d_e})$.  Expanding out
+our equation, we find that the only term not involving $f$ is
+$p^{2}a^{2}f_x^{2}n_e^{2}d_e^{2}n$.  $f$ is coprime to $n_e$ and $d_e$,
+and let's add the assumption that it's also coprime to $n$.  If $p$
+and $a$ are both non-zero, we must have $f_x$ zero, so adding that
+assumption produces an equation of the form:
+
+$$[\cdots]f^{2a+1} + [\cdots]f^{a+1} + [\cdots]f^a + [\cdots]f = 0$$
+
+Here, for the first time, we find exponents that are {\it incomparable},
+since we can't separate the final two terms without additional
+assumptions on the value of $a$.  Assuming that $a$ is at least two,
+the $f$ terms are:
+
+$$p^{2}n_e^{2}d_{ex}^{2}n -2p^{2}n_en_{ex}d_ed_{ex}n +p^{2}n_{ex}^{2}d_e^{2}n = p^2(n_e d_{ex} - n_{ex} d_e)^2n = p^2(n_e d_e)_x^2n$$
+
+which must be a multiple of $f$ (or zero), so we integrate and
+conclude that $n_e d_e = f^b q+c$, where $c_x=0$.
+
+\vfill\eject
 \section*{Solving Polynomial Differential Equations}
 
 Often we're confronted with an equation like $n_{xx} = n_t$, where $n$
