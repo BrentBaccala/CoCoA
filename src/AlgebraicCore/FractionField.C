@@ -35,7 +35,6 @@
 #include "CoCoA/ideal.H"
 
 #include <memory>
-using std::auto_ptr;
 #include <iostream>
 using std::ostream;
 #include <new>
@@ -153,8 +152,8 @@ namespace CoCoA
   {
   private: // data members
     mutable MemPool myMemMgr;           // MemPool must come before myZeroPtr and myOnePtr
-    auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
 
   private:
     typedef FractionFieldElem value_t; // FractionFieldElem is the actual type of the values in a FractionFieldImpl

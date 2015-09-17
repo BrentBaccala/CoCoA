@@ -38,7 +38,6 @@ using std::ostream;
 #include<limits>
 using std::numeric_limits;
 #include <memory>
-using std::auto_ptr;
 #include <vector>
 using std::vector;
 
@@ -139,7 +138,7 @@ namespace CoCoA
     mutable MemPool myMemMgr;     // IMPORTANT: this must come *before* myIndetVector and myOnePtr.
 //???    std::vector<long> myDelta;
     vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-    auto_ptr<PPMonoidElem> myOnePtr;
+    std::unique_ptr<PPMonoidElem> myOnePtr;
     //@}
   };
 

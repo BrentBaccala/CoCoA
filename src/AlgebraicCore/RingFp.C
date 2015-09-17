@@ -41,7 +41,6 @@ using std::ostream;        // only in myOutput
 // #include <limits>  ---  included in MachineInt.H (included via BigRat.H)
 using std::numeric_limits; // only in ctor
 // #include <memory>  ---  included in MemPool.H
-using std::auto_ptr;
 // #include <vector>  ---  included in ideal.H
 using std::vector;
 
@@ -56,8 +55,8 @@ namespace CoCoA
     const value_t myModulus;
     const SmallFpImpl myImpl;
     mutable MemPool myMemMgr;       // MemPool must come *BEFORE* myZeroPtr and myOnePtr
-    auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
 
   private: // auxiliary functions
     static value_t PrincipalGen(const ideal& I); // used for arg checking in ctor

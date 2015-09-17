@@ -44,7 +44,6 @@ using std::ostream;
 #include<iterator>
 using std::back_inserter;
 #include <memory>
-using std::auto_ptr;
 #include <new>
 //for placement new
 
@@ -167,7 +166,7 @@ namespace CoCoA
     const ring myR;
     const long myNumComptsValue;            // always > 0
     mutable MemPool myMemMgr;               // This must come before myZeroValue.
-    std::auto_ptr<ModuleElem> myZeroValue;  // This must come after myMemMgr.
+    std::unique_ptr<ModuleElem> myZeroValue;  // This must come after myMemMgr.
     std::vector<ModuleElem> myGensArray;
     const FreeModule myM; // so that myAmbientFreeModule can work
   };
@@ -511,7 +510,7 @@ namespace CoCoA
 
   private: // data members
     const ModuleOrdering myModuleOrd; ///< abstract description of the ordering
-    std::auto_ptr<CmpBase> myOrdPtr; ///< actual implementation of the ordering [should be const???]
+    std::unique_ptr<CmpBase> myOrdPtr; ///< actual implementation of the ordering [should be const???]
   };
 
 

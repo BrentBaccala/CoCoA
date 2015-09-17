@@ -96,7 +96,7 @@ private: // auxiliary functions
 private: // data members
   ring ExponentRing;
   vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-  auto_ptr<PPMonoidElem> myOnePtr;
+  unique_ptr<PPMonoidElem> myOnePtr;
 };
 
 

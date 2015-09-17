@@ -24,6 +24,7 @@
 #include "CoCoA/assert.H"
 #include "CoCoA/bool3.H"
 #include "CoCoA/symbol.H"
+#include "CoCoA/BigInt.H"
 
 #include "gmp.h"
 

@@ -39,7 +39,6 @@
 #include <vector>
 using std::vector;
 #include <memory>
-using std::auto_ptr;
 
 namespace CoCoA
 {

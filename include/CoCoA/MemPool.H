@@ -22,7 +22,6 @@
 #include <cstddef>
 //using std::size_t;
 #include <memory>
-//using std::auto_ptr;
 #include <string>
 //using std::string;
 
@@ -93,7 +92,7 @@ namespace CoCoA
     const bool myFillNewLoaf;         ///< if set, each new loaf is filled with copies of a known value.
     std::size_t mySlicesPerLoaf;      ///< approx number of slices new loaf should have (increases with each new loaf)
     slice_t myHeadOfFreeList;
-    std::auto_ptr<loaf> myLoaves; // intrusive linked list of loaves
+    std::unique_ptr<loaf> myLoaves; // intrusive linked list of loaves
     unsigned int myVerbosityLevel; ///< if >=2 then a log message is printed each time a new loaf is made
   };
 

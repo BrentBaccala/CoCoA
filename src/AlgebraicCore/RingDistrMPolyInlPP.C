@@ -39,7 +39,6 @@ using std::copy;
 #include <iostream>
 using std::ostream;
 #include <memory>
-using std::auto_ptr;
 #include <limits>
 using std::numeric_limits; // needed only if CoCoA_DEBUG is set.
 #include <new>
@@ -73,8 +72,8 @@ namespace CoCoA
     mutable MemPool myDMPPool; ///< memory manager for polynomials
     long myNumIndetsValue; ///< number of indeteminates
     mutable MemPool mySummandPool; ///< memory manager for summands; MemPool MUST COME BEFORE myZeroPtr, myOnePtr, and myIndetVector!
-    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
     std::vector<RingElem> myIndetVector;
 
   public:  // functions which every ring must implement
@@ -229,7 +228,7 @@ namespace CoCoA
   RingElemRawPtr RingDistrMPolyInlPPImpl::myNew(const MachineInt& n) const
   {
     if (IsZero(n)) return myNew();
-    auto_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
     *ans = n;
     return RingElemRawPtr(ans.release());
   }
@@ -238,7 +237,7 @@ namespace CoCoA
   RingElemRawPtr RingDistrMPolyInlPPImpl::myNew(const BigInt& N) const
   {
     if (N == 0) return myNew();
-    auto_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
     *ans = N;
     return RingElemRawPtr(ans.release());
   }
@@ -246,7 +245,7 @@ namespace CoCoA
 
   RingElemRawPtr RingDistrMPolyInlPPImpl::myNew(ConstRawPtr rawcopy) const
   {
-    auto_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyInlPP> ans(new(myDMPPool.alloc()) DistrMPolyInlPP(myCoeffRingValue, myPPMValue, myOrdvArith, mySummandPool)); // placement new
     *ans = import(rawcopy);
     return RingElemRawPtr(ans.release());
   }

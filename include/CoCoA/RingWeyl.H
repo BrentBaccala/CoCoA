@@ -42,8 +42,8 @@ namespace CoCoA
   private: // data members of RingWeyl
     const SparsePolyRing myReprRing;
     long myNumTrueIndetsValue;
-    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
     std::vector<RingElem> myIndetVector;
     std::vector<RingElem> myDerivationVector;
 

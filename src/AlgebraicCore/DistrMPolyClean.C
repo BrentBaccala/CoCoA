@@ -28,7 +28,6 @@
 #include <iostream>
 //using << in output
 //#include <memory> --- included in MemPool.H
-using std::auto_ptr;
 //#include <vector> ---  included in DistrMPolyClean.H
 using std::vector;
 
@@ -112,7 +111,7 @@ namespace CoCoA
   {
     myAssignZero();
     if (IsZero(rhs)) return *this; // to avoid needless alloc/free
-    auto_ptr<summand> t(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> t(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(t->myCoeff), rhs);
     if (!IsZero(t->myCoeff))
     {
@@ -127,7 +126,7 @@ namespace CoCoA
   {
     myAssignZero();
     if (IsZero(rhs)) return *this; // to avoid needless alloc/free
-    auto_ptr<summand> t(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> t(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(t->myCoeff), rhs);
     if (!IsZero(t->myCoeff))
     {
@@ -141,7 +140,7 @@ namespace CoCoA
   {
     myAssignZero();
     if (IsZero(rhs)) return *this; // to avoid needless alloc/free
-    auto_ptr<summand> t(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> t(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(t->myCoeff), rhs);
     if (!IsZero(t->myCoeff))
     {
@@ -158,7 +157,7 @@ namespace CoCoA
 
   DistrMPolyClean::summand* DistrMPolyClean::myCopySummand(const summand* original) const
   {
-    auto_ptr<summand> copy(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> copy(new summand(myCoeffRing, myPPM));
 
     myCoeffRing->myAssign(raw(copy->myCoeff), raw(original->myCoeff));
     myPPM->myAssign(raw(copy->myPP), raw(original->myPP));
@@ -250,7 +249,7 @@ namespace CoCoA
     summand** f_prev = &mySummands;
     summand*  f_smnd = *f_prev;
 
-    auto_ptr<summand> tmp_smnd(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> tmp_smnd(new summand(myCoeffRing, myPPM));
     RingElem tmp(myCoeffRing);
 
     int CMP = 0;
@@ -506,7 +505,7 @@ namespace CoCoA
     const summand* const LMf = f.mySummands;  // shorthand
     const summand* const LMg = g.mySummands;  // shorthand
 
-    auto_ptr<summand> SpareSummand(new summand(R, f.myPPM));
+    std::unique_ptr<summand> SpareSummand(new summand(R, f.myPPM));
     CoCoA_ASSERT( R->myIsDivisible(raw(SpareSummand->myCoeff),
                                    raw(LMf->myCoeff), raw(LMg->myCoeff)) );
     R->myDiv(raw(SpareSummand->myCoeff), raw(LMf->myCoeff), raw(LMg->myCoeff));
@@ -586,7 +585,7 @@ namespace CoCoA
   {
     if (myCoeffRing->myIsZero(rawc)) return;
 
-    auto_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(tmp->myCoeff), rawc);
     myPPM->myAssign(raw(tmp->myPP), expv);
     myPushFront(tmp.release()); 
@@ -601,7 +600,7 @@ namespace CoCoA
   {
     if (myCoeffRing->myIsZero(rawc)) return;
 
-    auto_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(tmp->myCoeff), rawc);
     myPPM->myAssign(raw(tmp->myPP), expv);
     myPushBack(tmp.release());
@@ -615,7 +614,7 @@ namespace CoCoA
   {
     if (myCoeffRing->myIsZero(rawc)) return;
 
-    auto_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(tmp->myCoeff), rawc);
     myPPM->myAssign(raw(tmp->myPP), rawpp);
     myPushFront(tmp.release()); 
@@ -626,7 +625,7 @@ namespace CoCoA
   {
     if (myCoeffRing->myIsZero(rawc)) return;
 
-    auto_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
+    std::unique_ptr<summand> tmp(new summand(myCoeffRing, myPPM));
     myCoeffRing->myAssign(raw(tmp->myCoeff), rawc);
     myPPM->myAssign(raw(tmp->myPP), rawpp);
     myPushBack(tmp.release());
@@ -712,7 +711,7 @@ namespace CoCoA
       return;
     }
 
-    auto_ptr<DistrMPolyClean::summand> SpareSummand(new DistrMPolyClean::summand(R, lhs.myPPM));
+    std::unique_ptr<DistrMPolyClean::summand> SpareSummand(new DistrMPolyClean::summand(R, lhs.myPPM));
     while (gterm != 0 && hterm != 0)
     {
       int cmp = (lhs.myPPM)->myCmp(raw(gterm->myPP), raw(hterm->myPP));
@@ -771,7 +770,7 @@ namespace CoCoA
     typedef DistrMPolyClean::summand summand;
     summand** f_prev = &mySummands;
     summand*  f_smnd = *f_prev;
-    auto_ptr<summand> s(myCopySummand(g.mySummands));
+    std::unique_ptr<summand> s(myCopySummand(g.mySummands));
     int CMP;
 
     while (f_smnd!=0 &&
@@ -805,7 +804,7 @@ namespace CoCoA
     typedef DistrMPolyClean::summand summand;
     const summand* gterm = g.mySummands;
     const summand* hterm = h.mySummands;
-    auto_ptr<DistrMPolyClean::summand> SpareSummand(new DistrMPolyClean::summand(R, lhs.myPPM));
+    std::unique_ptr<DistrMPolyClean::summand> SpareSummand(new DistrMPolyClean::summand(R, lhs.myPPM));
     while (gterm != 0 && hterm != 0)
     {
       int ord = (lhs.myPPM)->myCmp(raw(gterm->myPP), raw(hterm->myPP));

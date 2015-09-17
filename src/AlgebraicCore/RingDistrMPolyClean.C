@@ -35,7 +35,6 @@
 #include <iostream>
 //for operator <<
 #include <memory>
-using std::auto_ptr;
 #include <new>
 //for placement new
 #include <vector>
@@ -111,7 +110,7 @@ namespace CoCoA
   RingElemRawPtr RingDistrMPolyCleanImpl::myNew(const MachineInt& n) const
   {
     if (IsZero(n)) return myNew();
-    auto_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
     *ans = n;
     return RingElemRawPtr(ans.release());
   }
@@ -120,7 +119,7 @@ namespace CoCoA
   RingElemRawPtr RingDistrMPolyCleanImpl::myNew(const BigInt& N) const
   {
     if (N == 0) return myNew();  // not really necessary
-    auto_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
     *ans = N;
     return RingElemRawPtr(ans.release());
   }
@@ -128,7 +127,7 @@ namespace CoCoA
 
   RingElemRawPtr RingDistrMPolyCleanImpl::myNew(ConstRawPtr rawcopy) const
   {
-    auto_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
+    std::unique_ptr<DistrMPolyClean> ans(new(myDMPPool.alloc()) DistrMPolyClean(myCoeffRingValue, myPPMValue, mySummandPool)); // placement new
     *ans = import(rawcopy);
     return RingElemRawPtr(ans.release());
   }

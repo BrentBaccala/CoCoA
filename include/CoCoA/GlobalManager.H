@@ -23,7 +23,6 @@
 #include "CoCoA/random.H"
 
 #include <memory>
-// using std::auto_ptr;
 
 namespace CoCoA
 {
@@ -105,7 +104,7 @@ namespace CoCoA
       GMPMemMgr(GlobalSettings::AllocatorSetting choice, std::size_t SliceSize);
       ~GMPMemMgr();
     private: // data members of GMPMemMgr
-      std::auto_ptr<MemPool> myPoolPtr;
+      std::unique_ptr<MemPool> myPoolPtr;
       void *(*myPrevAlloc) (std::size_t);
       void *(*myPrevRealloc) (void *, std::size_t, std::size_t);
       void (*myPrevFree) (void *, std::size_t);

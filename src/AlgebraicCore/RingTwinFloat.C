@@ -32,7 +32,6 @@
 #include <iostream>
 using std::ostream;
 #include <memory>
-using std::auto_ptr;
 #include <vector>
 using std::vector; // only in RingTwinFloatImpl::output
 #include <algorithm>
@@ -133,9 +132,9 @@ namespace CoCoA
   {
   private: // data members
     mutable MemPool myMemMgr;         // MemPool must come before myZeroPtr, myOnePtr, and myMinusOnePtr
-    auto_ptr<RingElem> myZeroPtr;     ///< Every ring stores its own zero.
-    auto_ptr<RingElem> myOnePtr;      ///< Every ring stores its own one.
-    auto_ptr<RingElem> myMinusOnePtr; ///< Useful for myIsMinusOne
+    std::unique_ptr<RingElem> myZeroPtr;     ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;      ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myMinusOnePtr; ///< Useful for myIsMinusOne
     const long myAccuracyBits;        ///< the precision requested (or 10, whichever is the greater)
     const long myBufferBits;          ///< number of buffer bits (see article)
     const long myNoiseBits;           ///< initially the last myNoiseBits are "noise"

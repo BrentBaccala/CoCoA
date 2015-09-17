@@ -38,7 +38,6 @@ using std::setw;
 using std::ostream;
 using std::endl;
 //#include <memory>
-using std::auto_ptr;
 
 namespace CoCoA
 {
@@ -152,7 +151,7 @@ namespace CoCoA
     loaf(const loaf&);           ///< NEVER DEFINED -- copy ctor disabled
     loaf& operator=(const loaf&);///< NEVER DEFINED -- assignment disabled
   private: // data members of loaf
-    auto_ptr<loaf> myNext;
+    std::unique_ptr<loaf> myNext;
     const size_t mySliceWords;
     const size_t myNumSlices;
     slice_t* const myBegin;

@@ -40,7 +40,6 @@
 #include <iostream>
 using std::ostream;
 #include <memory>
-using std::auto_ptr;
 #include <vector>
 using std::vector;
 
@@ -82,8 +81,8 @@ namespace CoCoA
   class GeneralQuotientRingImpl: public QuotientRingBase
   {
   private: // data members
-    auto_ptr<RingElemAlias> myZeroPtr;
-    auto_ptr<RingElemAlias> myOnePtr;
+    std::unique_ptr<RingElemAlias> myZeroPtr;
+    std::unique_ptr<RingElemAlias> myOnePtr;
 
   public:
     GeneralQuotientRingImpl(const ring& R, const ideal& I);

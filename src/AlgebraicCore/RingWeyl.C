@@ -38,7 +38,6 @@
 #include "CoCoA/utils.H"
 
 #include <memory>
-using std::auto_ptr;
 #include <iostream>
 using std::ostream;
 using std::endl;   // just for debugging

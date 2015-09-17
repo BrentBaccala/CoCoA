@@ -121,7 +121,7 @@ private: // data members
   const long numNestedIndets;
   const long numExtraIndets;
   std::vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-  std::auto_ptr<PPMonoidElem> myOnePtr;
+  std::unique_ptr<PPMonoidElem> myOnePtr;
 };
 
   // Pseudo-ctors

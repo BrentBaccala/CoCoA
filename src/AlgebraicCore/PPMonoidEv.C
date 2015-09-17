@@ -42,7 +42,6 @@ using std::ostream;
 #include<limits>
 using std::numeric_limits;
 #include <memory>
-using std::auto_ptr;
 #include <vector>
 using std::vector;
 
@@ -197,8 +196,8 @@ namespace CoCoA
     const long myEntrySize;       ///< size in ?bytes???
     mutable MemPool myMemMgr;     // IMPORTANT: this must come *before* myIndetVector and myOnePtr.
     vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-    auto_ptr<CmpBase> myOrdPtr;         ///< actual implementation of the ordering [should be const???]
-    auto_ptr<PPMonoidElem> myOnePtr;
+    std::unique_ptr<CmpBase> myOrdPtr;         ///< actual implementation of the ordering [should be const???]
+    std::unique_ptr<PPMonoidElem> myOnePtr;
     //@}
   };
 
@@ -992,8 +991,8 @@ namespace CoCoA
     const long myEntrySize;     ///< size in ????
     mutable MemPool myMemMgr;     // IMPORTANT: this must come *before* myIndetVector and myOnePtr.
     std::vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-    std::auto_ptr<CmpBase> myOrdPtr;         ///< actual implementation of the ordering [should be const???]
-    std::auto_ptr<PPMonoidElem> myOnePtr;
+    std::unique_ptr<CmpBase> myOrdPtr;         ///< actual implementation of the ordering [should be const???]
+    std::unique_ptr<PPMonoidElem> myOnePtr;
     //@}
   };
 

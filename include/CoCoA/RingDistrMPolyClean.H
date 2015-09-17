@@ -60,8 +60,8 @@ namespace CoCoA
     mutable MemPool myDMPPool; ///< memory manager for polynomials
     long myNumIndetsValue; ///< number of indeteminates
     mutable MemPool mySummandPool; ///< memory manager for summands; MemPool MUST COME BEFORE myZeroPtr, myOnePtr, and myIndetVector!
-    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
     std::vector<RingElem> myIndetVector;
 
   public:  // functions which every ring must implement

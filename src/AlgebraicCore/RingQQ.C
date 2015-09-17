@@ -32,7 +32,6 @@
 #include "CoCoA/utils_gmp.H"
 
 #include <memory>
-using std::auto_ptr;
 #include <cmath>
 using std::ldexp;
 #include <iostream>
@@ -55,8 +54,8 @@ namespace CoCoA
 
   private: // data members
     mutable MemPool myMemMgr;           // MemPool must come before myZeroPtr and myOnePtr
-    auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
 
   private:
     RingQQImpl(const ring& ZZ);

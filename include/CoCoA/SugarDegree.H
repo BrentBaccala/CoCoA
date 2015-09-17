@@ -73,7 +73,7 @@ namespace CoCoA
     friend bool IsInitialized(const SugarDegree& sd) { return sd.myPtr.get()!=0; }
     friend int cmp(const SugarDegree& s1, const SugarDegree& s2) { return s1->myCmp(*(s2.myPtr.get())); }
   private: // data member
-    std::auto_ptr<SugarDegreeBase> myPtr;
+    std::unique_ptr<SugarDegreeBase> myPtr;
   };
 
 

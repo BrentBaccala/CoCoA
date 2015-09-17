@@ -37,7 +37,6 @@ using std::ostream;
 #include <list>
 using std::list;
 #include <memory>
-using std::auto_ptr;
 #include <new>
 //for placement new
 #include <string>
@@ -149,7 +148,7 @@ namespace CoCoA
 
   protected: // Data members
     std::vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
-    std::auto_ptr<PPMonoidElem> myOnePtr;
+    std::unique_ptr<PPMonoidElem> myOnePtr;
   };
 
 
@@ -195,7 +194,7 @@ namespace CoCoA
 
   PPMonoidElemRawPtr PPMonoidSparseImpl::myNew() const
   {
-    auto_ptr<value_t> tmp;
+    std::unique_ptr<value_t> tmp;
     tmp.reset(new value_t());
     return PPMonoidElemRawPtr(tmp.release());
   }
@@ -204,7 +203,7 @@ namespace CoCoA
   //  THIS IS NOT EXCEPTION CLEAN AS WRITTEN HERE: will leak if MemPool::alloc throws.
   PPMonoidElemRawPtr PPMonoidSparseImpl::myNew(PPMonoidElemConstRawPtr rawpp) const
   {
-    auto_ptr<value_t> tmp;
+    std::unique_ptr<value_t> tmp;
     tmp.reset(new value_t(import(rawpp)));
     return PPMonoidElemRawPtr(tmp.release());
   }
@@ -213,7 +212,7 @@ namespace CoCoA
   PPMonoidElemRawPtr PPMonoidSparseImpl::myNew(const std::vector<long>& expv) const
   {
     CoCoA_ASSERT(len(expv) == myNumIndets);
-    auto_ptr<value_t> tmp;
+    std::unique_ptr<value_t> tmp;
     tmp.reset(new value_t());
 
     for (long i=0; i < myNumIndets; ++i)
@@ -227,7 +226,7 @@ namespace CoCoA
 
   void PPMonoidSparseImpl::myDelete(RawPtr rawpp) const
   {
-    auto_ptr<value_t> tmp;
+    std::unique_ptr<value_t> tmp;
     tmp.reset(&import(rawpp));
   }
 
@@ -253,7 +252,7 @@ namespace CoCoA
 
   void PPMonoidSparseImpl::myMul(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
   {
-    auto_ptr<value_t> ans;
+    std::unique_ptr<value_t> ans;
     ans.reset(new value_t);
     value_t::const_iterator i = import(rawpp1).begin();
     const value_t::const_iterator endi = import(rawpp1).end();

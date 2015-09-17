@@ -35,7 +35,6 @@
 #include <iostream>
 using std::ostream;
 // #include <memory>   // from MemPool.H
-using std::auto_ptr;
 #include <vector>
 using std::vector;
 
@@ -57,8 +56,8 @@ namespace CoCoA
   private: // Data members of RingDenseUPolyCleanImpl
     const ring myCoeffRingValue;  ///< the coefficient ring
     mutable MemPool myDUPPool; ///< memory manager for polynomials
-    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
     std::vector<RingElem> myIndetVector; ///< Vector for compatibility with SparsePolyRing ???
     symbol myIndetSymbolValue; ///< the indet name
     long myMinCapacity;  // the minumum capacity for all coeff vectors
@@ -184,7 +183,7 @@ namespace CoCoA
   RingElemRawPtr RingDenseUPolyCleanImpl::myNew(const MachineInt& n) const
   {
     if (IsZero(n)) return myNew();  // not really necessary
-    auto_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(myCoeffRingValue, myMinCapacity)); // placement new
+    std::unique_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(myCoeffRingValue, myMinCapacity)); // placement new
     *ans = n;
     return RingElemRawPtr(ans.release());
   }
@@ -193,7 +192,7 @@ namespace CoCoA
   RingElemRawPtr RingDenseUPolyCleanImpl::myNew(const BigInt& N) const
   {
     if (N == 0) return myNew();  // not really necessary
-    auto_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(myCoeffRingValue, myMinCapacity)); // placement new
+    std::unique_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(myCoeffRingValue, myMinCapacity)); // placement new
     *ans = N;
     return RingElemRawPtr(ans.release());
   }
@@ -201,7 +200,7 @@ namespace CoCoA
 
   RingElemRawPtr RingDenseUPolyCleanImpl::myNew(ConstRawPtr rawcopy) const
   {
-    auto_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(import(rawcopy), myMinCapacity)); // placement new
+    std::unique_ptr<DenseUPolyClean> ans(new(myDUPPool.alloc()) DenseUPolyClean(import(rawcopy), myMinCapacity)); // placement new
     //    *ans = import(rawcopy);
     return RingElemRawPtr(ans.release());
   }

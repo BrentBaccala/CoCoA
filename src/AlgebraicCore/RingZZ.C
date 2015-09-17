@@ -51,8 +51,8 @@ namespace CoCoA
     static const value_t& import(RingElemConstRawPtr rawx);
   private: // data members
     mutable MemPool myMemMgr;           // MemPool must come BEFORE myZeroPtr and myOnePtr
-    std::auto_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
-    std::auto_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
+    std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
+    std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.
 
   private:
     RingZZImpl();                        ///< Called only by NewRingZZ

@@ -77,7 +77,7 @@ namespace CoCoA
     SparsePolyIter& operator++();
     SparsePolyIter operator++(int);
   private:
-    std::auto_ptr<SparsePolyIterBase> myIterPtr;
+    std::unique_ptr<SparsePolyIterBase> myIterPtr;
     friend bool IsEnded(const SparsePolyIter& i);
     friend RingElemAlias coeff(const SparsePolyIter& i);
     friend ConstRefPPMonoidElem PP(const SparsePolyIter& i);
