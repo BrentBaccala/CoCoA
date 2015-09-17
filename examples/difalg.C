@@ -132,7 +132,9 @@ PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, 
   ExponentRing(ExponentRing),
   myIndetVector()
 {
-  // XXX do something with PPOrdering ord
+  if (! IsLex(ord)) {
+    CoCoA_ERROR(ERR::NYI, "non-lexicographic ordering in PPMonoidRingExp");
+  }
 
   myRefCountInc();  // this is needed for exception cleanliness, in case one of the lines below throws
   myOnePtr.reset(new PPMonoidElem(PPMonoid(this)));
