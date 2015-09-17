@@ -37,8 +37,6 @@ private: // disable copy ctor and assignment
   PPMonoidRingExpImpl& operator=(const PPMonoidRingExpImpl& rhs); // NEVER DEFINED -- assignment disabled
 
 public:
-  void contents() const; // FOR DEBUGGING ONLY
-
   const std::vector<PPMonoidElem>& myIndets() const;               ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
 
   // The functions below are operations on power products owned by PPMonoidRingExpImpl
@@ -134,6 +132,9 @@ PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, 
 {
   if (! IsLex(ord)) {
     CoCoA_ERROR(ERR::NYI, "non-lexicographic ordering in PPMonoidRingExp");
+  }
+  if (! IsOrderedDomain(ExponentRing)) {
+    CoCoA_ERROR(ERR::BadRing, "unordered ring used for ExponentRing in PPMonoidRingExp");
   }
 
   myRefCountInc();  // this is needed for exception cleanliness, in case one of the lines below throws
