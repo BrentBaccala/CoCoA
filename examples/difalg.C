@@ -44,7 +44,7 @@ class PPMonoidRingExpElem : protected std::vector<RingElem> {
   using std::vector<RingElem>::operator[];
 
   const RingElem operator[](size_type pos) const {
-    if (pos > size()) return RingElem(RingZZ());
+    if (pos >= size()) return RingElem(owner(front()));
     else return std::vector<RingElem>::operator[](pos);
   }
 };
@@ -65,7 +65,7 @@ public:
   const std::vector<PPMonoidElem>& myIndets() const;               ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
 
   // The functions below are operations on power products owned by PPMonoidRingExpImpl
-  ConstRefPPMonoidElem myNewSymbolValue(const symbol& s) override;
+  ConstRefPPMonoidElem myNewSymbolValue(const symbol& s) const override;
   const PPMonoidElem& myOne() const;
   using PPMonoidBase::myNew;    // disable warnings of overloading
   PPMonoidElemRawPtr myNew() const;                                ///< ctor from nothing
@@ -194,19 +194,27 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
   return myIndetVector;
 }
 
-ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s)
+/* Yuck!  I now want to modify a const object by adding a new symbol
+ * to the PPMonoid.  The rest of the library is so heavily invested in
+ * PPMonoid's being const that changing it elsewhere is too painful to
+ * consider.  Instead we play games with const_cast.  My greatest
+ * concern is multithreading implications, since myNumIndets can
+ * change underfoot.
+ */
+
+ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) const
 {
   for (long i=0; i < myNumIndets; ++i)
     if ( s == myIndetSymbols[i] )
       return myIndetVector[i];
 
+  const_cast<PPMonoidRingExpImpl *>(this)->myIndetSymbols.push_back(s);
+  const_cast<PPMonoidRingExpImpl *>(this)->myNumIndets ++;
+
   PPMonoidElem pp(PPMonoid(this));
+  myMulIndetPower(raw(pp), myNumIndets-1, 1);
 
-  myMulIndetPower(raw(pp), myNumIndets, 1);
-
-  myIndetSymbols.push_back(s);
-  myNumIndets ++;
-  myIndetVector.push_back(pp);
+  const_cast<PPMonoidRingExpImpl *>(this)->myIndetVector.push_back(pp);
 
   return myIndetVector.back();
 }
@@ -1111,7 +1119,124 @@ void testPowerPolyRing(void)
   RingElem t(K, "t");
   RingElem q(K, "q");
 
-  //cout << power(f,p)/f << endl;
+  cout << power(f,p)/f << endl;
+  //cout << (power(f,p)) /power(f,2*p) << endl;
+  //cout << (power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
+  //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
+
+  CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
+  CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
+  CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
+  CoCoA_ASSERT((power(f,p) + power(f,p-1)) / power(f,2*p) == (f+1) / power(f,p+1));
+  CoCoA_ASSERT((power(f,2*p) - 1) / (power(f,p) - 1) == power(f,p) + 1);
+
+  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
+
+  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
+  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << " " << content(num(8*q)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+
+  CoCoA_ASSERT(gcd(num(32*t*t + 64*t + 32), num(8*q)) == 8);
+  CoCoA_ASSERT(gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) == 32);
+
+  //cout << deriv(power(f,p),f) << endl;
+
+  CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
+}
+
+/* PowerPolyDifferentialRing - a polynomial ring whose exponents are
+ * polynomials, and whose differentiation operator generates an
+ * infinite number of indeterminates
+ *
+ * We assume that everything in the coefficient ring is a constant
+ * (i.e, differentiates to zero).
+ */
+
+class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
+
+public:
+
+  using PowerPolyRingBase::PowerPolyRingBase;
+
+  void myDeriv(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawx) const override
+  {
+    if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
+    const long n = myNumIndets();
+    const SparsePolyRing P(this);
+    vector<long> expv(n);
+    exponents(expv, myLPP(rawx));
+    long lower_indet;
+
+    CoCoA_ASSERT(IsIndet(lower_indet, myLPP(rawx)));
+
+    /* XXX rawx should be an indet at this point */
+
+    /* Differentiating x^n -> n*x^(n-1) requires multiplying monomials
+     * by exponents.
+     *
+     */
+
+    RingElem ans(P);
+    for (SparsePolyIter itf=myBeginIter(rawf); !IsEnded(itf); ++itf)
+    {
+      for (long indetn = 0; indetn < myNumIndets(); indetn ++) {
+	/* First we compute x^n -> n*x^(n-1) */
+
+	/* First we compute x^n -> n*x^(n-1) */
+
+	const RingElem d = RingElemExponent(PP(itf), indetn);
+
+	if (IsZero(d)) continue;
+
+	const RingElem scale = CanonicalHom(owner(d), P)(d);
+
+	RingElem m(scale * monomial(P, coeff(itf), PP(itf)/indet(myPPM(), indetn)));
+
+	if (indetn != lower_indet) {
+	  const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
+	  const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
+
+	  m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(head(indet_symbol) + head(lower_indet_symbol))));
+	}
+
+	if (!IsZero(m)) myAppendClear(raw(ans), raw(m));
+      }
+    }
+    mySwap(raw(ans), rawlhs); // really an assignment
+  }
+
+};
+
+SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM) {
+  return SparsePolyRing(new PowerPolyDifferentialRingBase(CoeffRing, PPM));
+}
+
+void testPowerPolyDifferentialRing(void)
+{
+  ring ZZ = RingZZ();
+  ring QQ = RingQQ();
+
+  // ExponentRing - these are the indeterminates that can appear in powers
+
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
+  RingElem p(ExponentRing, "p");
+
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q"}, lex, ExponentRing);
+  ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
+  ring K = NewFractionField(R);
+
+  RingElem f(K, "f");
+  RingElem t(K, "t");
+  RingElem q(K, "q");
+
+  cout << deriv(f,t) << endl;
+  cout << deriv(power(f,p),f) << endl;
+  cout << deriv(power(f,p),t) << endl;
   //cout << (power(f,p)) /power(f,2*p) << endl;
   //cout << (power(f,p-1))/power(f,2*p) << endl;
   //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
@@ -2722,6 +2847,7 @@ int main()
   try
   {
     testPowerPolyRing();
+    testPowerPolyDifferentialRing();
     testSmithFactor();
     testDiophantineSolvable();
     program();
