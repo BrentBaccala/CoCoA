@@ -225,8 +225,8 @@ namespace CoCoA
 
   protected: // data members (common to all PPOrdering implementations)
     const PPOrdering myOrd;
-    const std::vector<symbol> myIndetSymbols;
-    const long myNumIndets;
+    std::vector<symbol> myIndetSymbols;
+    long myNumIndets;
     friend long NumIndets(const PPMonoid& M);
   };
 
