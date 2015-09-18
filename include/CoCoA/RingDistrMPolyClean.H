@@ -58,7 +58,6 @@ namespace CoCoA
     const ring myCoeffRingValue;  ///< the coefficient ring
     const PPMonoid myPPMValue; ///< the monoid of the power-products
     mutable MemPool myDMPPool; ///< memory manager for polynomials
-    long myNumIndetsValue; ///< number of indeteminates
     mutable MemPool mySummandPool; ///< memory manager for summands; MemPool MUST COME BEFORE myZeroPtr, myOnePtr, and myIndetVector!
     std::unique_ptr<RingElem> myZeroPtr;  ///< Every ring stores its own zero.
     std::unique_ptr<RingElem> myOnePtr;   ///< Every ring stores its own one.

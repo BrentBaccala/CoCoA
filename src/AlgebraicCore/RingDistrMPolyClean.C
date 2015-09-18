@@ -59,13 +59,13 @@ namespace CoCoA
     myCoeffRingValue(R),
     myPPMValue(PPM),
     myDMPPool(sizeof(DistrMPolyClean), "RingDistrMPolyCleanImpl::myDMPPool"),
-    myNumIndetsValue(NumIndets(PPM)),
     mySummandPool(DistrMPolyClean::ourSummandSize(R, PPM), "RingDistrMPolyCleanImpl::mySummandPool")
   {
     CoCoA_ASSERT(IsCommutative(myCoeffRingValue));
     myRefCountInc();  // this is needed for exception cleanliness, in case one of the lines below throws
     myZeroPtr.reset(new RingElem(ring(this)));
     myOnePtr.reset(new RingElem(ring(this), 1));
+    long myNumIndetsValue = NumIndets(PPM);
     myIndetVector.resize(myNumIndetsValue, *myZeroPtr);
     vector<long> expv(myNumIndetsValue);
     for (long i=0; i < myNumIndetsValue; ++i)
@@ -216,7 +216,7 @@ namespace CoCoA
 
   long RingDistrMPolyCleanImpl::myNumIndets() const
   {
-    return myNumIndetsValue;
+    return NumIndets(myPPM());
   }
 
 
