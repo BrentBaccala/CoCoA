@@ -22,12 +22,16 @@ using namespace std;
 
 class PPMonoidRingExpImpl;
 
-/* PPMonoidRingExpElem : elements of a PPMonoidRingExp
+/* PPMonoidRingExpElem : an element of a PPMonoidRingExp
  *
  * internally implemented as a vector<RingElem> in the ExponentRing
  *
  * Because of the ability to dynamically add new symbols, different
- * elements might have different length vectors.
+ * elements might have different length vectors, so we overload
+ * operator[] in a const (i.e, non-assignment) context and return zero
+ * if we attempt to access past the end of the vector.  So you still
+ * have to resize() when you assign new elements, but accessing
+ * elements looks like an infinite zero-padded vector.
  */
 
 class PPMonoidRingExpElem : protected std::vector<RingElem> {
@@ -35,6 +39,13 @@ class PPMonoidRingExpElem : protected std::vector<RingElem> {
 
   PPMonoidRingExpElem(long numIndets) {
     resize(numIndets);
+  }
+
+  using std::vector<RingElem>::operator[];
+
+  const RingElem operator[](size_type pos) const {
+    if (pos > size()) return RingElem(RingZZ());
+    else return std::vector<RingElem>::operator[](pos);
   }
 };
 
@@ -128,8 +139,11 @@ inline const PPMonoidRingExpElem & PPMonoidRingExpImpl::myExpv(ConstRawPtr rawpp
 
 bool PPMonoidRingExpImpl::myCheckExponents(const std::vector<long>& expv) const
 {
+  // CoCoA_ERROR(ERR::NYI, "myCheckExponents in PPMonoidRingExp");
+  // Check vector is no bigger than our current number of indets
+  if ((long) expv.size() > myNumIndets) return false;
   // Check exps are non-neg
-  for (long i=0; i < myNumIndets; ++i)
+  for (unsigned long i=0; i < expv.size(); ++i)
     if (expv[i] < 0) return false;
   return true;
 }
@@ -213,7 +227,7 @@ PPMonoidElemRawPtr PPMonoidRingExpImpl::myNew(const std::vector<long>& expv) con
 void PPMonoidRingExpImpl::myAssignOne(RawPtr rawpp) const
 {
   PPMonoidRingExpElem & expv = myExpv(rawpp);
-  for (long i = 0; i < myNumIndets; ++i)
+  for (unsigned long i = 0; i < expv.size(); ++i)
     expv[i] = zero(ExponentRing);
 }
 
@@ -230,7 +244,8 @@ void PPMonoidRingExpImpl::myAssign(RawPtr rawpp, const vector<long>& expv1) cons
   CoCoA_ASSERT(myCheckExponents(expv1));
 
   PPMonoidRingExpElem & expv = myExpv(rawpp);
-  for (long i = 0; i < myNumIndets; ++i)
+  expv.resize(expv1.size());
+  for (unsigned long i = 0; i < expv1.size(); ++i)
     expv[i] = RingElem(ExponentRing, expv1[i]);
 }
 
@@ -259,7 +274,10 @@ void PPMonoidRingExpImpl::myMul(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i=0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+  expv.resize(nexps);
+
+  for (unsigned long i=0; i < nexps; ++i)
     {
       expv[i] = expv1[i] + expv2[i];
     }
@@ -271,6 +289,7 @@ void PPMonoidRingExpImpl::myMulIndetPower(RawPtr rawpp, long indet, long exp) co
   CoCoA_ASSERT(exp >= 0);
   CoCoA_ASSERT(0 <= indet && indet < myNumIndets);
   PPMonoidRingExpElem & expv = myExpv(rawpp);
+  if ((long) expv.size() <= indet) expv.resize(indet+1);
   expv[indet] += exp;
 }
 
@@ -282,7 +301,10 @@ void PPMonoidRingExpImpl::myDiv(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i=0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+  expv.resize(nexps);
+
+  for (unsigned long i=0; i < nexps; ++i)
     {
       CoCoA_ASSERT("Exponent Underflow" && expv1[i] >= expv2[i]);
       expv[i] = expv1[i] - expv2[i];
@@ -297,7 +319,10 @@ void PPMonoidRingExpImpl::myColon(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr 
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i=0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+  expv.resize(nexps);
+
+  for (unsigned long i=0; i < nexps; ++i)
     if (expv1[i] > expv2[i])
       expv[i] = expv1[i] - expv2[i];
     else
@@ -312,7 +337,10 @@ void PPMonoidRingExpImpl::myGcd(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+  expv.resize(nexps);
+
+  for (unsigned long i = 0; i < nexps; ++i)
     expv[i] = min(expv1[i], expv2[i]);
 }
 
@@ -324,7 +352,10 @@ void PPMonoidRingExpImpl::myLcm(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+  expv.resize(nexps);
+
+  for (unsigned long i = 0; i < nexps; ++i)
     expv[i] = max(expv1[i], expv2[i]);
 }
 
@@ -334,7 +365,10 @@ void PPMonoidRingExpImpl::myRadical(RawPtr rawpp, ConstRawPtr rawpp1) const
   PPMonoidRingExpElem & expv = myExpv(rawpp);
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = expv1.size();
+  expv.resize(nexps);
+
+  for (unsigned long i = 0; i < nexps; ++i)
     expv[i] = (expv1[i] > 0) ? one(ExponentRing) : zero(ExponentRing);
 }
 
@@ -346,7 +380,10 @@ void PPMonoidRingExpImpl::myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long
   PPMonoidRingExpElem & expv = myExpv(rawpp);
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = expv1.size();
+  expv.resize(nexps);
+
+  for (unsigned long i = 0; i < nexps; ++i)
     expv[i] = LongExp * expv1[i];
 }
 
@@ -356,7 +393,10 @@ void PPMonoidRingExpImpl::myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, Cons
   PPMonoidRingExpElem & expv = myExpv(rawpp);
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = expv1.size();
+  expv.resize(nexps);
+
+  for (unsigned long i = 0; i < nexps; ++i)
     expv[i] = exp * expv1[i];
 }
 
@@ -364,8 +404,9 @@ void PPMonoidRingExpImpl::myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, Cons
 bool PPMonoidRingExpImpl::myIsOne(ConstRawPtr rawpp) const
 {
   const PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const auto nexps = expv.size();
 
-  for (long i = 0; i < myNumIndets; ++i)
+  for (unsigned long i = 0; i < nexps; ++i)
     if (! IsZero(expv[i])) return false;
 
   return true;
@@ -375,14 +416,16 @@ bool PPMonoidRingExpImpl::myIsOne(ConstRawPtr rawpp) const
 bool PPMonoidRingExpImpl::myIsIndet(long& index, ConstRawPtr rawpp) const
 {
   const PPMonoidRingExpElem & expv = myExpv(rawpp);
-  long j = myNumIndets;
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = expv.size();
+
+  unsigned long j = nexps;
+  for (unsigned long i = 0; i < nexps; ++i)
     {
       if (IsZero(expv[i])) continue;
-      if (j != myNumIndets || ! IsOne(expv[i])) return false;
+      if (j != nexps || ! IsOne(expv[i])) return false;
       j = i;
     }
-  if (j == myNumIndets) return false;
+  if (j == nexps) return false;
   index = j;
   return true;
 }
@@ -393,7 +436,9 @@ bool PPMonoidRingExpImpl::myIsCoprime(ConstRawPtr rawpp1, ConstRawPtr rawpp2) co
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = min(expv1.size(), expv2.size());
+
+  for (unsigned long i = 0; i < nexps; ++i)
     if (! IsZero(expv1[i]) && ! IsZero(expv2[i])) return false;
 
   return true;
@@ -405,8 +450,11 @@ bool PPMonoidRingExpImpl::myIsEqual(ConstRawPtr rawpp1, ConstRawPtr rawpp2) cons
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+
+  for (unsigned long i = 0; i < nexps; ++i)
     if (expv1[i] != expv2[i]) return false;
+
   return true;
 }
 
@@ -416,7 +464,9 @@ bool PPMonoidRingExpImpl::myIsDivisible(ConstRawPtr rawpp1, ConstRawPtr rawpp2) 
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i = 0; i < myNumIndets; ++i)
+  const auto nexps = max(expv1.size(), expv2.size());
+
+  for (unsigned long i = 0; i < nexps; ++i)
     if (expv1[i] < expv2[i]) return false;
 
   return true;
@@ -426,8 +476,9 @@ bool PPMonoidRingExpImpl::myIsDivisible(ConstRawPtr rawpp1, ConstRawPtr rawpp2) 
 bool PPMonoidRingExpImpl::myIsRadical(ConstRawPtr rawpp) const
 {
   const PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const auto nexps = expv.size();
 
-  for (long i = 0; i < myNumIndets; ++i)
+  for (unsigned long i = 0; i < nexps; ++i)
     if (expv[i] > one(ExponentRing)) return false;
 
   return true;
@@ -441,7 +492,9 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  for (long i=0; i<myNumIndets; ++i) {
+  const auto nexps = max(expv1.size(), expv2.size());
+
+  for (unsigned long i=0; i < nexps; ++i) {
     if (expv1[i] != expv2[i]) {
       if (expv1[i] > expv2[i]) return 1; else return -1;
     }
@@ -484,15 +537,22 @@ long PPMonoidRingExpImpl::myExponent(ConstRawPtr rawpp, long indet) const
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  if (! IsInteger(N, expv[indet])) {
-    CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
-  }
+  if (indet < (long) expv.size()) {
 
-  if (! IsConvertible(n, N)) {
-    CoCoA_ERROR(ERR::ExpTooBig, "Exponent extraction in PPMonoidRingExp");
-  }
+    if (! IsInteger(N, expv[indet])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
 
-  return n;
+    if (! IsConvertible(n, N)) {
+      CoCoA_ERROR(ERR::ExpTooBig, "Exponent extraction in PPMonoidRingExp");
+    }
+
+    return n;
+
+  } else {
+
+    return 0;
+  }
 }
 
 void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const
@@ -501,8 +561,12 @@ void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long ind
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  if (! IsInteger(EXP, expv[indet])) {
-    CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+  if (indet < (long) expv.size()) {
+    if (! IsInteger(EXP, expv[indet])) {
+      CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
+    }
+  } else {
+    EXP = 0;
   }
 }
 
@@ -513,7 +577,11 @@ void PPMonoidRingExpImpl::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, l
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  EXP = expv[indet];
+  if (indet < (long) expv.size()) {
+    EXP = expv[indet];
+  } else {
+    EXP = RingElem(ExponentRing);
+  }
 }
 
 
