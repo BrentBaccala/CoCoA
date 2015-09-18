@@ -65,6 +65,7 @@ public:
   const std::vector<PPMonoidElem>& myIndets() const;               ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
 
   // The functions below are operations on power products owned by PPMonoidRingExpImpl
+  ConstRefPPMonoidElem myNewSymbolValue(const symbol& s) override;
   const PPMonoidElem& myOne() const;
   using PPMonoidBase::myNew;    // disable warnings of overloading
   PPMonoidElemRawPtr myNew() const;                                ///< ctor from nothing
@@ -192,6 +193,24 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
 {
   return myIndetVector;
 }
+
+ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s)
+{
+  for (long i=0; i < myNumIndets; ++i)
+    if ( s == myIndetSymbols[i] )
+      return myIndetVector[i];
+
+  PPMonoidElem pp(PPMonoid(this));
+
+  myMulIndetPower(raw(pp), myNumIndets, 1);
+
+  myIndetSymbols.push_back(s);
+  myNumIndets ++;
+  myIndetVector.push_back(pp);
+
+  return myIndetVector.back();
+}
+
 
 
 const PPMonoidElem& PPMonoidRingExpImpl::myOne() const
