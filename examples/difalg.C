@@ -1198,6 +1198,17 @@ private:
     return result;
   }
 
+  /* To speed things up, we keep a map from pairs of indet indices to
+   * their derivative.  I.e, if indet 0 is 'x' and indet 1 is 't',
+   * then <0,1> will map to 'x_t'.  This mapping is theoretically
+   * infinite, so we only compute the entries when we need them, then
+   * stash them here for future reference.  It's 'mutable' because
+   * 'myDeriv' is declared 'const' way up in PolyRing.H and I don't
+   * want to change that just to speed things up.
+   */
+
+  mutable map<pair<long, long>, RingElem> differentiation_map;
+
 public:
 
   using PowerPolyRingBase::PowerPolyRingBase;
@@ -1211,12 +1222,8 @@ public:
 
     CoCoA_ASSERT(IsIndet(lower_indet, myLPP(rawx)));
 
-    /* Differentiating x^n -> n*x^(n-1) requires multiplying monomials
-     * by exponents.
-     *
-     */
-
     RingElem ans(P);
+
     for (SparsePolyIter itf=myBeginIter(rawf); !IsEnded(itf); ++itf)
     {
       for (long indetn = 0; indetn < myNumIndets(); indetn ++) {
@@ -1226,6 +1233,11 @@ public:
 	const RingElem d = RingElemExponent(PP(itf), indetn);
 
 	if (IsZero(d)) continue;
+
+	/* Differentiating x^n -> n*x^(n-1) requires multiplying
+	 * monomials by exponents.  CanonicalHom is used to inject
+	 * exponents into the polynomial ring.
+	 */
 
 	const RingElem scale = CanonicalHom(owner(d), P)(d);
 
@@ -1237,15 +1249,17 @@ public:
 	 */
 
 	if (indetn != lower_indet) {
-	  const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
-	  const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
+	  const auto key = make_pair(indetn, lower_indet);
+	  if (differentiation_map.count(key) == 0) {
+	    const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
+	    const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
 
-	  //m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(head(indet_symbol) + head(lower_indet_symbol))));
-	  m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol)))));
+	    differentiation_map[key] = monomial(P, 1, myPPM()->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol)))));
+	  }
+	  m *= differentiation_map[key];
 	}
 
-	//if (!IsZero(m)) myAppendClear(raw(ans), raw(m));
-	if (!IsZero(m)) ans += m;
+	ans += m;
       }
     }
     mySwap(raw(ans), rawlhs); // really an assignment
@@ -1278,32 +1292,39 @@ void testPowerPolyDifferentialRing(void)
   RingElem t(K, "t");
   RingElem q(K, "q");
 
-  cout << deriv(f,t) << endl;
-  cout << deriv(deriv(f,t),t) << endl;
-  cout << deriv(deriv(f,q),t) << endl;
-  cout << deriv(deriv(f,t),q) << endl;
+  // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
+  // different from 'p' in K, which we now create.
 
-  RingElem ft(K, "f_t");
-  RingElem ftt(K, "f_{tt}");
-  RingElem fqt(K, "f_{qt}");
+  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
 
-  CoCoA_ASSERT(deriv(f,t) == ft);
-  CoCoA_ASSERT(deriv(deriv(f,t),t) == ftt);
-  CoCoA_ASSERT(deriv(deriv(f,q),t) == fqt);
+  // Funny syntax - the derivatives don't exist in the ring until we
+  // call 'deriv', so we do that first and then check to see if
+  // they're right, instead of the other way around.
+
+  RingElem ft = deriv(f,t);
+  RingElem ftt = deriv(deriv(f,t),t);
+  RingElem fqt = deriv(deriv(f,q),t);
+
+  CoCoA_ASSERT(ft == RingElem(K, "f_t"));
+  CoCoA_ASSERT(ftt == RingElem(K, "f_{tt}"));
+  CoCoA_ASSERT(fqt == RingElem(K, "f_{qt}"));
   CoCoA_ASSERT(deriv(deriv(f,t),q) == fqt);
 
-  cout << deriv(power(f,p),f) << endl;
-  cout << deriv(power(f,p),t) << endl;
-  cout << deriv(deriv(power(f,p),t),t) << endl;
-  cout << deriv(power(f,p)*q,t) << endl;
-  cout << deriv(power(f,p)/q,t) << endl;
-  cout << deriv(f/q,t) << endl;
+  //cout << deriv(power(f,p),f) << endl;
+  //cout << deriv(power(f,p),t) << endl;
+  //cout << deriv(deriv(power(f,p),t),t) << endl;
+  //cout << deriv(power(f,p)*q,t) << endl;
+  //cout << deriv(power(f,p)/q,t) << endl;
+  //cout << deriv(f/q,t) << endl;
 
-  CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
-  CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
-  CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
-  CoCoA_ASSERT((power(f,p) + power(f,p-1)) / power(f,2*p) == (f+1) / power(f,p+1));
-  CoCoA_ASSERT((power(f,2*p) - 1) / (power(f,p) - 1) == power(f,p) + 1);
+  RingElem qt = deriv(q,t);
+
+  CoCoA_ASSERT(deriv(power(f,p),f) == pK*power(f,p-1));
+  CoCoA_ASSERT(deriv(power(f,p),t) == pK*power(f,p-1)*ft);
+  CoCoA_ASSERT(deriv(deriv(power(f,p),t),t) == pK*power(f,p-1)*ftt + pK*(pK-1)*power(f,p-2)*ft*ft);
+  CoCoA_ASSERT(deriv(power(f,p)*q,t) == power(f,p)*qt + pK*power(f,p-1)*q*ft);
+  CoCoA_ASSERT(deriv(power(f,p)/q,t) == -(power(f,p)*qt - pK*power(f,p-1)*q*ft)/power(q,2));
+  CoCoA_ASSERT(deriv(f/q,t) == -(f*qt - q*ft)/power(q,2));
 
   // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
 
