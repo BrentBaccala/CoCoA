@@ -11,16 +11,30 @@ using namespace std;
  * A PPMonoid whose exponents are elements in a ring that is also an
  * ordered domain.  Only "positive" exponents are allowed (positive in
  * the sense that they compare greater than zero).
+ *
+ * We also allow new symbols to be inserted into the PPMonoid, to
+ * support differential rings with an infinite number of (algebraic)
+ * generators.
+ *
+ * Only lexicographic ordering is supported at this time.  New symbols
+ * are currently added to the end of the ordering.
  */
 
 class PPMonoidRingExpImpl;
 
-class PPMonoidRingExpElem {
+/* PPMonoidRingExpElem : elements of a PPMonoidRingExp
+ *
+ * internally implemented as a vector<RingElem> in the ExponentRing
+ *
+ * Because of the ability to dynamically add new symbols, different
+ * elements might have different length vectors.
+ */
+
+class PPMonoidRingExpElem : protected std::vector<RingElem> {
   friend PPMonoidRingExpImpl;
-  std::vector<RingElem> exponents;
 
   PPMonoidRingExpElem(long numIndets) {
-    exponents.resize(numIndets);
+    resize(numIndets);
   }
 };
 
@@ -85,8 +99,8 @@ public:
 
 
 private: // auxiliary functions
-  PPMonoidRingExpElem * myExpv(RawPtr) const;
-  const PPMonoidRingExpElem * myExpv(ConstRawPtr) const;
+  PPMonoidRingExpElem & myExpv(RawPtr) const;
+  const PPMonoidRingExpElem & myExpv(ConstRawPtr) const;
 
   void myComputeDivMask(DivMask& dm, const DivMaskRule& DivMaskImpl, ConstRawPtr rawpp) const; ///< used by PPWithMask
   bool myCheckExponents(const std::vector<long>& expv) const;
@@ -100,23 +114,21 @@ private: // data members
 
 // File local inline functions
 
-inline PPMonoidRingExpElem * PPMonoidRingExpImpl::myExpv(RawPtr rawpp) const
+inline PPMonoidRingExpElem & PPMonoidRingExpImpl::myExpv(RawPtr rawpp) const
 {
-  return static_cast<PPMonoidRingExpElem *>(rawpp.myRawPtr());
+  return * (static_cast<PPMonoidRingExpElem *>(rawpp.myRawPtr()));
 }
 
 
-inline const PPMonoidRingExpElem * PPMonoidRingExpImpl::myExpv(ConstRawPtr rawpp) const
+inline const PPMonoidRingExpElem & PPMonoidRingExpImpl::myExpv(ConstRawPtr rawpp) const
 {
-  return static_cast<const PPMonoidRingExpElem *>(rawpp.myRawPtr());
+  return * (static_cast<const PPMonoidRingExpElem *>(rawpp.myRawPtr()));
 }
 
 
 bool PPMonoidRingExpImpl::myCheckExponents(const std::vector<long>& expv) const
 {
-  // Check expv.size == myNumIndets.
   // Check exps are non-neg
-  if (len(expv) != myNumIndets) return false;
   for (long i=0; i < myNumIndets; ++i)
     if (expv[i] < 0) return false;
   return true;
@@ -200,9 +212,9 @@ PPMonoidElemRawPtr PPMonoidRingExpImpl::myNew(const std::vector<long>& expv) con
 
 void PPMonoidRingExpImpl::myAssignOne(RawPtr rawpp) const
 {
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = zero(ExponentRing);
+    expv[i] = zero(ExponentRing);
 }
 
 
@@ -210,22 +222,22 @@ void PPMonoidRingExpImpl::myAssign(RawPtr rawpp, ConstRawPtr rawpp1) const
 {
   if (rawpp == rawpp1) return;
 
-  myExpv(rawpp)->exponents = myExpv(rawpp1)->exponents;
+  myExpv(rawpp) = myExpv(rawpp1);
 }
 
 void PPMonoidRingExpImpl::myAssign(RawPtr rawpp, const vector<long>& expv1) const
 {
   CoCoA_ASSERT(myCheckExponents(expv1));
 
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = RingElem(ExponentRing, expv1[i]);
+    expv[i] = RingElem(ExponentRing, expv1[i]);
 }
 
 
 void PPMonoidRingExpImpl::myDelete(RawPtr rawpp) const
 {
-  delete myExpv(rawpp);
+  delete &myExpv(rawpp);
 }
 
 
@@ -233,22 +245,23 @@ void PPMonoidRingExpImpl::mySwap(RawPtr rawpp1, RawPtr rawpp2) const
 {
   if (rawpp1 == rawpp2) return;
 
-  PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  expv1->exponents.swap(expv2->exponents);
+  expv1.swap(expv2);
 }
 
 
 void PPMonoidRingExpImpl::myMul(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   // No worries about aliasing.
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
+
   for (long i=0; i < myNumIndets; ++i)
     {
-      expv->exponents[i] = expv1->exponents[i] + expv2->exponents[i];
+      expv[i] = expv1[i] + expv2[i];
     }
 }
 
@@ -257,22 +270,22 @@ void PPMonoidRingExpImpl::myMulIndetPower(RawPtr rawpp, long indet, long exp) co
 {
   CoCoA_ASSERT(exp >= 0);
   CoCoA_ASSERT(0 <= indet && indet < myNumIndets);
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  expv->exponents[indet] += exp;
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  expv[indet] += exp;
 }
 
 
 void PPMonoidRingExpImpl::myDiv(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   // No worries about aliasing.
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i=0; i < myNumIndets; ++i)
     {
-      CoCoA_ASSERT("Exponent Underflow" && expv1->exponents[i] >= expv2->exponents[i]);
-      expv->exponents[i] = expv1->exponents[i] - expv2->exponents[i];
+      CoCoA_ASSERT("Exponent Underflow" && expv1[i] >= expv2[i]);
+      expv[i] = expv1[i] - expv2[i];
     }
 }
 
@@ -280,49 +293,49 @@ void PPMonoidRingExpImpl::myDiv(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr ra
 void PPMonoidRingExpImpl::myColon(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   // No worries about aliasing.
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i=0; i < myNumIndets; ++i)
-    if (expv1->exponents[i] > expv2->exponents[i])
-      expv->exponents[i] = expv1->exponents[i] - expv2->exponents[i];
+    if (expv1[i] > expv2[i])
+      expv[i] = expv1[i] - expv2[i];
     else
-      expv->exponents[i] = zero(ExponentRing);
+      expv[i] = zero(ExponentRing);
 }
 
 
 void PPMonoidRingExpImpl::myGcd(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   // No worries about aliasing.
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = min(expv1->exponents[i], expv2->exponents[i]);
+    expv[i] = min(expv1[i], expv2[i]);
 }
 
 
 void PPMonoidRingExpImpl::myLcm(RawPtr rawpp, ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   // No worries about aliasing.
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = max(expv1->exponents[i], expv2->exponents[i]);
+    expv[i] = max(expv1[i], expv2[i]);
 }
 
 
 void PPMonoidRingExpImpl::myRadical(RawPtr rawpp, ConstRawPtr rawpp1) const
 {
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = (expv1->exponents[i] > 0) ? one(ExponentRing) : zero(ExponentRing);
+    expv[i] = (expv1[i] > 0) ? one(ExponentRing) : zero(ExponentRing);
 }
 
 
@@ -330,30 +343,30 @@ void PPMonoidRingExpImpl::myPowerSmallExp(RawPtr rawpp, ConstRawPtr rawpp1, long
 {
   CoCoA_ASSERT(LongExp >= 0);
 
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = LongExp * expv1->exponents[i];
+    expv[i] = LongExp * expv1[i];
 }
 
 
 void PPMonoidRingExpImpl::myPowerRingElem(RawPtr rawpp, ConstRawPtr rawpp1, ConstRefRingElem exp) const  // assumes exp >= 0
 {
-  PPMonoidRingExpElem * const expv = myExpv(rawpp);
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
+  PPMonoidRingExpElem & expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
 
   for (long i = 0; i < myNumIndets; ++i)
-    expv->exponents[i] = exp * expv1->exponents[i];
+    expv[i] = exp * expv1[i];
 }
 
 
 bool PPMonoidRingExpImpl::myIsOne(ConstRawPtr rawpp) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (! IsZero(expv->exponents[i])) return false;
+    if (! IsZero(expv[i])) return false;
 
   return true;
 }
@@ -361,12 +374,12 @@ bool PPMonoidRingExpImpl::myIsOne(ConstRawPtr rawpp) const
 
 bool PPMonoidRingExpImpl::myIsIndet(long& index, ConstRawPtr rawpp) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
   long j = myNumIndets;
   for (long i = 0; i < myNumIndets; ++i)
     {
-      if (IsZero(expv->exponents[i])) continue;
-      if (j != myNumIndets || ! IsOne(expv->exponents[i])) return false;
+      if (IsZero(expv[i])) continue;
+      if (j != myNumIndets || ! IsOne(expv[i])) return false;
       j = i;
     }
   if (j == myNumIndets) return false;
@@ -377,11 +390,11 @@ bool PPMonoidRingExpImpl::myIsIndet(long& index, ConstRawPtr rawpp) const
 
 bool PPMonoidRingExpImpl::myIsCoprime(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (! IsZero(expv1->exponents[i]) && ! IsZero(expv2->exponents[i])) return false;
+    if (! IsZero(expv1[i]) && ! IsZero(expv2[i])) return false;
 
   return true;
 }
@@ -389,22 +402,22 @@ bool PPMonoidRingExpImpl::myIsCoprime(ConstRawPtr rawpp1, ConstRawPtr rawpp2) co
 
 bool PPMonoidRingExpImpl::myIsEqual(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (expv1->exponents[i] != expv2->exponents[i]) return false;
+    if (expv1[i] != expv2[i]) return false;
   return true;
 }
 
 
 bool PPMonoidRingExpImpl::myIsDivisible(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (expv1->exponents[i] < expv2->exponents[i]) return false;
+    if (expv1[i] < expv2[i]) return false;
 
   return true;
 }
@@ -412,10 +425,10 @@ bool PPMonoidRingExpImpl::myIsDivisible(ConstRawPtr rawpp1, ConstRawPtr rawpp2) 
 
 bool PPMonoidRingExpImpl::myIsRadical(ConstRawPtr rawpp) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
 
   for (long i = 0; i < myNumIndets; ++i)
-    if (expv->exponents[i] > one(ExponentRing)) return false;
+    if (expv[i] > one(ExponentRing)) return false;
 
   return true;
 }
@@ -425,12 +438,12 @@ bool PPMonoidRingExpImpl::myIsRadical(ConstRawPtr rawpp) const
 
 int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
-  const PPMonoidRingExpElem * const expv1 = myExpv(rawpp1);
-  const PPMonoidRingExpElem * const expv2 = myExpv(rawpp2);
+  const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
+  const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i=0; i<myNumIndets; ++i) {
-    if (expv1->exponents[i] != expv2->exponents[i]) {
-      if (expv1->exponents[i] > expv2->exponents[i]) return 1; else return -1;
+    if (expv1[i] != expv2[i]) {
+      if (expv1[i] > expv2[i]) return 1; else return -1;
     }
   }
   return 0;
@@ -465,13 +478,13 @@ int PPMonoidRingExpImpl::myCmpWDegPartial(ConstRawPtr, ConstRawPtr, long) const
 
 long PPMonoidRingExpImpl::myExponent(ConstRawPtr rawpp, long indet) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
   BigInt N;
   long n;
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  if (! IsInteger(N, expv->exponents[indet])) {
+  if (! IsInteger(N, expv[indet])) {
     CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
   }
 
@@ -484,11 +497,11 @@ long PPMonoidRingExpImpl::myExponent(ConstRawPtr rawpp, long indet) const
 
 void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long indet) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  if (! IsInteger(EXP, expv->exponents[indet])) {
+  if (! IsInteger(EXP, expv[indet])) {
     CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
   }
 }
@@ -496,17 +509,17 @@ void PPMonoidRingExpImpl::myBigExponent(BigInt& EXP, ConstRawPtr rawpp, long ind
 
 void PPMonoidRingExpImpl::myRingElemExponent(RingElem& EXP, ConstRawPtr rawpp, long indet) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
 
   CoCoA_ASSERT(indet < myNumIndets);
 
-  EXP = expv->exponents[indet];
+  EXP = expv[indet];
 }
 
 
 void PPMonoidRingExpImpl::myExponents(std::vector<long>& v, ConstRawPtr rawpp) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
   BigInt N;
   long n;
 
@@ -515,7 +528,7 @@ void PPMonoidRingExpImpl::myExponents(std::vector<long>& v, ConstRawPtr rawpp) c
   // Run this loop twice so we don't modify the vector if there's an exception
 
   for (long i=0; i < myNumIndets; ++i) {
-    if (! IsInteger(N, expv->exponents[i])) {
+    if (! IsInteger(N, expv[i])) {
       CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
     }
 
@@ -525,7 +538,7 @@ void PPMonoidRingExpImpl::myExponents(std::vector<long>& v, ConstRawPtr rawpp) c
   }
 
   for (long i=0; i < myNumIndets; ++i) {
-    if (! IsInteger(N, expv->exponents[i])) {
+    if (! IsInteger(N, expv[i])) {
       CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
     }
 
@@ -540,21 +553,21 @@ void PPMonoidRingExpImpl::myExponents(std::vector<long>& v, ConstRawPtr rawpp) c
 
 void PPMonoidRingExpImpl::myBigExponents(std::vector<BigInt>& expvector, ConstRawPtr rawpp) const
 {
-  const PPMonoidRingExpElem * const expv = myExpv(rawpp);
+  const PPMonoidRingExpElem & expv = myExpv(rawpp);
   BigInt N;
 
-  CoCoA_ASSERT(len(expv->exponents) == myNumIndets);
+  CoCoA_ASSERT((long) expv.size() == myNumIndets);
 
   // Run this loop twice so we don't modify the vector if there's an exception
 
   for (long i=0; i < myNumIndets; ++i) {
-    if (! IsInteger(N, expv->exponents[i])) {
+    if (! IsInteger(N, expv[i])) {
       CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
     }
   }
 
   for (long i=0; i < myNumIndets; ++i) {
-    if (! IsInteger(expvector[i], expv->exponents[i])) {
+    if (! IsInteger(expvector[i], expv[i])) {
       CoCoA_ERROR(ERR::BadConvert, "Exponent extraction in PPMonoidRingExp");
     }
   }
