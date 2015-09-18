@@ -1119,6 +1119,11 @@ void testPowerPolyRing(void)
   RingElem t(K, "t");
   RingElem q(K, "q");
 
+  // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
+  // different from 'p' in K, which we now create.
+
+  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
+
   cout << gcd(num(power(f,p)),num(f)) << endl;
   cout << power(f,p)/f << endl;
   //cout << (power(f,p)) /power(f,2*p) << endl;
@@ -1144,7 +1149,7 @@ void testPowerPolyRing(void)
 
   //cout << deriv(power(f,p),f) << endl;
 
-  CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
+  CoCoA_ASSERT(deriv(power(f,p), f) == pK*power(f,p-1));
 }
 
 /* PowerPolyDifferentialRing - a polynomial ring whose exponents are
@@ -1398,7 +1403,7 @@ pair<int,int> PosMinAbs(matrix M, int I)
       }
     }
   }
-  return pair<int,int>(MinI, MinJ);
+  return make_pair(MinI, MinJ);
 }
 
 pair<int,int> PosMinDeg(matrix M, int I)
@@ -1417,7 +1422,7 @@ pair<int,int> PosMinDeg(matrix M, int I)
       }
     }
   }
-  return pair<int,int>(MinI, MinJ);
+  return make_pair(MinI, MinJ);
 }
 
 void LMinInII(SmithRecord& L, int I, bool Pol)
