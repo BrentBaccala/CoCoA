@@ -1119,6 +1119,7 @@ void testPowerPolyRing(void)
   RingElem t(K, "t");
   RingElem q(K, "q");
 
+  cout << gcd(num(power(f,p)),num(f)) << endl;
   cout << power(f,p)/f << endl;
   //cout << (power(f,p)) /power(f,2*p) << endl;
   //cout << (power(f,p-1))/power(f,2*p) << endl;
@@ -1156,6 +1157,47 @@ void testPowerPolyRing(void)
 
 class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
 
+private:
+
+  /* Given two strings (from two symbols), return the symbol string
+   * corresponding to the derivative of the first by the second.
+   *
+   * (f,t) -> f_t      (f_t,t) -> f_{tt}     (f_t,x) -> f_{tx}
+   *
+   * Differentiation with respect to different variables is
+   * commutative, so subscript symbols are always sorted into
+   * accending alphabetical order.
+   */
+
+  std::string append_symbol(const std::string head, const std::string tail) const
+  {
+    const std::size_t underscore = head.find("_");
+
+    // XXX wrong if tail contains extended TeX like \lambda
+    CoCoA_ASSERT(tail.length() == 1);
+
+    if (underscore == std::string::npos) {
+      return head + "_" + tail;
+    }
+
+    std::string result = head;
+
+    if (result.find("{", underscore) == std::string::npos) {
+      result.insert(underscore+1, "{");
+      result.append("}");
+    }
+
+    // XXX assumes that any previous subscripts are already sorted
+    for (auto i=result.find("{")+1; i < result.length(); i++) {
+      if ((result[i] > tail[0]) || (result[i] == '}')) {
+	result.insert(i, tail);
+	break;
+      }
+    }
+
+    return result;
+  }
+
 public:
 
   using PowerPolyRingBase::PowerPolyRingBase;
@@ -1163,15 +1205,11 @@ public:
   void myDeriv(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawx) const override
   {
     if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
-    const long n = myNumIndets();
+
     const SparsePolyRing P(this);
-    vector<long> expv(n);
-    exponents(expv, myLPP(rawx));
     long lower_indet;
 
     CoCoA_ASSERT(IsIndet(lower_indet, myLPP(rawx)));
-
-    /* XXX rawx should be an indet at this point */
 
     /* Differentiating x^n -> n*x^(n-1) requires multiplying monomials
      * by exponents.
@@ -1182,7 +1220,6 @@ public:
     for (SparsePolyIter itf=myBeginIter(rawf); !IsEnded(itf); ++itf)
     {
       for (long indetn = 0; indetn < myNumIndets(); indetn ++) {
-	/* First we compute x^n -> n*x^(n-1) */
 
 	/* First we compute x^n -> n*x^(n-1) */
 
@@ -1194,14 +1231,21 @@ public:
 
 	RingElem m(scale * monomial(P, coeff(itf), PP(itf)/indet(myPPM(), indetn)));
 
+	/* Next, if upper and lower indets differ, we multiply by a
+	 * partial derivative.  If upper and lower indets are the
+	 * same, we leave it alone, since dx/dx = 1.
+	 */
+
 	if (indetn != lower_indet) {
 	  const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
 	  const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
 
-	  m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(head(indet_symbol) + head(lower_indet_symbol))));
+	  //m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(head(indet_symbol) + head(lower_indet_symbol))));
+	  m *= monomial(P, 1, myPPM()->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol)))));
 	}
 
-	if (!IsZero(m)) myAppendClear(raw(ans), raw(m));
+	//if (!IsZero(m)) myAppendClear(raw(ans), raw(m));
+	if (!IsZero(m)) ans += m;
       }
     }
     mySwap(raw(ans), rawlhs); // really an assignment
@@ -1235,12 +1279,25 @@ void testPowerPolyDifferentialRing(void)
   RingElem q(K, "q");
 
   cout << deriv(f,t) << endl;
+  cout << deriv(deriv(f,t),t) << endl;
+  cout << deriv(deriv(f,q),t) << endl;
+  cout << deriv(deriv(f,t),q) << endl;
+
+  RingElem ft(K, "f_t");
+  RingElem ftt(K, "f_{tt}");
+  RingElem fqt(K, "f_{qt}");
+
+  CoCoA_ASSERT(deriv(f,t) == ft);
+  CoCoA_ASSERT(deriv(deriv(f,t),t) == ftt);
+  CoCoA_ASSERT(deriv(deriv(f,q),t) == fqt);
+  CoCoA_ASSERT(deriv(deriv(f,t),q) == fqt);
+
   cout << deriv(power(f,p),f) << endl;
   cout << deriv(power(f,p),t) << endl;
-  //cout << (power(f,p)) /power(f,2*p) << endl;
-  //cout << (power(f,p-1))/power(f,2*p) << endl;
-  //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
-  //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
+  cout << deriv(deriv(power(f,p),t),t) << endl;
+  cout << deriv(power(f,p)*q,t) << endl;
+  cout << deriv(power(f,p)/q,t) << endl;
+  cout << deriv(f/q,t) << endl;
 
   CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
   CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
