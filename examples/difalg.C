@@ -1346,6 +1346,90 @@ void testPowerPolyDifferentialRing(void)
   CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
 }
 
+class DifferentialIdeal {
+
+  friend std::ostream & operator<<(std::ostream &out, const DifferentialIdeal);
+
+protected:
+
+  const ring R;
+  std::vector<RingElem> gens;
+
+public:
+
+  DifferentialIdeal(const ring R, std::vector<RingElem> gens) :
+    R(R), gens(gens) { }
+
+  DifferentialIdeal(const RingElem& r1) : R(owner(r1)) {
+    gens.push_back(r1);
+  }
+  DifferentialIdeal(const RingElem& r1, const RingElem& r2) : R(owner(r1)) {
+    gens.push_back(r1);
+    gens.push_back(r2);
+  }
+
+};
+
+std::ostream & operator<<(std::ostream &out, const DifferentialIdeal ideal)
+{
+  out << "DifferentialIdeal(";
+
+  std::copy(ideal.gens.begin(), ideal.gens.end() - 1, std::ostream_iterator<RingElem>(out, ", "));
+
+  out << ideal.gens.back() << ")";
+
+  return out;
+}
+
+void testDifferentialIdeal(void)
+{
+  ring ZZ = RingZZ();
+  ring QQ = RingQQ();
+
+  // ExponentRing - these are the indeterminates that can appear in powers
+
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
+  RingElem p(ExponentRing, "p");
+
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y"}, lex, ExponentRing);
+  ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
+  ring K = NewFractionField(R);
+
+  RingElem f(K, "f");
+  RingElem t(K, "t");
+  RingElem q(K, "q");
+  RingElem x(K, "x");
+  RingElem y(K, "y");
+
+  // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
+  // different from 'p' in K, which we now create.
+
+  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
+
+  // Funny syntax - the derivatives don't exist in the ring until we
+  // call 'deriv', so we do that first and then check to see if
+  // they're right, instead of the other way around.
+
+  RingElem ft = deriv(f,t);
+  RingElem ftt = deriv(deriv(f,t),t);
+  RingElem fqt = deriv(deriv(f,q),t);
+
+  //DifferentialIdeal di(f, t);
+
+  RingElem xt = deriv(x,t);
+  RingElem yt = deriv(y,t);
+  RingElem xtt = deriv(xt,t);
+
+  // First example from Rosenfeld-Groebner paper
+
+  DifferentialIdeal di(2*(xtt+1)*yt+y, xt*xt+x);
+
+  std::cerr << di << endl;
+}
+
 /* Smith Normal Form
  *
  * Algorithm to compute a matrix's Smith normal form ported from
@@ -2931,6 +3015,7 @@ int main()
   {
     testPowerPolyRing();
     testPowerPolyDifferentialRing();
+    testDifferentialIdeal();
     testSmithFactor();
     testDiophantineSolvable();
     program();
