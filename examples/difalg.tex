@@ -245,8 +245,8 @@ involving $x$ would not appear in $d_x$ or $n$, so the LHS must be
 zero, which can only occur if either $n=0$ or if $d_x=0$, which
 contradicts the assumption that $d$'s factor involves $x$.
 
-To summarize, we've concluded that either $n=0$ or that $d$ must not
-involve $x$, and thus be a polynomial in $\C[t]$.  In this case, the
+To summarize, we've concluded that either $n=0$ or that $d_x=0$,
+and thus be $d$ must be a polynomial in $\C[t]$.  In this case, the
 derivatives $d_x$ and $d_{xx}$ vanish from the original equation and it becomes:
 
 $$n_{xx} d^2 = n_t d^2 - n d d_t$$
@@ -276,6 +276,21 @@ $$\{1, x, x^2 + 2t, x^3 + 6xt, x^4 + 12 x^2t + 12 t^2, x^5+20x^3t+60xt^2, \ldots
 
 So the only solutions to $\delta_x^2 \Psi = \delta_t \Psi$ in
 $\C(x,t)$ are linear combinations of these polynomials.
+
+Incidentally, what happens if we apply the irreducible factor analysis
+to the numerator equation $n_{xx}=n_t$ with $n=f^p q$?  We find that
+$p$ must be one, and an additional differential condition, namely,
+that $f_{xx}q+2f_x q_x - f_t q$ be a multiple of $f$.  Notice that
+$B_5 = x^5+20x^3t+60xt^2 =
+x(x^2+(10+2\sqrt{10})t)(x^2+(10-2\sqrt{10})t)$,
+\footnote{\tt expand(x*(x**2+(10 + 2 *sqrt(10))*t)*(x**2+(10 - 2*sqrt( 10))*t));}
+and that any selection
+of one of these factors as $f$ (and the product of the remaining two
+as $q$) satisfies the differential condition.  While interesting as
+the logical conclusion of the irreducible factor solution technique,
+this information doesn't seem to lead directly to a solution.  Open
+question: would an elimination analysis with differential Groebner
+bases turn up additional relations on the irreducible factors?
 
 Can we find a different field that contains more solutions to this PDE?
 
