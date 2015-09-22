@@ -1367,6 +1367,11 @@ public:
     gens.push_back(r1);
     gens.push_back(r2);
   }
+  DifferentialIdeal(const RingElem& r1, const RingElem& r2, const RingElem& r3) : R(owner(r1)) {
+    gens.push_back(r1);
+    gens.push_back(r2);
+    gens.push_back(r3);
+  }
 
 };
 
@@ -1394,7 +1399,7 @@ void testDifferentialIdeal(void)
   // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
   // along with its fraction field.
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y"}, lex, ExponentRing);
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y", "z"}, lex, ExponentRing);
   ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
@@ -1403,6 +1408,7 @@ void testDifferentialIdeal(void)
   RingElem q(K, "q");
   RingElem x(K, "x");
   RingElem y(K, "y");
+  RingElem z(K, "z");
 
   // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
   // different from 'p' in K, which we now create.
@@ -1417,6 +1423,10 @@ void testDifferentialIdeal(void)
   RingElem ftt = deriv(deriv(f,t),t);
   RingElem fqt = deriv(deriv(f,q),t);
 
+  RingElem fx = deriv(f,x);
+  RingElem fy = deriv(f,y);
+  RingElem fz = deriv(f,z);
+
   //DifferentialIdeal di(f, t);
 
   RingElem xt = deriv(x,t);
@@ -1428,6 +1438,12 @@ void testDifferentialIdeal(void)
   DifferentialIdeal di(2*(xtt+1)*yt+y, xt*xt+x);
 
   std::cerr << di << endl;
+
+  // Sixth example from Mansfield thesis
+
+  DifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
+
+  std::cerr << di6 << endl;
 }
 
 /* Smith Normal Form
