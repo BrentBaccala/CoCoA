@@ -3,6 +3,8 @@
 // #include <unordered_map>
 #include <algorithm>
 #include <functional>
+#include <string>
+#include <regex>
 using namespace CoCoA;
 using namespace std;
 
@@ -121,6 +123,7 @@ private: // data members
   ring ExponentRing;
   vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
   unique_ptr<PPMonoidElem> myOnePtr;
+  vector<long> ranking;  ///< the indexes of the indets, sorted into ranking order
 };
 
 
@@ -155,7 +158,8 @@ bool PPMonoidRingExpImpl::myCheckExponents(const std::vector<long>& expv) const
 PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, const PPOrdering& ord, const ring& ExponentRing):
   PPMonoidBase(ord, IndetNames),
   ExponentRing(ExponentRing),
-  myIndetVector()
+  myIndetVector(),
+  ranking(myNumIndets)
 {
   if (! IsLex(ord)) {
     CoCoA_ERROR(ERR::NYI, "non-lexicographic ordering in PPMonoidRingExp");
@@ -179,6 +183,9 @@ PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, 
       }
   }
   myRefCountZero();
+
+  // initialize the ranking to the order passed in
+  std::iota(ranking.begin(), ranking.end(), 0);
 }
 
 
@@ -202,6 +209,32 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
  * change underfoot.
  */
 
+static std::string symbol_head(const std::string & symbol)
+{
+  const std::size_t underscore = symbol.find("_");
+
+  if (underscore == std::string::npos) {
+    return symbol;
+  } else {
+    return symbol.substr(0, underscore-1);
+  }
+}
+
+static std::string symbol_tail(const std::string & symbol)
+{
+  const std::size_t underscore = symbol.find("_");
+  const std::size_t openbracket = symbol.find("{");
+  const std::size_t closebracket = symbol.find("}");
+
+  if (underscore == std::string::npos) {
+    return "";
+  } else if (openbracket == std::string::npos) {
+    return symbol.substr(underscore+1, std::string::npos);
+  } else {
+    return symbol.substr(openbracket+1, closebracket-openbracket-1);
+  }
+}
+
 ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) const
 {
   for (long i=0; i < myNumIndets; ++i)
@@ -215,6 +248,65 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
   myMulIndetPower(raw(pp), myNumIndets-1, 1);
 
   const_cast<PPMonoidRingExpImpl *>(this)->myIndetVector.push_back(pp);
+
+  // insert the new indet into the ranking, based on how its symbol compares
+
+  // this local variable overrides the instance variable and makes it writable
+  std::vector<long> & ranking = const_cast<PPMonoidRingExpImpl *>(this)->ranking;
+
+  // comparison logic: first lexicographic ordering on the base symbol
+  // (the part before an underscore), this gives us an elimination
+  // ordering on the base symbols, then total degree on the
+  // derivatives, then lexiographic on the derivatives
+
+  // C++ regex doesn't work prior to gcc 4.9
+
+  // const std::regex re("([^_]+)(_\\{?(.+)\\}?)?");
+  // std::smatch newsymbol;
+  // CoCoA_ASSERT(std::regex_match (head(s), newsymbol, re));
+
+  // symbol[0] is entire match
+  // symbol[1] is head
+  // symbol[2] is tail with _ and braces
+  // symbol[3] is tail stripped
+
+  const std::string newsymbol_head = symbol_head(head(s));
+  const std::string newsymbol_tail = symbol_tail(head(s));
+
+  for (long i=0; i < myNumIndets-1; ++i) {
+
+    //std::smatch oldsymbol;
+    //CoCoA_ASSERT(std::regex_match (head(myIndetSymbols[ranking[i]]), oldsymbol, re));
+
+    const std::string oldsymbol_head = symbol_head(head(myIndetSymbols[ranking[i]]));
+    const std::string oldsymbol_tail = symbol_tail(head(myIndetSymbols[ranking[i]]));
+
+    // XXX comparison here is string, should be order passed to constructor
+    if (oldsymbol_head > newsymbol_head) {
+      ranking.insert(ranking.begin() + i, myNumIndets-1);
+      goto done;
+    }
+    if (oldsymbol_head == newsymbol_head) {
+      if (oldsymbol_tail.length() > newsymbol_tail.length()) {
+	ranking.insert(ranking.begin() + i, myNumIndets-1);
+	goto done;
+      }
+      if (oldsymbol_tail.length() == newsymbol_tail.length()) {
+	if (oldsymbol_tail < newsymbol_tail) {
+	  // If they're the same length, then oldsymbol_tail compares
+	  // less when the first character that differs is less in
+	  // oldsymbol_tail.  Tail letters are sorted into ascending
+	  // order, so "xxyz" < "xyyz".
+	  ranking.insert(ranking.begin() + i, myNumIndets-1);
+	  goto done;
+	}
+      }
+    }
+  }
+  // Everything compared less than the new symbol, so we fell through
+  // here.  New symbol goes at the end.
+  ranking.push_back(myNumIndets-1);
+ done:
 
   return myIndetVector.back();
 }
@@ -519,11 +611,10 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
-  const auto nexps = max(expv1.size(), expv2.size());
-
-  for (unsigned long i=0; i < nexps; ++i) {
-    if (expv1[i] != expv2[i]) {
-      if (expv1[i] > expv2[i]) return 1; else return -1;
+  for (long i=0; i < myNumIndets; ++i) {
+    long r = ranking[i];
+    if (expv1[r] != expv2[r]) {
+      if (expv1[r] > expv2[r]) return 1; else return -1;
     }
   }
   return 0;
@@ -1314,6 +1405,14 @@ void testPowerPolyDifferentialRing(void)
   CoCoA_ASSERT(ftt == RingElem(K, "f_{tt}"));
   CoCoA_ASSERT(fqt == RingElem(K, "f_{qt}"));
   CoCoA_ASSERT(deriv(deriv(f,t),q) == fqt);
+
+  // Test the ranking on the derivative terms.
+
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ft)));
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ftt)));
+  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(ftt)));
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(fqt)));
+  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(fqt)));
 
   //cout << deriv(power(f,p),f) << endl;
   //cout << deriv(power(f,p),t) << endl;
