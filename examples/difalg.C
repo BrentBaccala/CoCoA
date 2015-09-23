@@ -18,8 +18,20 @@ using namespace std;
  * support differential rings with an infinite number of (algebraic)
  * generators.
  *
- * Only lexicographic ordering is supported at this time.  New symbols
- * are currently added to the end of the ordering.
+ * The only term ordering used is inverse lexicographic, based on a
+ * total degree ranking of the derivative terms.  The derivatives are
+ * attached as tails by PowerPolyRing, separated from the heads by
+ * underscores.  Identical heads are grouped together, along with
+ * tails of the same length.
+ *
+ * For example, if the constructor was passed f, t, and q as initial
+ * symbols, default lexicographic ranking is f > t > q, and the
+ * derivative ranking might be like:
+ *
+ *       q < q_t < t < f < f_t < f_{tt} < f_{qt}
+ *
+ * Based on this ranking, inverse lex is then used to compare
+ * monomials.
  */
 
 class PPMonoidRingExpImpl;
@@ -123,7 +135,7 @@ private: // data members
   ring ExponentRing;
   vector<PPMonoidElem> myIndetVector; ///< the indets as PPMonoidElems
   unique_ptr<PPMonoidElem> myOnePtr;
-  vector<long> ranking;  ///< the indexes of the indets, sorted into ranking order
+  vector<long> ranking;  ///< the indices of the indets, in ranking order, from least to greatest
 };
 
 
@@ -185,7 +197,9 @@ PPMonoidRingExpImpl::PPMonoidRingExpImpl(const std::vector<symbol>& IndetNames, 
   myRefCountZero();
 
   // initialize the ranking to the order passed in
-  std::iota(ranking.begin(), ranking.end(), 0);
+  for (long i = 0; i < myNumIndets; ++i) {
+    ranking[i] = myNumIndets - i - 1;
+  }
 }
 
 
@@ -216,7 +230,7 @@ static std::string symbol_head(const std::string & symbol)
   if (underscore == std::string::npos) {
     return symbol;
   } else {
-    return symbol.substr(0, underscore-1);
+    return symbol.substr(0, underscore);
   }
 }
 
@@ -273,6 +287,8 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
   const std::string newsymbol_head = symbol_head(head(s));
   const std::string newsymbol_tail = symbol_tail(head(s));
 
+  bool found_matching_head = false;
+
   for (long i=0; i < myNumIndets-1; ++i) {
 
     //std::smatch oldsymbol;
@@ -281,12 +297,8 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
     const std::string oldsymbol_head = symbol_head(head(myIndetSymbols[ranking[i]]));
     const std::string oldsymbol_tail = symbol_tail(head(myIndetSymbols[ranking[i]]));
 
-    // XXX comparison here is string, should be order passed to constructor
-    if (oldsymbol_head > newsymbol_head) {
-      ranking.insert(ranking.begin() + i, myNumIndets-1);
-      goto done;
-    }
     if (oldsymbol_head == newsymbol_head) {
+      found_matching_head = true;
       if (oldsymbol_tail.length() > newsymbol_tail.length()) {
 	ranking.insert(ranking.begin() + i, myNumIndets-1);
 	goto done;
@@ -301,6 +313,12 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
 	  goto done;
 	}
       }
+    } else if (found_matching_head) {
+      // We've already found the matching head, but oldsymbol_head !=
+      // newsymbol_head, so that means we've just passed the matching
+      // head and moved onto the next head.  Insert new symbol here.
+      ranking.insert(ranking.begin() + i, myNumIndets-1);
+      goto done;
     }
   }
   // Everything compared less than the new symbol, so we fell through
@@ -604,15 +622,13 @@ bool PPMonoidRingExpImpl::myIsRadical(ConstRawPtr rawpp) const
 }
 
 
-/* XXX myCmp currently uses lex ordering with no other option */
-
 int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
 
   for (long i=0; i < myNumIndets; ++i) {
-    long r = ranking[i];
+    long r = ranking[myNumIndets - i - 1];
     if (expv1[r] != expv2[r]) {
       if (expv1[r] > expv2[r]) return 1; else return -1;
     }
@@ -1209,6 +1225,12 @@ void testPowerPolyRing(void)
   RingElem f(K, "f");
   RingElem t(K, "t");
   RingElem q(K, "q");
+
+  // check term ordering
+
+  CoCoA_ASSERT(LPP(num(f)) > LPP(num(t)));
+  CoCoA_ASSERT(LPP(num(f)) > LPP(num(q)));
+  CoCoA_ASSERT(LPP(num(t)) > LPP(num(q)));
 
   // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
   // different from 'p' in K, which we now create.
