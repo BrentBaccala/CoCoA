@@ -215,14 +215,6 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
   return myIndetVector;
 }
 
-/* Yuck!  I now want to modify a const object by adding a new symbol
- * to the PPMonoid.  The rest of the library is so heavily invested in
- * PPMonoid's being const that changing it elsewhere is too painful to
- * consider.  Instead we play games with const_cast.  My greatest
- * concern is multithreading implications, since myNumIndets can
- * change underfoot.
- */
-
 static std::string symbol_head(const std::string & symbol)
 {
   const std::size_t underscore = symbol.find("_");
@@ -248,6 +240,37 @@ static std::string symbol_tail(const std::string & symbol)
     return symbol.substr(openbracket+1, closebracket-openbracket-1);
   }
 }
+
+/* Splits a differential indeterminate into its base and derivative parts.
+ *
+ * Ex:  f_xt splits into f and xt
+ */
+
+static void split_differential_indet (const PPMonoidElem &e, PPMonoidElem &base, PPMonoidElem &deriv)
+{
+  long i;
+
+  if (! IsIndet(i, e)) {
+    CoCoA_ERROR(ERR::NotIndet, "split_differential_indet");
+  }
+
+  const std::string sym = head(IndetSymbol(owner(e), i));
+
+  base = owner(e)->mySymbolValue(symbol(symbol_head(sym)));
+
+  AssignOne(deriv);
+  for (char &c: symbol_tail(sym)) {
+    deriv *= owner(e)->mySymbolValue(symbol(std::string(1, c)));
+  }
+}
+
+/* Yuck!  I now want to modify a const object by adding a new symbol
+ * to the PPMonoid.  The rest of the library is so heavily invested in
+ * PPMonoid's being const that changing it elsewhere is too painful to
+ * consider.  Instead we play games with const_cast.  My greatest
+ * concern is multithreading implications, since myNumIndets can
+ * change underfoot.
+ */
 
 ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) const
 {
@@ -1494,8 +1517,145 @@ public:
     gens.push_back(r3);
   }
 
+  // HDT - highest derivative term
+
+  PPMonoidElem HDT(const RingElem &f1)
+  {
+    // Assume we're using a monomial ordering so that a polynomial's
+    // HDT will appear in its LPP.
+
+    const PPMonoidElem& lpp = LPP(f1);
+    PPMonoidElem hdt(owner(lpp));
+
+    // I count on 'one' comparing less than any indet, so hdt, as
+    // initialized, will always compare less than any actual indet.
+
+    for (long i = 0; i < NumIndets(owner(lpp)); ++ i) {
+      if (exponent(lpp, i) > 0) {
+	if (hdt < indet(owner(lpp), i)) {
+	  hdt = indet(owner(lpp), i);
+	}
+      }
+    }
+
+    return hdt;
+  }
+
+  // Hu - highest unknown, the unknown function appearing in the
+  // highest derivative term
+
+  PPMonoidElem Hu(const RingElem &f1)
+  {
+    PPMonoidElem e = HDT(f1);
+    PPMonoidElem base(owner(e));
+    PPMonoidElem deriv(owner(e));
+    split_differential_indet(e, base, deriv);
+    return base;
+  }
+
+  RingElem multideriv(RingElem r, ConstRefPPMonoidElem p)
+  {
+    for (long i = 0; i < NumIndets(owner(p)); ++ i) {
+      for (long j = exponent(p, i); j > 0; -- j) {
+	r = deriv(r, monomial(owner(r), 1, indet(owner(p), i)));
+      }
+    }
+    return r;
+  }
+
+  RingElem polySpoly(ConstRefRingElem f1, ConstRefRingElem f2)
+  {
+    ConstRefPPMonoidElem lpp1 = LPP(f1);
+    ConstRefPPMonoidElem lpp2 = LPP(f2);
+
+    ConstRefRingElem c1 = content(f1);
+    ConstRefRingElem c2 = content(f2);
+
+    const PPMonoidElem lcmpp = lcm(lpp1, lpp2);
+    const RingElem lcmc = lcm(c1, c2);
+
+    RingElem a1 = monomial(owner(f1), lcmc/c1, lcmpp / lpp1);
+    RingElem a2 = monomial(owner(f2), lcmc/c2, lcmpp / lpp2);
+
+    return a1*f1 - a2*f2;
+  }
+
+  RingElem diffSpoly(const RingElem& f1, const RingElem& f2)
+  {
+    // Assume we're using a monomial ordering so that a polynomial's
+    // highest ranking unknown will appear in its LPP.
+
+    // We want to find the highest ranking unknown in each polynomial.
+    // If it's the same unknown, we can construct differential
+    // operators that elevate each to a common derivative.
+
+    if (Hu(f1) == Hu(f2)) {
+      PPMonoidElem hdt1 = HDT(f1);
+      PPMonoidElem hdt2 = HDT(f2);
+      PPMonoidElem base(owner(hdt1));
+      PPMonoidElem deriv1(owner(hdt1));
+      PPMonoidElem deriv2(owner(hdt2));
+
+      // If Hu(f1) == Hu(f2), then the bases should be the same.
+      split_differential_indet(hdt1, base, deriv1);
+      split_differential_indet(hdt2, base, deriv2);
+
+      // compute a1 and a2, the differentials that raise HDT(f1) and
+      // HDT(f2) to the same derivative
+
+      PPMonoidElem lcm12 = lcm(deriv1, deriv2);
+      PPMonoidElem a1 = lcm12 / deriv1;
+      PPMonoidElem a2 = lcm12 / deriv2;
+
+      return polySpoly(multideriv(f1, a1), multideriv(f2, a2));
+    } else {
+      return polySpoly(f1, f2);
+    }
+  }
+
+  RingElem reduce(RingElem r)
+  {
+    if (IsZero(r)) return r;
+    for (unsigned int i=0; i < gens.size(); i++) {
+      if (IsDivisible(LPP(num(r)), LPP(num(gens[i])))  &&  IsDivisible(LC(num(r)), LC(num(gens[i])))) {
+	RingElem content = LC(num(r)) / LC(num(gens[i]));
+	RingElem factor = EmbeddingHom(owner(r))(monomial(owner(num(r)), content, LPP(num(r)) / LPP(num(gens[i]))));
+	r -= gens[i] * factor;
+	i = -1;
+	if (IsZero(r)) return r;
+      }
+    }
+    return r;
+  }
+
+  void Buchberger(void)
+  {
+    std::vector<std::pair<RingElem, RingElem>> pairset;
+
+    for (unsigned int i=0; i < gens.size(); i++) {
+      for (unsigned int j=i+1; j < gens.size(); j++) {
+	pairset.push_back(make_pair(gens[i], gens[j]));
+      }
+    }
+
+    while (! pairset.empty()) {
+      auto p = pairset.back();
+      RingElem dp = reduce(EmbeddingHom(owner(p.first))(diffSpoly(num(p.first), num(p.second))));
+      //cout << dp << endl;
+      pairset.pop_back();
+      if (! IsZero(dp)) {
+	cout << "{" << p.first << ", " << p.second << "} -> " << dp << endl;
+	for (unsigned int i=0; i < gens.size(); i++) {
+	  pairset.push_back(make_pair(dp, gens[i]));
+	}
+	gens.push_back(dp);
+      }
+    }
+  }
+
 };
 
+#if 0
 std::ostream & operator<<(std::ostream &out, const DifferentialIdeal ideal)
 {
   out << "DifferentialIdeal(";
@@ -1506,6 +1666,7 @@ std::ostream & operator<<(std::ostream &out, const DifferentialIdeal ideal)
 
   return out;
 }
+#endif
 
 void testDifferentialIdeal(void)
 {
@@ -1558,13 +1719,17 @@ void testDifferentialIdeal(void)
 
   DifferentialIdeal di(2*(xtt+1)*yt+y, xt*xt+x);
 
-  std::cerr << di << endl;
+  // std::cerr << di << endl;
+
+  di.Buchberger();
+
+  // std::cerr << di << endl;
 
   // Sixth example from Mansfield thesis
 
   DifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
 
-  std::cerr << di6 << endl;
+  // std::cerr << di6 << endl;
 }
 
 /* Smith Normal Form
