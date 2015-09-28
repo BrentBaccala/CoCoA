@@ -1,0 +1,53 @@
+      Differential
+      Copyright (c)  2015  Brent Baccala
+      GNU Free Documentation License, Version 1.2
+%!includeconf: ../aux-txt2tags/config.t2t
+      TeXTitle{Differential}{Brent Baccala}
+
+
+== User documentation ==
+%======================================================================
+
+The class ``Differential`` represents differential mappings of a ring,
+which are a type of ring map, but are not homomorphisms.
+
+The main operation available for ``Differential``s is application to a
+[[RingElem]].
+
+
+=== Constructors ===[constructors]
+%----------------------------------------------------------------------
+
+Normally when creating a new ``Differential`` we specify both the ring
+to which it belongs, and its initial value in that ring.  Let ``R`` be
+a [[ring]], and let V be a vector of ``RingHom``s of R.
+
+ | ``Differential d(R);``      | a differential map of ``R``, initially identity |
+ | ``Differential d(R, V);``   | a differential map of ``R`` |
+
+
+=== Operations on RingElems ===[operations]
+%----------------------------------------------------------------------
+``Differential``s can be modified.
+
+
+==== Altering ====
+
+ | ``d.update(s, d);``     | map ``s`` to ``d`` |
+
+
+
+==== Applying ====
+
+ | ``d(r);``     | map ``r`` to ``d(r)`` |
+
+
+
+%== Bugs, Shortcomings and other ideas ==
+%======================================================================
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For "txt2tags safety" leave 2 empty lines after the last line of text.

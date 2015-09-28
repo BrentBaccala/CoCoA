@@ -28,6 +28,7 @@ CoCoALib 0.99    documentation
 %!include: ../txt/DenseMatrix.txt
 %!include: ../txt/DenseUPolyClean.txt
 %!include: ../txt/DenseUPolyRing.txt
+%!include: ../txt/Differential.txt
 %!include: ../txt/DistrMPolyClean.txt
 %!include: ../txt/DistrMPolyInlPP.txt
 %!include: ../txt/DivMask.txt
