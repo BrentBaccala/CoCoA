@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      MemPool</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      MemPool</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2006,2010 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      MemPool</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2006,2010 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User Documentation for MemPool</A>
       <UL>
@@ -39,10 +40,13 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User Documentation for MemPool</H2>
+
 <A NAME="toc2"></A>
 <H3>General description</H3>
+
 <P>
 A MemPool provides a simple and fast memory management scheme for memory
 blocks of <B>fixed size</B>.  It is particularly well-suited to cases where there
@@ -60,22 +64,25 @@ forwards to <CODE>::operator new</CODE> any request for a block of memory of siz
 different from that specified at the creation of the <CODE>MemPool</CODE> object;
 wrong size deallocations are similarly forwarded to <CODE>::operator delete</CODE>.
 </P>
+
 <A NAME="toc3"></A>
 <H3>Basic Use</H3>
+
 <P>
 The constructor for a <CODE>MemPool</CODE> requires that the size (in bytes) of the blocks
 it is to manage be specified (as the first argument).  We recommend that the
 <CODE>MemPool</CODE> be given a name (second argument as a string); the name is useful only
 for debugging.  The third argument may occasionally be useful for more advanced use.
 </P>
+
 <PRE>
    MemPool workspace(16); // 16 byte slices used as temporary workspaces
 </PRE>
-<P></P>
+
 <PRE>
    MemPool MemMgr(sizeof(widget), "memmgr for widgets");
 </PRE>
-<P></P>
+
 <P>
 Once the <CODE>MemPool</CODE> has been created, a new block of memory is obtained via a
 call to the member function <CODE>alloc</CODE>, and a block of memory is freed via a
@@ -83,6 +90,7 @@ call to the member function <CODE>free</CODE> (only to be applied to blocks prev
 allocated by the same <CODE>MemPool</CODE>).  In fact, <CODE>alloc</CODE> and <CODE>free</CODE> have two
 variants:
 </P>
+
 <PRE>
     MemPool::alloc()  allocates a block of the default size for the ``MemPool``
   
@@ -95,6 +103,7 @@ variants:
     ``sz`` is not the default size for the ``MemPool`` the request is passed on to
     ``::operator delete``
 </PRE>
+
 <P>
 The variants taking an explicit block size permit <CODE>MemPool</CODE>s to be used by
 a class specific operator new/delete pair (see example program below).
@@ -123,8 +132,10 @@ Technical note:
 <CODE>MemPool</CODE> is just a typedef for the true class name <CODE>MemPoolFast</CODE>
   (or <CODE>MemPoolDebug</CODE> if you enable debugging).
 </P>
+
 <A NAME="toc4"></A>
 <H3>Debugging with MemPools</H3>
+
 <P>
 The preprocessor variable <CODE>CoCoA_MEMPOOL_DEBUG</CODE> can be set at compile-time
 to perform run-time checks and obtain debugging information and statistics.
@@ -138,10 +149,12 @@ Each <CODE>MemPool</CODE> object maintains a record of its own level of verbosit
 debug checks.  Upon creation of a new <CODE>MemPool</CODE> object these levels are
 set automatically to the values of these two global variables:
 </P>
+
 <PRE>
     MemPoolDebug::ourInitialDebugLevel
     MemPoolDebug::ourInitialVerbosityLevel
 </PRE>
+
 <P>
 The values of these globals should be set <B>before creating</B> any MemPools,
 <I>i.e.</I> before creating the <CODE>GlobalManager</CODE> (which creates the MemPools
@@ -161,27 +174,32 @@ the error stream is global, <I>i.e.</I> the same for all MemPools.
 After construction of a <CODE>MemPool</CODE> object its levels can be adjusted using
 the member functions:
 </P>
+
 <PRE>
     MemPool MemMgr(...);        // construct MemPool
     MemMgr.SetDebugLevel(n);    // change debug level for this object
     MemMgr.SetVerbosityLevel(n);// change verbosity level for this object
 </PRE>
+
 <P>
 You can arrange for a <CODE>MemPool</CODE> to print out some summary statistics at
 regular intervals.  The interval (in seconds) used for such messages is
 approximately the value of
 </P>
+
 <PRE>
    MemPoolDebug::ourOutputStatusInterval
 </PRE>
-<P></P>
+
 <A NAME="toc5"></A>
 <H3>The Verbosity Levels</H3>
+
 <P>
 To help in debugging and fine tuning, you can get some logging messages out of
 a <CODE>MemPool</CODE>; these are printed on <CODE>GlobalLogput</CODE> (see <A HREF="io.html"><CODE>io</CODE></A>).  Here is a
 description of the various levels of <I>verbosity</I>:
 </P>
+
 <DL>
 <DT><B>Level 0</B></DT><DD>
   No logging information is produced (but error messages may be
@@ -205,6 +223,7 @@ description of the various levels of <I>verbosity</I>:
 
 <A NAME="toc6"></A>
 <H3>Using Verbosity Level 3</H3>
+
 <P>
 This is a very verbose level: each allocation/deallocation gives rise to a
 printed message (on a single rather long line).  These messages can be
@@ -232,8 +251,10 @@ analogous way by calling instead the member function
 <CODE>MemPoolDebug</CODE> object has been created; of course, recompilation
 will be necessary.
 </P>
+
 <A NAME="toc7"></A>
 <H3>Debug Levels in MemPools</H3>
+
 <P>
 If CoCoA_MEMPOOL_DEBUG was set during compilation then each <CODE>MemPool</CODE>
 object performs some debug checking.  If the checks reveal a problem then
@@ -241,9 +262,11 @@ an error message is printed on <CODE>GlobalErrput</CODE>.  Upon creation of a
 <CODE>MemPool</CODE> object, the debug level is set to the value of the global
 variable:
 </P>
+
 <PRE>
     MemPoolDebug::ourInitialDebugLevel
 </PRE>
+
 <P>
 After creation the debug level can be adjusted by calling the member function
 <CODE>SetDebugLevel</CODE>; this must be called before the <CODE>MemPool</CODE> has allocated any
@@ -254,6 +277,7 @@ first allocation has been made.
 Here are the meanings of the different levels of checking: (each higher
 level includes all lower levels)
 </P>
+
 <DL>
 <DT><B>Level 0</B></DT><DD>
   A count of the number of allocations, deallocations and <I>active</I> blocks
@@ -295,6 +319,7 @@ level includes all lower levels)
 
 <A NAME="toc8"></A>
 <H3>Example: Using a MemPool as the memory manager for a class</H3>
+
 <P>
 Suppose you already have a class called MyClass.  Here are the changes to
 make so that heap-located instances of MyClass reside in slices managed by
@@ -303,6 +328,7 @@ a MemPool; obviously stack-located instances cannot be managed by MemPool.
 <P>
 Add in the definition of MyClass (typically in the file MyClass.H):
 </P>
+
 <PRE>
    private:
     static MemPool myMemMgr;
@@ -313,11 +339,12 @@ Add in the definition of MyClass (typically in the file MyClass.H):
     inline void* operator new(size_t sz)
     { return myMemMgr.alloc(sz); }
 </PRE>
-<P></P>
+
 <P>
 The class static variable must be defined in some <CODE>.C</CODE> file,
 probably MyClass.C is the most suitable choice:
 </P>
+
 <PRE>
     MemPool MyClass::myMemMgr = MemPool(sizeof(MyClass));
       or
@@ -325,6 +352,7 @@ probably MyClass.C is the most suitable choice:
       or
     MemPool MyClass::myMemMgr = MemPool(sizeof(MyClass), PoolName, NrWordsInMargin);
 </PRE>
+
 <P>
 <CODE>PoolName</CODE> is a string: it is used only in logging and error messages in debugging
   mode, but it might be useful when debugging even when CoCoA_MEMPOOL_DEBUG is
@@ -340,6 +368,7 @@ and how the debugging facilities can be employed.  Compile this program
 with <CODE>CoCoA_MEMPOOL_DEBUG</CODE> set, and then run it to see the error
 messages produced indicating improper use of memory resources.
 </P>
+
 <PRE>
   #include &lt;cstddef&gt;
   #include &lt;iostream&gt;
@@ -436,9 +465,10 @@ messages produced indicating improper use of memory resources.
     return 0;
   }
 </PRE>
-<P></P>
+
 <A NAME="toc9"></A>
 <H2>Maintenance notes for the MemPool source code</H2>
+
 <P>
 The code for <CODE>MemPoolFast</CODE> and <CODE>MemPoolDebug</CODE> is exception-safe.  The only
 exception this code could cause is <CODE>std::bad_alloc</CODE> in the member functions
@@ -468,8 +498,10 @@ a typedef for <CODE>MemPoolDebug</CODE>.
 memory management operations while <CODE>MemPoolDebug</CODE> performs validity checks
 and maintains counters for various sorts of operation.
 </P>
+
 <A NAME="toc10"></A>
 <H3>MemPoolFast and loaf</H3>
+
 <P>
 The most important member functions of <CODE>MemPoolFast</CODE> are <CODE>alloc</CODE> and <CODE>free</CODE>
 for slices of the requested size; it is vital that these be fast (on average).
@@ -566,20 +598,24 @@ the <CODE>loaf</CODE>s in that list.
 To fulfil a request for logging information about utilization of slices in
 each <CODE>loaf</CODE>, I added four member functions:
 </P>
+
 <PRE>
     IamOriginator      - true iff arg points to a slice of this loaf
     myFreeCounterReset - reset counters to zero in this loaf list
     myCountFreeSlice   - incr my counter if slice is mine, o/w pass to next loaf
     myOutputStatus     - print out utilization stats.
 </PRE>
+
 <P>
 Apart from <CODE>IamOriginator</CODE>, I would much rather these functions did not exist.
 </P>
 <P>
 The implementation of a <CODE>loaf</CODE> is straightforward (but a bit messy).
 </P>
+
 <A NAME="toc11"></A>
 <H3>MemPoolDebug</H3>
+
 <P>
 The idea behind <CODE>MemPoolDebug</CODE> is that it should offer the same interface
 as <CODE>MemPoolFast</CODE> but will additionally perform validity checks and
@@ -614,6 +650,7 @@ These values are consulted only when a <CODE>MemPoolDebug</CODE> object is creat
 Using global variables like this make its easy to vary the debug level
 (without having to recompile the whole library).
 </P>
+
 <UL>
 <LI><CODE>MemPoolDebug::ourInitialVerbosityLevel</CODE>
        default verbosity level
@@ -661,8 +698,10 @@ the correct fill value.  This is intended to help discover writes to freed
 memory long after the slice has been freed.  This level gets very slow on larger
 examples.
 </P>
+
 <A NAME="toc12"></A>
 <H2>Bugs, Shortcomings, etc</H2>
+
 <P>
 Idea for better locality of reference: keep two free lists, one for the
 most recent loaf, and one for all older loaves.  When most recent loaf
@@ -736,6 +775,6 @@ sophisticated will just made the code even more complex though (sigh).
 <CODE>AutoPtrSlice</CODE> is still very experimental.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/MemPool.html -i txt/MemPool.txt -->
 </BODY></HTML>

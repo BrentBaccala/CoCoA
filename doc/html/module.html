@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      module</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      module</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2009 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      module</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2009 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for the classes module, ModuleBase, ModuleElem</A>
         <UL>
@@ -32,8 +33,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for the classes module, ModuleBase, ModuleElem</H2>
+
 <P>
 You may also wish to look at the documentation for <A HREF="FGModule.html"><CODE>FGModule</CODE></A>
 the type which represents (explicitly) Finitely Generated Modules.
@@ -63,13 +66,15 @@ Analogously to <CODE>ring</CODE>s and <CODE>RingElem</CODE>s, every <CODE>Module
 To create a <CODE>module</CODE> you must a pseudo-constructor for one of the concrete
 module classes (refer to their documentation for details): <I>e.g.</I>
 </P>
+
 <PRE>
    NewFreeModule(R, n)   -- create a new FreeModule of n components over R
 </PRE>
-<P></P>
+
 <P>
 The functions which one may apply directly to a module are:
 </P>
+
 <PRE>
     NumCompts(M) -- the number of components an element of M has
     RingOf(M)  -- the base ring of M (i.e. M is a module over this ring)
@@ -78,6 +83,7 @@ The functions which one may apply directly to a module are:
     M1 == M2     -- are the two modules identical (same repr in memory)?
     M1 != M2     -- opposite of M1 == M2
 </PRE>
+
 <P>
 As you can see there is not a lot one can do to a module.  Primarily
 they exist to "give the correct type" to module elements; internally
@@ -89,14 +95,17 @@ that value.  The owner of an object of type <CODE>ModuleElem</CODE> must be spec
 during the lifetime of the object; the value it contains may, however,
 be changed (C++ const rules permitting).
 </P>
+
 <A NAME="toc2"></A>
 <H4>Functions on ModuleElems</H4>
+
 <P>
 Let <CODE>v</CODE> be a non-const <CODE>ModuleElem</CODE>, and <CODE>v1, v2</CODE> be <CODE>const ModuleElems</CODE> all
 belonging to the same concrete module <CODE>M</CODE>.  Let <CODE>R</CODE> be the base ring of <CODE>M</CODE>,
 and <CODE>r</CODE> a const element of <CODE>R</CODE>.  Then we summarize the possible operations
 using C++ syntax:
 </P>
+
 <PRE>
   owner(v1)   // gives the module to which v1 belongs
   
@@ -112,15 +121,17 @@ using C++ syntax:
   
   v[pos]  // throws if the module is not FGModule 
 </PRE>
-<P></P>
+
 <P>
 In every case it is an error to combine/compare <CODE>ModuleElems</CODE> belonging to
 different modules.  As you would expect, instead of multiplying or dividing
 by a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> you may also multiply or divide by a machine integer, a
 <A HREF="BigInt.html"><CODE>BigInt</CODE></A> or a <A HREF="BigRat.html"><CODE>BigRat</CODE></A>.
 </P>
+
 <A NAME="toc3"></A>
 <H2>Maintainer documentation for the classes module, and ModuleElem</H2>
+
 <P>
 I shall suppose that the user documentation has already been read and
 digested.  It could also be helpful to have read the documentation for
@@ -137,12 +148,13 @@ the algebraic structure to which the value belongs, and the other being
 an opaque representation of the value which can be correctly interpreted
 only by the owning module.  The data members are:
 </P>
+
 <PRE>
     module myM;             // the module to which the ModuleElem belongs
     ModuleRawValue myValue; // "opaque" representation of the value,
                             // concrete modules must "import" this value.
 </PRE>
-<P></P>
+
 <P>
 The design philosophy for modules follows closely that used for rings.  This means
 that every operation on <CODE>ModuleElem</CODE>s is actually effected by calling
@@ -164,8 +176,10 @@ that used for rings, but may also lead to some slight beneficial effect
 on run-time performance.  It does naturally imply that the programmer
 bears a considerable burden of responsibility.
 </P>
+
 <A NAME="toc4"></A>
 <H4>(2.1) Member functions for operations on raw values  [IGNORE THIS -- OUT OF DATE]</H4>
+
 <P>
 For ring elements (especially those in a small finite field), noticeable
 speed gains arise from using directly raw values and ring member
@@ -178,6 +192,7 @@ wish to create their own concrete module classes.
 Let <CODE>v</CODE> be a non-const RawValue, and <CODE>v1, v2</CODE> const RawValues belonging to <CODE>M</CODE>.
 Let <CODE>r</CODE> be a RingBase::RawValue belonging to the base ring of <CODE>M</CODE>.
 </P>
+
 <PRE>
   M.myNumCompts()
   M.myRing()
@@ -199,9 +214,10 @@ Let <CODE>r</CODE> be a RingBase::RawValue belonging to the base ring of <CODE>M
   M.myIsZero(v1)
   M.myIsEqual(v1, v2)
 </PRE>
-<P></P>
+
 <A NAME="toc5"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 This code is too new, largely untried/untested.  As soon as it gets
 some use, there will be some material to put here :-)
@@ -211,6 +227,6 @@ The documentation is very incomplete.  Will be fixed (eventually).
 Maintainer documentation is incompleter than user doc.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/module.html -i txt/module.txt -->
 </BODY></HTML>

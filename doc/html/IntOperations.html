@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      IntOperations</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      IntOperations</H1>
-<FONT SIZE="4">
-<I>      &copy;  2012,2014 John Abbott and Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      IntOperations</H1>
+<FONT SIZE="4"><I>      &copy;  2012,2014 John Abbott and Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -41,17 +42,19 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-BigInt1.C">ex-BigInt1.C</A>
 <LI><A HREF="../../examples/index.html#ex-BigInt2.C">ex-BigInt2.C</A>
 <LI><A HREF="../../examples/index.html#ex-BigInt3.C">ex-BigInt3.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 Here is a collection of basic operations available for integer values;
 see also the more advanced functions in <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>.
@@ -70,8 +73,10 @@ arguments, take a look at the class <A HREF="MachineInt.html"><CODE>MachineInt</
 for this purpose (handling both signed and unsigned machine integers
 safely).
 </P>
+
 <A NAME="queries"></A>
 <H3>Queries</H3>
+
 <UL>
 <LI><CODE>IsEven(n)</CODE>     -- true iff <CODE>n</CODE> is even
 <LI><CODE>IsOdd(n)</CODE>      -- true iff <CODE>n</CODE> is odd
@@ -82,21 +87,22 @@ safely).
 <LI><CODE>IsExactIroot(X,n,r)</CODE> -- true iff <CODE>n</CODE> is a perfect <CODE>r</CODE>-th power, assigns <CODE>iroot(N,r)</CODE> to <CODE>X</CODE>
 </UL>
 
-<P></P>
 <P>
 Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>IsZero(N)</CODE>     -- true iff <CODE>N</CODE> is zero
 <LI><CODE>IsOne(N)</CODE>      -- true iff <CODE>N</CODE> is 1
 <LI><CODE>IsMinusOne(N)</CODE> -- true iff <CODE>N</CODE> is -1
 </UL>
 
-<P></P>
 <A NAME="operations"></A>
 <H3>Operations</H3>
+
 <A NAME="toc5"></A>
 <H4>Infix operators</H4>
+
 <OL>
 <LI>normal arithmetic (potentially inefficient because of temporaries)
  <UL>
@@ -115,6 +121,7 @@ because it is too easy to write misleading code: for instance,
 <CODE>a*b^2</CODE> is interpreted by the compiler as <CODE>(a*b)^2</CODE>.  There is no
 way to make the C++ compiler use the expected interpretation.
 </P>
+
 <OL>
 <LI>arithmetic and assignment
  <UL>
@@ -139,9 +146,11 @@ way to make the C++ compiler use the expected interpretation.
 
 <A NAME="toc6"></A>
 <H4>cmp</H4>
+
 <P>
 (three way comparison)
 </P>
+
 <UL>
 <LI><CODE>cmp(a, b)</CODE> -- returns an <CODE>int</CODE> which is
                       <CODE>&lt; 0</CODE>,   <CODE>== 0</CODE>, or   <CODE>&gt; 0</CODE> if
@@ -149,13 +158,14 @@ way to make the C++ compiler use the expected interpretation.
 <LI><CODE>CmpAbs(a,b)</CODE> -- same as <CODE>cmp(abs(a),abs(b))</CODE> but might be faster.
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H4>Sundry standard functions</H4>
+
 <P>
 (Several basic number theoretical operations are defined in <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>)
 Let <CODE>n</CODE> be an integer,
 </P>
+
 <UL>
 <LI><CODE>abs(n)</CODE>         -- the absolute value of <CODE>n</CODE>
 <LI><CODE>sign(n)</CODE>        -- (returns <CODE>int</CODE>) returns
@@ -169,10 +179,10 @@ Let <CODE>n</CODE> be an integer,
                       error if <CODE>n=0</CODE> or <CODE>b&lt;2</CODE>
 </UL>
 
-<P></P>
 <P>
 These functions return <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>power(a, b)</CODE> -- returns <CODE>a</CODE> to the power <CODE>b</CODE> (error if <CODE>b&lt;0</CODE>); <CODE>power(0,0)</CODE> gives 1
 <LI><CODE>SmallPower(a, b)</CODE> -- (returns <CODE>long</CODE>) returns <CODE>a</CODE> to the power <CODE>b</CODE> (error if <CODE>b&lt;0</CODE>; <B>no check for overflow</B>) 
@@ -185,12 +195,13 @@ These functions return <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 <LI><CODE>RandomBigInt(lo, hi)</CODE> -- a uniform random integer <CODE>N</CODE> s.t. <CODE>lo &lt;= N &lt;=  hi</CODE> (see <A HREF="random.html"><CODE>random</CODE></A> for details).
 </UL>
 
-<P></P>
 <A NAME="toc8"></A>
 <H4>Conversion functions</H4>
+
 <P>
 Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>mantissa(N)</CODE> -- <CODE>N</CODE> represented as a floating-point number.
   	    If <CODE>N</CODE> is zero, produces 0.0.
@@ -202,21 +213,22 @@ Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
               2^e &gt; abs(n).  If <CODE>N</CODE> is zero, result is zero.
 </UL>
 
-<P></P>
 <A NAME="toc9"></A>
 <H4>Miscellany</H4>
+
 <P>
 Only for <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>NumDigits(N, b)</CODE> -- (returns <CODE>long</CODE>) the number of digits <CODE>N</CODE> has
                          when written in base <CODE>b</CODE>
                          (the result may sometimes to be too large by 1)
 </UL>
 
-<P></P>
 <A NAME="toc10"></A>
 <H4>Procedures for arithmetic</H4>
+
 <P>
 These procedures are ugly but may give a slight gain in speed.
 Use them only if you really must; it is probably better to use
@@ -230,6 +242,7 @@ when CoCoALib upgrades to the C++11 standard.
 Assignment is always to leftmost argument(s) <CODE>a</CODE>, a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
 Second and/or third argument of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
 </P>
+
 <UL>
 <LI><CODE>add(a, b, c)</CODE>   --  a = b+c
 <LI><CODE>sub(a, b, c)</CODE>   --  a = b-c
@@ -243,9 +256,9 @@ Second and/or third argument of type <A HREF="BigInt.html"><CODE>BigInt</CODE></
 <LI><CODE>abs(a, b)</CODE>      --  a = abs(b)
 </UL>
 
-<P></P>
 <A NAME="toc11"></A>
 <H3>Error Conditions and Exceptions</H3>
+
 <P>
 Error conditions are signalled by exceptions.  Examples of error conditions
 are impossible arithmetic operations such as division by zero, overly large
@@ -255,6 +268,7 @@ arguments (<I>e.g.</I> second argument to binomial must fit into a machine
 <P>
 Currently the exception structure is very simplistic:
 </P>
+
 <UL>
 <LI>exceptions indicating exhaustion of resources are those from the
     system, this library does not catch them;
@@ -302,6 +316,7 @@ Currently the exception structure is very simplistic:
 
 <A NAME="toc12"></A>
 <H2>Maintainer Documentation</H2>
+
 <P>
 The implementation of <CODE>cmp</CODE> is more convoluted than I'd like; it must
 avoid internal overflow.
@@ -324,8 +339,10 @@ the two values explicitly.
 NOTE: if you change rounding of halves, you must change TWO fns (<CODE>RoundDiv</CODE>
 for machine ints and <CODE>RoundDiv</CODE> for big ints).
 </P>
+
 <A NAME="toc13"></A>
 <H2>Bugs, shortcomings and other ideas</H2>
+
 <P>
 The power functions could allow high powers of -1,0,1 (without complaining about
 the exponent being too big).  But is it worth it?
@@ -337,11 +354,14 @@ C interface to GMP.  Many other GMP functions are not directly accessible.
 <P>
 <CODE>IsExactIroot</CODE> has rather a lot of signatures.
 </P>
+
 <A NAME="toc14"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2014</B>
 </P>
+
 <UL>
 <LI>March
  <UL>
@@ -357,7 +377,6 @@ C interface to GMP.  Many other GMP functions are not directly accessible.
  </UL>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/IntOperations.html -i txt/IntOperations.txt -->
 </BODY></HTML>

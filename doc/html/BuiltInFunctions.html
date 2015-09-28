@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>    BuiltInFunctions</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>    BuiltInFunctions</H1>
-<FONT SIZE="4">
-<I>      &copy;  2013 Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>    BuiltInFunctions</H1>
+<FONT SIZE="4"><I>      &copy;  2013 Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -35,14 +36,17 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><CODE>BuiltInFunctions.C</CODE> and  <CODE>BuiltInOneLiners.C</CODE> ;-)
 </UL>
 
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 (Very rough set of notes about adding new functions to CoCoA-5)
 </P>
@@ -51,6 +55,7 @@ Typical situation: I have a function <CODE>FooFunc</CODE> implemented in CoCoALi
 and want to make it a CoCoA-5 function (called <CODE>FooFunc</CODE>).
 There are these possible scenarios I might want in CoCoA-5:
 </P>
+
 <OL>
 <LI>a <B>simple</B> function (not overloaded) with CoCoA-5 data types
 <LI>a <B>simple</B> function (not overloaded) with <I>almost</I> CoCoA-5 data types
@@ -62,6 +67,7 @@ There are these possible scenarios I might want in CoCoA-5:
 <P>
 Examples:
 </P>
+
 <OL>
 <LI><CODE>IsInvertible</CODE> (takes a <CODE>RINGELEM</CODE> returns a <CODE>BOOL</CODE>),
 <CODE>LinSolve</CODE> (takes two <CODE>MAT</CODE> returns a <CODE>MAT</CODE>).
@@ -74,30 +80,33 @@ Examples:
 
 <A NAME="toc3"></A>
 <H3>1 one-liner: DECLARE_COCOALIB_FUNCTION</H3>
+
 <P>
 This is the easiest case: the porting is implemented in just one line
 specifying:
 </P>
+
 <UL>
 <LI>number of arguments
 <LI>name of the function
 <LI>input types
 </UL>
 
-<P></P>
 <P>
 the return type is deduced by the omonymous CoCoALib function
 </P>
 <P>
 Example: from <CODE>BuiltInOneLiners.C</CODE>
 </P>
+
 <PRE>
   DECLARE_COCOALIB_FUNCTION1(IsInvertible, RINGELEM)
   DECLARE_COCOALIB_FUNCTION2(LinSolve, MAT, MAT)
 </PRE>
-<P></P>
+
 <A NAME="toc4"></A>
 <H3>2 one-liner: DECLARE_COCOALIBFORC5_FUNCTION</H3>
+
 <P>
 CoCoA-5 has a simpler (less structured) hierarchy of types, so, for example,
 <A HREF="PPMonoidElem.html"><CODE>PPMonoidElem</CODE></A>s are represented by <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s, and machine integers
@@ -114,13 +123,15 @@ implementation available in CoCoALib itself
 <P>
 Example: from <CODE>BuiltInOneLiners.C</CODE>
 </P>
+
 <PRE>
   DECLARE_COCOALIBFORC5_FUNCTION1(RingQQt, INT)
   DECLARE_COCOALIBFORC5_FUNCTION2(CoeffOfTerm, RINGELEM, RINGELEM)
 </PRE>
-<P></P>
+
 <A NAME="toc5"></A>
 <H3>3 overloading</H3>
+
 <P>
 Allowing different types in input (with fixed number of arguments)
 </P>
@@ -130,6 +141,7 @@ Example: from <CODE>BuiltInFunctions.C</CODE>  (NB: <CODE>END_STD_BUILTIN_FUNCTI
 <P>
 In CoCoA-5 <CODE>GBasis</CODE> takes an <CODE>IDEAL</CODE> or a <CODE>MODULE</CODE>
 </P>
+
 <PRE>
   DECLARE_STD_BUILTIN_FUNCTION(GBasis, 1) {
     int which;
@@ -141,9 +153,11 @@ In CoCoA-5 <CODE>GBasis</CODE> takes an <CODE>IDEAL</CODE> or a <CODE>MODULE</CO
   }
   END_STD_BUILTIN_FUNCTION
 </PRE>
+
 <P>
 In CoCoA-5 <CODE>LT</CODE> takes an <CODE>IDEAL</CODE>, a <CODE>MODULE</CODE>, a <CODE>RINGELEM</CODE>, or a <CODE>MODULEELEM</CODE>
 </P>
+
 <PRE>
   DECLARE_STD_BUILTIN_FUNCTION(LT, 1) { // AMB
     int which;
@@ -162,12 +176,14 @@ In CoCoA-5 <CODE>LT</CODE> takes an <CODE>IDEAL</CODE>, a <CODE>MODULE</CODE>, a
   }
   END_STD_BUILTIN_FUNCTION
 </PRE>
-<P></P>
+
 <A NAME="toc6"></A>
 <H3>4 variable number of arguments</H3>
+
 <P>
 Example: from <CODE>BuiltInFunctions.C</CODE> (NB: without <CODE>END_STD_BUILTIN_FUNCTION</CODE>)
 </P>
+
 <PRE>
   // variable number of args
   DECLARE_ARITYCHECK_FUNCTION(indets) { return (1&lt;=nArg) &amp;&amp; (nArg&lt;=2); }
@@ -180,9 +196,10 @@ Example: from <CODE>BuiltInFunctions.C</CODE> (NB: without <CODE>END_STD_BUILTIN
                               runtimeEnv-&gt;evalArgAs&lt;STRING&gt;(ARG(1))-&gt;theString));
   }
 </PRE>
-<P></P>
+
 <A NAME="toc7"></A>
 <H3>5 other</H3>
+
 <P>
 <CODE>VersionInfo</CODE> (returns a <CODE>RECORD</CODE>)
 </P>
@@ -190,6 +207,7 @@ Example: from <CODE>BuiltInFunctions.C</CODE> (NB: without <CODE>END_STD_BUILTIN
 Let <CODE>TTTT</CODE> (<CODE>T1</CODE>, <CODE>T2</CODE>, ..)
 be a CoCoA-5 type with corresponding CoCoALib type <CODE>tttt</CODE>.
 </P>
+
 <UL>
 <LI><CODE>runtimeEnv-&gt;evalArgAs&lt;TTTT&gt;(ARG(0));</CODE>
 returns a pointer <CODE>intrusive_ptr&lt;TTTT&gt;</CODE>
@@ -232,15 +250,18 @@ reference <CODE>-&gt;theTttt</CODE> of CoCoALib type <CODE>tttt</CODE>.
   }
   END_STD_BUILTIN_FUNCTION
 </PRE>
+
 </UL>
 
 <A NAME="toc8"></A>
 <H2>Maintainer documentation</H2>
+
 <P>
 *For overloaded functions explicitely*:
 Explicitely define all cases and make an extra default case
 for safety (gives protection in development when one type has been forgotten)
 </P>
+
 <PRE>
   DECLARE_STD_BUILTIN_FUNCTION(LT, 1) {
     int which;
@@ -256,20 +277,22 @@ for safety (gives protection in development when one type has been forgotten)
   }
   END_STD_BUILTIN_FUNCTION
 </PRE>
-<P></P>
+
 <A NAME="toc9"></A>
 <H2>Bugs, shortcomings and other ideas</H2>
+
 <UL>
 <LI>Can we make it even simpler?
 <LI>Should <CODE>RefTo&lt;tttt&gt;</CODE> work also for <CODE>intrusive_ptr&lt;TTTT&gt;</CODE>?
 </UL>
 
-<P></P>
 <A NAME="toc10"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2014</B>
 </P>
+
 <UL>
 <LI>July (before ICMS in Seoul)
   <UL>
@@ -285,7 +308,6 @@ for safety (gives protection in development when one type has been forgotten)
   </UL>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/BuiltInFunctions.html -i txt/BuiltInFunctions.txt -->
 </BODY></HTML>

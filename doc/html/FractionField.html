@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      FractionField</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      FractionField</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2012 John Abbott, Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      FractionField</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2012 John Abbott, Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for FractionField</A>
       <UL>
@@ -33,8 +34,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for FractionField</H2>
+
 <P>
 A <CODE>FractionField</CODE> is an abstract class (inheriting from <A HREF="ring.html"><CODE>ring</CODE></A>)
 representing a fraction field of an effective GCD domain.
@@ -42,17 +45,19 @@ representing a fraction field of an effective GCD domain.
 <P>
 See <A HREF="RingElem.html#FractionField"><CODE>RingElem</CODE> FractionField</A> for operations on its elements.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-RingQ1.C">ex-RingQQ1.C</A>
 <LI><A HREF="../../examples/index.html#ex-PolyRing1.C">ex-PolyRing1.C</A>
 <LI><A HREF="../../examples/index.html#ex-RingHom5.C">ex-RingHom5.C</A>
 </UL>
 
-<P></P>
 <A NAME="constructors"></A>
 <H3>Pseudo-constructors</H3>
+
 <UL>
 <LI><CODE>NewFractionField(R)</CODE> -- creates a new <A HREF="ring.html"><CODE>ring</CODE></A>, more precisely a 
    <CODE>FractionField</CODE>, whose elements are formal fractions of elements of
@@ -65,21 +70,22 @@ See <A HREF="RingElem.html#FractionField"><CODE>RingElem</CODE> FractionField</A
 will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotFracField</CODE> if needed.
 </UL>
 
-<P></P>
 <A NAME="query"></A>
 <H3>Query and cast</H3>
+
 <P>
 Let <CODE>S</CODE> be a <A HREF="ring.html"><CODE>ring</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>IsFractionField(S)</CODE> -- <CODE>true</CODE> iff <CODE>S</CODE> is actually a <CODE>FractionField</CODE>
 <LI><CODE>FractionFieldPtr(S)</CODE> -- pointer to the fraction field impl (for calling mem fns);
 will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotFracField</CODE> if needed.
 </UL>
 
-<P></P>
 <A NAME="operations"></A>
 <H3>Operations on FractionField</H3>
+
 <P>
 In addition to the standard <A HREF="ring.html#operations"><CODE>ring</CODE> operations</A>, a <CODE>FractionField</CODE>
 may be used in other functions.
@@ -88,23 +94,24 @@ may be used in other functions.
 Let <CODE>FrF</CODE> be a <CODE>FractionField</CODE>
 built as <CODE>NewFractionField(R)</CODE> with <CODE>R</CODE> a <A HREF="ring.html"><CODE>ring</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>BaseRing(FrF)</CODE> -- the <A HREF="ring.html"><CODE>ring</CODE></A> it is the <CODE>FractionField</CODE> of --
                        an identical copy of <CODE>R</CODE>, not merely an isomorphic
                        <A HREF="ring.html"><CODE>ring</CODE></A>.
 </UL>
 
-<P></P>
 <A NAME="homomorphisms"></A>
 <H3>Homomorphisms</H3>
+
 <UL>
 <LI><CODE>EmbeddingHom(FrF)</CODE> -- <CODE>BaseRing(FrF)</CODE> --&gt; <CODE>FrF</CODE>
 <LI><CODE>InducedHom(FrF, phi)</CODE> -- phi: <CODE>BaseRing(K)</CODE> --&gt; <CODE>codomain(phi)</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H2>Maintainer documentation for FractionField, FractionFieldBase, FractionFieldImpl</H2>
+
 <P>
 The class <CODE>FractionField</CODE> is wholly analogous to the class <A HREF="ring.html"><CODE>ring</CODE></A>,
 <I>i.e.</I> a reference counting smart pointer.  The only difference is that
@@ -116,6 +123,7 @@ safely apply a <CODE>static_cast</CODE> when the pointer value is accessed).
 <CODE>FractionFieldBase</CODE> is an abstract class derived from <CODE>RingBase</CODE>.
 It adds a few pure virtual functions to those contained in <CODE>RingBase</CODE>:
 </P>
+
 <PRE>
   virtual const ring&amp; myBaseRing() const;
   virtual ConstRawPtr myRawNum(ConstRawPtr rawq) const; // NB result belongs to BaseRing!!
@@ -123,7 +131,7 @@ It adds a few pure virtual functions to those contained in <CODE>RingBase</CODE>
   virtual const RingHom&amp; myEmbeddingHom() const;
   virtual RingHom myInducedHomCtor(const RingHom&amp; phi) const;
 </PRE>
-<P></P>
+
 <P>
 <CODE>myBaseRing</CODE> returns a reference to the <A HREF="ring.html"><CODE>ring</CODE></A> (guaranteed to be an effective GCD
 domain) supplied to the constructor.
@@ -162,8 +170,10 @@ hard to ensure that they are <I>canonical</I> since in general we can
 multiply numerator and denominator by any unit.  See a <B>bug comment</B>
 about normalizing units.
 </P>
+
 <A NAME="toc8"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 The functions <CODE>myNew</CODE> are not <I>exception safe</I>: memory would be leaked if
 space for the numerator were successfully allocated while allocation for
@@ -198,6 +208,7 @@ instead of just 1.  MUST FIX THIS!!
 <P>
 The printing function is TERRIBLE!
 </P>
+
 <DL>
 <DT>FASTER + and -</DT><DD>
   Addition and subtraction can be done better:
@@ -225,6 +236,6 @@ numerator and denominator have been multiplied by non-trivial units.  BAD BUG!
 Ironically <CODE>myIsInteger</CODE> does work correctly.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/FractionField.html -i txt/FractionField.txt -->
 </BODY></HTML>

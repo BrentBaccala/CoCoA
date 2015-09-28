@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      error</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      error</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2008,2010 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      error</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2008,2010 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -42,17 +43,20 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-error1.C">ex-error1.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <A NAME="toc3"></A>
 <H3>Debugging</H3>
+
 <P>
 If you get a <CODE>CoCoA ERROR</CODE> when you execute your program, you can
 easily intercept it with your preferred debugger tool.
@@ -60,21 +64,26 @@ easily intercept it with your preferred debugger tool.
 <P>
 For example, when debugging with <B>gdb</B>, type
 </P>
+
 <PRE>
   break CoCoA::ThrowError
 </PRE>
+
 <P>
 and then <CODE>run</CODE>.
 When it stops in the call of <CODE>ThrowError</CODE>, type <CODE>up</CODE> to reach the line
 which originally caused the error.
 </P>
+
 <A NAME="toc4"></A>
 <H3>Recommended way of reporting errors</H3>
+
 <P>
 Usually if you have detected an error in your program, you want to
 report it immediately.  We recommend that you use the macro <CODE>CoCoA_ERROR</CODE>
 to do this.  Here's an example:
 </P>
+
 <PRE>
       value_t operator/(const value_t&amp; num, const value_t&amp; den)
       {
@@ -83,24 +92,30 @@ to do this.  Here's an example:
         ....
       }
 </PRE>
+
 <P>
 The first argument should be an error ID (<I>i.e.</I> ERR::something); you can
 find a list of the IDs in the file (CoCoA_ROOT)/include/CoCoA/error.H.  If
 no ID is suitable, you can just put a string instead.  The second argument
 should be an indication of the function in which the error occurred.
 </P>
+
 <A NAME="toc5"></A>
 <H3>Adding a New Error ID and its Default Message</H3>
+
 <P>
 If you are a CoCoALib contributor and want to add a new error ID and
 message (or even a new language for error messages), please read the
 maintainer documentation for what to do.
 </P>
+
 <A NAME="toc6"></A>
 <H3>Information about errors -- for the more advanced</H3>
+
 <P>
 The macro <CODE>CoCoA_ERROR</CODE> does two things:
 </P>
+
 <UL>
 <LI>(1)  it creates a <CODE>CoCoA::ErrorInfo</CODE> object with the parameters given to the macro, and also with the filename and line number;
 <LI>(2)  it calls the function <CODE>CoCoA::ThrowError</CODE> on the <CODE>ErrorInfo</CODE> object just created.
@@ -114,6 +129,7 @@ The class <CODE>CoCoA::ErrorInfo</CODE> is intended to be used for creating exce
 objects -- indeed, it derives from <CODE>std::exception</CODE>.  There are two things
 you are likely to want to do with exception objects:
 </P>
+
 <UL>
 <LI>(A)  create and throw the exception object
 <LI>(B)  catch the exception object
@@ -144,15 +160,19 @@ you are likely to want to do with exception objects:
     greater than 1 then a log message is produced each time <CODE>CoCoA::ThrowError</CODE>
     is called; the log message is printed on <CODE>std::clog</CODE>.
 </P>
+
 <UL>
 <LI>Case (B) After catching a <CODE>CoCoA::ErrorInfo</CODE> object in the variable <CODE>err</CODE>
   you can make the following queries:
+
 <PRE>
     err == ERR::ErrorID  -- returns true iff err is of type ERR::ErrorID
                      (replace ErrorID by the ID of the error you want!)
     err.what()  -- returns a C string being the error message;
 </PRE>
+
   EXAMPLE (of handling a CoCoA Error):
+
 <PRE>
     try { ... }
     catch (const CoCoA::ErrorInfo&amp; err)
@@ -161,6 +181,7 @@ you are likely to want to do with exception objects:
       // code to handle the "expected" division by zero error
     }
 </PRE>
+
   If you have caught a <CODE>CoCoA::ErrorInfo</CODE> object and want to announce it
   as an error then call the procedure <CODE>CoCoA::ANNOUNCE</CODE> with the ostream
   on which to make the announcement and the ErrorInfo object as second
@@ -179,24 +200,29 @@ Recall that, as for any other "exception object", simply creating a
 signalled.  To signal the error it must be thrown -- we recommend passing
 the error object to the function <CODE>CoCoA::ThrowError</CODE> (see above).
 </P>
+
 <A NAME="toc7"></A>
 <H3>Choosing the language for error messages</H3>
+
 <P>
 You may choose the language for CoCoALib error messages: the default is
 English.  If an error message has not yet been translated into the
 chosen language then it is replaced by the default english message.
 Currently there are only two choices:
 </P>
+
 <PRE>
    ErrorLanguage::english();
 </PRE>
+
 <PRE>
    ErrorLanguage::italian();
 </PRE>
-<P></P>
+
 <P>
 EXAMPLE:
 </P>
+
 <PRE>
     int main()
     {
@@ -204,12 +230,15 @@ EXAMPLE:
       ....
     }
 </PRE>
+
 <P>
 The language for error messages may be changed any number of times: the last
 chosen language is the one used when creating an <CODE>ErrorInfo</CODE> object.
 </P>
+
 <A NAME="toc8"></A>
 <H2>Maintainer documentation for files error.H and error.C</H2>
+
 <P>
 <CODE>CoCoA::ErrorInfo</CODE> is derived from <CODE>std::exception</CODE> for compatibility with the
 rest of C++.  How this might be useful I cannot yet say, but it does not
@@ -265,8 +294,10 @@ addresses of the strings in <CODE>myName</CODE>; this is quick and simple, and
 sufficient for our purposes -- the actual values of strings pointed to are
 not taken into consideration!
 </P>
+
 <A NAME="toc9"></A>
 <H3>To Add a New Error Code and Message</H3>
+
 <P>
 Invent a new name for the error code, and insert it in the list of names
 of "error variables" (in the file error.H).  Make sure you insert it
@@ -282,8 +313,10 @@ obvious from the other initializations there (which use the macro
 <CODE>DEFINE_ERROR</CODE>).  You may wish to add translations of your new error message
 into the other languages present in error.C.
 </P>
+
 <A NAME="toc10"></A>
 <H3>To Add a New Language for Error Messages</H3>
+
 <P>
 You must write a function analogous to the function italian() which
 resides inside the namespace <CODE>CoCoA::ErrorLanguage</CODE>.  The new function
@@ -302,6 +335,7 @@ EXAMPLE:
   the name "german" for the function which activates german error
   messages.  Here is what we do:
 </P>
+
 <DL>
 <DT> (1) edit error.H;</DT><DD>
       immediately after the line containing "void italian();" insert
@@ -315,6 +349,7 @@ EXAMPLE:
 
 <A NAME="toc11"></A>
 <H2>Bugs, Shortcomings, and other ideas</H2>
+
 <P>
 The throw specifications on the destructor and <CODE>what</CODE> member function
 are needed for compatibility with <CODE>std::exception</CODE> -- I regard this as
@@ -334,11 +369,14 @@ Only very few error messages have been translated into italian so far.
 Perhaps allow the user to specify which ostream to print the logging
 message in <CODE>ThrowError</CODE>?
 </P>
+
 <A NAME="toc12"></A>
 <H3>new improved list of errors</H3>
+
 <P>
 work in progress
 </P>
+
 <UL>
 <LI>SERIOUS
 <LI>NYI
@@ -366,12 +404,13 @@ work in progress
  </UL>
 </UL>
 
-<P></P>
 <A NAME="toc13"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2013</B>
 </P>
+
 <UL>
 <LI>July (v0.995??):
  <UL>
@@ -380,7 +419,6 @@ work in progress
  </UL>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/error.html -i txt/error.txt -->
 </BODY></HTML>

@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      PPOrdering</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      PPOrdering</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2014 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      PPOrdering</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2014 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -35,16 +36,18 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-PPMonoidElem2.C">ex-PPMonoidElem2.C</A>
 <LI><A HREF="../../examples/index.html#ex-OrderingGrading1.C">ex-OrderingGrading1.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 An object of the class <CODE>PPOrdering</CODE> represents an <I>arithmetic</I> ordering on
 the (multiplicative) monoid of power products, <I>i.e.</I> such that the
@@ -56,8 +59,10 @@ In CoCoALib orderings and gradings are intimately linked -- for gradings
 see also <A HREF="degree.html"><CODE>degree</CODE></A>.  If you want to use an ordering to compare power
 products then see <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A>.
 </P>
+
 <A NAME="constructors"></A>
 <H3>Pseudo-constructors</H3>
+
 <P>
 Currently, the most typical use for a <CODE>PPOrdering</CODE> object is as an
 argument to a constructor of a concrete <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A> or <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>,
@@ -66,6 +71,7 @@ so see below <B>Convenience constructors</B>.
 <P>
 These are the functions which create new <CODE>PPOrdering</CODE>s:
 </P>
+
 <UL>
 <LI><CODE>NewLexOrdering(NumIndets)</CODE> -- GradingDim = 0
 <LI><CODE>NewStdDegLexOrdering(NumIndets)</CODE> -- GradingDim = 1
@@ -73,7 +79,6 @@ These are the functions which create new <CODE>PPOrdering</CODE>s:
 <LI><CODE>NewMatrixOrdering(NumIndets, GradingDim, OrderMatrix)</CODE>
 </UL>
 
-<P></P>
 <P>
 The first three create respectively <CODE>lex</CODE>, <CODE>StdDegLex</CODE> and
 <CODE>StdDegRevLex</CODE> orderings on the given number of indeterminates.
@@ -85,26 +90,32 @@ The last function creates a <CODE>PPOrdering</CODE> given a matrix.  <CODE>Gradi
 specifies how many of the rows of <CODE>OrderMatrix</CODE> are to be taken as
 specifying the grading.
 </P>
+
 <A NAME="toc4"></A>
 <H4>Convenience constructors</H4>
+
 <P>
 For convenience there is also the class <CODE>PPOrderingCtor</CODE> which provides
 a handy interface for creating <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A> and <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A>, so that
 <CODE>lex</CODE>, <CODE>StdDegLex</CODE>, <CODE>StdDegRevLex</CODE> may be used as shortcuts instead
 of the proper constructors, <I>e.g.</I>
 </P>
+
 <PRE>
    NewPolyRing(RingQQ(), symbols("a","b","c","d"), lex);
 </PRE>
+
 <P>
 is the same as
 </P>
+
 <PRE>
    NewPolyRing(RingQQ(), symbols("a","b","c","d"), NewLexOrdering(4));
 </PRE>
-<P></P>
+
 <A NAME="queries"></A>
 <H3>Queries</H3>
+
 <UL>
 <LI><CODE>IsLex(PPO)</CODE>            -- true iff <CODE>PPO</CODE> is implemented as lex
 <LI><CODE>IsStdDegLex(PPO)</CODE>      -- true iff <CODE>PPO</CODE> is implemented as StdDegLex
@@ -113,12 +124,13 @@ is the same as
 <LI><CODE>IsTermOrdering(PPO)</CODE>   -- true iff <CODE>PPO</CODE> is a term ordering
 </UL>
 
-<P></P>
 <A NAME="operations"></A>
 <H3>Operations</H3>
+
 <P>
 The operations on a <CODE>PPOrdering</CODE> object are:
 </P>
+
 <UL>
 <LI><CODE>out &lt;&lt; PPO</CODE> --       output the <CODE>PPO</CODE> object to channel <CODE>out</CODE>
 <LI><CODE>NumIndets(PPO)</CODE> --   number of indeterminates the ordering is intended for
@@ -127,7 +139,6 @@ The operations on a <CODE>PPOrdering</CODE> object are:
 <LI><CODE>GradingMat(PPO)</CODE> --  the matrix defining the grading associated to the ordering
 </UL>
 
-<P></P>
 <P>
 CoCoALib supports graded polynomial rings with the restriction that
 the grading be compatible with the PP ordering: <I>i.e.</I> the grading
@@ -143,13 +154,14 @@ CoCoA Library contributors and the curious should read on.
 There is also a member function (<CODE>M</CODE> a matrix)
 ...  Don't use it yet!
 </P>
+
 <UL>
 <LI><CODE>PPO.myOrdMatCopy(M)</CODE> --  fill <CODE>M</CODE> with a matrix which specifies the ordering <CODE>PPO</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H2>Maintainer documentation for PPOrdering</H2>
+
 <P>
 A <CODE>PPOrdering</CODE> is just a smart pointer to an instance of a class
 derived from <CODE>PPOrderingBase</CODE>; so <CODE>PPOrdering</CODE> is a simple
@@ -163,14 +175,16 @@ implementations are all simple and straightforward except for the matrix
 ordering which is a little longer and messier but still easy enough to
 follow.
 </P>
+
 <A NAME="toc8"></A>
 <H2>Bugs, shortcomings and other ideas</H2>
+
 <P>
 We need better ways to compose <CODE>PPOrderings</CODE>, <I>i.e.</I> to build new ones
 starting from existing ones.  Max knows the sorts of operation needed
 here.  Something similar to CoCoA4's <CODE>BlockMatrix</CODE> command is needed.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/PPOrdering.html -i txt/PPOrdering.txt -->
 </BODY></HTML>

@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      ring</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      ring</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2010,2012 John Abbott, Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      ring</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2010,2012 John Abbott, Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation</A>
       <UL>
@@ -43,8 +44,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation</H2>
+
 <P>
 The primary use for a variable of type <CODE>ring</CODE> is simply to specify
 the ring to which <A HREF="RingElem.html"><CODE>RingElem</CODE></A> variables are associated.  CoCoALib
@@ -76,13 +79,16 @@ commutative rings, the possibility of creating and using certain
 non-commutative rings exists.  The documentation for these rings is kept
 separately in <A HREF="RingWeyl.html"><CODE>RingWeyl</CODE></A>.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Examples</H3>
+
 <P>
 Here is a list of example programs (to be found in the <CODE>examples/</CODE>
 subdirectory) illustrating the creation and use of various sorts of ring
 and their elements
 </P>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-ring1.C">ex-ring1.C</A>
 <LI><A HREF="../../examples/index.html#ex-ring2.C">ex-ring2.C</A>
@@ -95,9 +101,9 @@ and their elements
 <LI><A HREF="../../examples/index.html#ex-RingZZ1.C">ex-RingZZ1.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc3"></A>
 <H3>Types of ring (inheritance structure)</H3>
+
 <UL>
 <LI><A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>
 <LI><A HREF="RingTwinFloat.html"><CODE>RingTwinFloat</CODE></A>
@@ -130,15 +136,16 @@ and their elements
  </UL>
 </UL>
 
-<P></P>
 <A NAME="toc4"></A>
 <H3>Pseudo-constructors</H3>
+
 <P>
 The default initial value for a <CODE>ring</CODE> is the ring of integers (<CODE>RingZZ</CODE>).
 </P>
 <P>
 You can specify explicitly the initial value using one of the various ring pseudo-constructors:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>RingZZ()</CODE></TD>
@@ -168,9 +175,11 @@ You can specify explicitly the initial value using one of the various ring pseud
 
 <A NAME="operations"></A>
 <H3>Operations on Rings</H3>
+
 <P>
 Let <CODE>R</CODE> and <CODE>R2</CODE> be two variable of type <CODE>ring</CODE>.
 </P>
+
 <UL>
 <LI><CODE>characteristic(R)</CODE> -- the characteristic of <CODE>R</CODE> (as a <A HREF="BigInt.html"><CODE>BigInt</CODE></A>)
 <LI><CODE>symbols(R)</CODE>        -- a std::vector of the symbols in <CODE>R</CODE>
@@ -181,7 +190,6 @@ Let <CODE>R</CODE> and <CODE>R2</CODE> be two variable of type <CODE>ring</CODE>
 <LI><CODE>R != R2</CODE>          -- the logical negation of <CODE>R == R2</CODE>
 </UL>
 
-<P></P>
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>zero(R)</CODE></TD>
@@ -203,13 +211,16 @@ In CoCoALib all rings are built starting from ZZ by applying various
 <CODE>BaseRing</CODE> gives the immediate predecessor in the chain of
 constructions.
 </P>
+
 <A NAME="toc6"></A>
 <H4>Queries</H4>
+
 <P>
 In some cases the best algorithm to use may depend on whether the ring in
 which we are computing has certain properties or not; so CoCoALib offers
 some functions to ask a ring <CODE>R</CODE> about its properties:
 </P>
+
 <UL>
 <LI><CODE>IsCommutative(R)</CODE>     -- a boolean, true iff <CODE>R</CODE> is commutative
 <LI><CODE>IsIntegralDomain(R)</CODE>  -- a boolean, true iff <CODE>R</CODE> has no zero divisors
@@ -221,19 +232,21 @@ some functions to ask a ring <CODE>R</CODE> about its properties:
 <LI><CODE>LogCardinality(R)</CODE>    -- the integer k such that card(R) = p^k where p is char(R)
 </UL>
 
-<P></P>
 <P>
 NOTE: a pragmatic approach is taken: <I>e.g.</I> <CODE>IsOrderedDomain</CODE> is true only
 if comparisons between elements can actually be performed using the CoCoA library.
 </P>
+
 <A NAME="toc7"></A>
 <H4>Queries and views</H4>
+
 <P>
 It may also be important to discover practical structural details of a <CODE>ring</CODE>
 (<I>e.g.</I> some algorithms make sense only for a polynomial ring).  The
 following query functions <CODE>Is...</CODE> tell you how the <CODE>ring</CODE> is implemented,
 and the <I>view</I> functions <CODE>As...</CODE> give access to the specific operations:
 </P>
+
 <UL>
 <LI><CODE>IsZZ(R)</CODE>             -- see <A HREF="RingZZ.html#query"><CODE>RingZZ</CODE> query</A>
 <LI><CODE>IsQQ(R)</CODE>             -- see <A HREF="RingQQ.html#query"><CODE>RingQQ</CODE> query</A>
@@ -244,7 +257,6 @@ and the <I>view</I> functions <CODE>As...</CODE> give access to the specific ope
 <LI><CODE>IsSparsePolyRing(R)</CODE> -- see <A HREF="SparsePolyRing.html#query"><CODE>SparsePolyRing</CODE> query</A>
 </UL>
 
-<P></P>
 <P>
 In general the function "IsXYZ" should be read as "Is internally
 implemented as XYZ": for instance <CODE>IsQuotientRing</CODE> is true only if the
@@ -254,15 +266,19 @@ isomorphic but <CODE>IsZZ(R)</CODE> gives <CODE>false</CODE> and <CODE>IsZZ(Z)</
 while conversely <CODE>IsQuotientRing(R)</CODE> gives <CODE>true</CODE> and
 <CODE>IsQuotientRing(ZZ)</CODE> gives <CODE>false</CODE>.
 </P>
+
 <A NAME="toc8"></A>
 <H3>ADVANCED USE OF RINGS</H3>
+
 <P>
 The rest of this section is for more advanced use of <CODE>ring</CODE>s (<I>e.g.</I> by
 CoCoA library contributors).  If you are new to CoCoA, you need not read
 this subsection.
 </P>
+
 <A NAME="toc9"></A>
 <H4>Writing C++ classes for new types of ring</H4>
+
 <P>
 An important convention of the CoCoA library is that the class <CODE>RingBase</CODE>
 is to be used as an abstract base class for all rings.  You are strongly
@@ -306,8 +322,10 @@ during destruction by default the data members of <CODE>RingBase</CODE> are
 destroyed after the derived concrete ring.  It seems much safer simply to
 duplicate the code for each ring implementation class.
 </P>
+
 <A NAME="toc10"></A>
 <H2>Maintainer documentation</H2>
+
 <P>
 (<B>NB</B> consider consulting also <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
 and <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
@@ -343,6 +361,7 @@ obvious starting point for describing them -- you may find that you need
 to read the following more than once to comprehend it.  Here is a list
 of the classes:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>ring</CODE></TD>
@@ -394,8 +413,10 @@ implementation object, is defined as a data member of <CODE>RingBase</CODE>.
 <P>
 For the other classes see <A HREF="RingElem.html"><CODE>RingElem</CODE></A>.
 </P>
+
 <A NAME="toc11"></A>
 <H4>Further comments about implementation aspects of the above classes.</H4>
+
 <P>
 Recall that <CODE>ring</CODE> is essentially a smart pointer to a <CODE>RingBase</CODE>
 object, <I>i.e.</I> a concrete implementation of a ring.  Access to the
@@ -410,6 +431,7 @@ computing with ring elements.  Since these functions are pure they must
 all be fully defined in any instantiable ring class (<I>e.g.</I> RingZZImpl or
 RingFpImpl).  These member functions follow certain conventions:
 </P>
+
 <DL>
 <DT><B>RETURN VALUES</B>:</DT><DD>
    most arithmetic functions return no value, instead the
@@ -440,6 +462,7 @@ definition or merely to avoid having to define inappropriate member
 functions (<I>e.g.</I> gcd functions when the ring cannot be a gcd domain).
 Here is a list of them:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>IamTrueGCDDomain()</CODE></TD>
@@ -453,6 +476,7 @@ Here is a list of them:
 
 <A NAME="toc12"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 Printing rings is unsatisfactory.  Need a mechanism for specifying a
 print name for a ring; and also a mechanism for printing out the full
@@ -470,6 +494,6 @@ The fn <CODE>IsFiniteField</CODE> is not very smart; it recognises only prime
 finite fields, and simple algebraic extensions of them.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/ring.html -i txt/ring.txt -->
 </BODY></HTML>

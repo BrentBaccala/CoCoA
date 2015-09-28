@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      INTRODUCTION</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      INTRODUCTION</H1>
-<FONT SIZE="4">
-<I>      &copy;  2010,2013 John Abbott, Anna Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      INTRODUCTION</H1>
+<FONT SIZE="4"><I>      &copy;  2010,2013 John Abbott, Anna Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">Quick Summary: CoCoALib and CoCoA-5</A>
     <LI><A HREF="#toc2">Getting Started</A>
@@ -38,8 +39,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>Quick Summary: CoCoALib and CoCoA-5</H2>
+
 <P>
 <B>CoCoA-5</B> is an easy-to-use interactive system for computations in
 commutative algebra; it contains an on-line manual accessible via the
@@ -54,20 +57,26 @@ This introduction is part of the documentation for <I>CoCoALib</I>;
 to use the library you will need some <I>basic knowledge</I> of the C++
 programming language.
 </P>
+
 <A NAME="toc2"></A>
 <H2>Getting Started</H2>
+
 <P>
 The first step is to compile the software: see <A HREF="INSTALL.html"><CODE>INSTALL</CODE></A>
 </P>
+
 <A NAME="toc3"></A>
 <H3>Using CoCoALib</H3>
+
 <P>
 As we know that no one likes to read documentation, the best place to
 start is by looking at the <A HREF="../../examples/index.html">examples/</A>
 directory full of sample code using CoCoALib.
 </P>
+
 <A NAME="toc4"></A>
 <H4>Writing Your Own Programs</H4>
+
 <P>
 The simplest approach is to copy the example program <CODE>ex-empty.C</CODE>
 and modify that (see <A HREF="../../examples/index.html">guide</A>).
@@ -76,20 +85,26 @@ and modify that (see <A HREF="../../examples/index.html">guide</A>).
 If you want to experiment with CoCoALib using a different directory,
 just copy <CODE>examples/Makefile</CODE> into your directory and change the line
 </P>
+
 <PRE>
   COCOA_ROOT=...
 </PRE>
+
 <P>
 so that it specifies the full path of <CODE>CoCoALib-XX</CODE>, for instance
 </P>
+
 <PRE>
   COCOA_ROOT=/Users/bigatti/CoCoALib-0.99
 </PRE>
+
 <P>
 In any case, it is best to start with a copy of <CODE>ex-empty.C</CODE>.
 </P>
+
 <A NAME="toc5"></A>
 <H4>Debugging with CoCoALib</H4>
+
 <P>
 CoCoALib does offer some help in tracking down bugs in programs which
 use it.  If the preprocessor symbol <CODE>CoCoA_DEBUG</CODE> is set then various
@@ -99,8 +114,10 @@ activate debugging is to modify two lines in the file
 <CODE>configuration/autoconf.mk</CODE> -- the file contains comments to guide you.
 You may like to read [assert.html] to learn about <CODE>CoCoA_ASSERT</CODE>.
 </P>
+
 <A NAME="toc6"></A>
 <H3>Various Forms of Documentation</H3>
+
 <P>
 CoCoALib comes with a collection of hand-written descriptions of its
 capabilities as well as a collection of example programs showing how
@@ -116,6 +133,7 @@ The hand-written documentation is split into many files: generally there is
 one file of documentation for each implementation file in the source code.
 Furthermore, each file comprises three sections:
 </P>
+
 <UL>
 <LI><B>User Documentation</B>  gives the information a normal user of
   the library may need to know, principally the function interfaces
@@ -130,7 +148,6 @@ Furthermore, each file comprises three sections:
   to be taken into consideration for future versions.
 </UL>
 
-<P></P>
 <P>
 This documentation is in the CoCoALib directory <CODE>doc/txt/</CODE>, and
 converted into html (<CODE>doc/html/</CODE>) and LaTeX (<CODE>doc/tex/</CODE>) using
@@ -152,14 +169,18 @@ The hand-written documentation in the directory doc/ is supposed to be
 exhaustive (and is doubtless also rather exhausting).  The Doxygen files
 will most likely be of use to those already experienced in using CoCoALib.
 </P>
+
 <A NAME="toc7"></A>
 <H2>Sundry Important Points</H2>
+
 <P>
 We have tried to give CoCoALib a <I>natural</I> interface, but this has not always
 been possible.  Here are the main problem areas:
 </P>
+
 <A NAME="toc8"></A>
 <H4>Powering and Exponentiation</H4>
+
 <P>
 The use of the hat symbol (^) to denote exponentiation is very widespread.
 <B>CoCoALib does not allow this</B> you must use the function <CODE>power</CODE> instead.
@@ -170,8 +191,10 @@ valid code which does not compute what you would expect.  Here is a simple
 example: <CODE>3*x^2</CODE> is interpreted by the compiler as <CODE>(3*x)^2</CODE>.  Unfortunately
 there is no way to make the C++ compiler use the expected interpretation.
 </P>
+
 <A NAME="toc9"></A>
 <H4>Integers and Rationals</H4>
+
 <P>
 The C++ language is not designed to compute directly with unlimited
 integers or with exact rational numbers; special types (namely <A HREF="BigInt.html"><CODE>BigInt</CODE></A> and
@@ -180,6 +203,7 @@ integers or with exact rational numbers; special types (namely <A HREF="BigInt.h
 has to be wary of several pitfalls where code which looks correct at first
 glance does not produce the right answer.
 </P>
+
 <UL>
 <LI>rationals must be constructed explicitly, <I>e.g.</I> the expression
   <CODE>2/3</CODE> is valid C++ but is interpreted as an integer division
@@ -204,7 +228,6 @@ glance does not produce the right answer.
 <LI>(AMB: add examples from talk in Kassel)
 </UL>
 
-<P></P>
 <P>
 === Reporting CoCoALib Bugs and other problems ==
 </P>
@@ -214,18 +237,19 @@ which exhibits the bad behaviour with a clear indication of what you think the
 program should do, and where it apparently goes wrong.  The best way to inform
 us of the problem is to report an <I>issue</I> on
 </P>
+
 <PRE>
     http://cocoa.dima.unige.it/redmine/
 </PRE>
-<P></P>
+
 <P>
 If you'd rather not use redmine Forum, you can send email to:
 </P>
+
 <PRE>
    cocoa@dima.unige.it
 </PRE>
-<P></P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/00INTRODUCTION.html -i txt/00INTRODUCTION.txt -->
 </BODY></HTML>

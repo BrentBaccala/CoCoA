@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      MatrixView</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      MatrixView</H1>
-<FONT SIZE="4">
-<I>      &copy;  2008,2014 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      MatrixView</H1>
+<FONT SIZE="4"><I>      &copy;  2008,2014 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation for MatrixView</A>
@@ -38,8 +39,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-matrix1.C">ex-matrix1.C</A>
 <LI><A HREF="../../examples/index.html#ex-matrix2.C">ex-matrix2.C</A>
@@ -48,10 +51,12 @@
 
 <A NAME="toc2"></A>
 <H2>User documentation for MatrixView</H2>
+
 <P>
 A <CODE>MatrixView</CODE> offers a means to <B>view</B> one or more
  <B>existing objects</B> as though they were a <A HREF="matrix.html"><CODE>matrix</CODE></A>:
 </P>
+
 <UL>
 <LI>if you change the entries in the objects then the <CODE>MatrixView</CODE> changes;
 <LI>if you change the entries in the <CODE>MatrixView</CODE> then the underlying objects change;
@@ -60,11 +65,11 @@ A <CODE>MatrixView</CODE> offers a means to <B>view</B> one or more
   dreaded <B>undefined behaviour</B>, <I>i.e.</I> probably a crash).
 </UL>
 
-<P></P>
 <P>
 <B>NB</B> <I>Matrix views</I> do not make copies, so be careful with
   temporaries!  Look at these examples (<CODE>val</CODE> is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A>):
 </P>
+
 <PRE>
     // OK
     const vector&lt;RingElem&gt; v(3, val);
@@ -76,26 +81,30 @@ A <CODE>MatrixView</CODE> offers a means to <B>view</B> one or more
     // OK   NewDenseMat makes a copy of the vector before it disappears
     matrix M = NewDenseMat(RowMat(vector&lt;RingElem&gt;(3, val)));
 </PRE>
-<P></P>
+
 <A NAME="PseudoConstructors"></A>
 <H3>Pseudo-constructors</H3>
+
 <A NAME="toc4"></A>
 <H4>Constant Matrix Views</H4>
+
 <P>
 <B>NB</B> no entry is <I>writable</I>
 </P>
+
 <UL>
 <LI><CODE>ZeroMat(R, r, c)</CODE>     -- constant <CODE>r</CODE>-by-<CODE>c</CODE> zero matrix over <CODE>R</CODE>
 <LI><CODE>IdentityMat(R, n)</CODE>    -- constant <CODE>n</CODE>-by-<CODE>n</CODE> identity matrix over <CODE>R</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc5"></A>
 <H4>Matrix Views of a Vector</H4>
+
 <P>
 You can <I>view</I> a <CODE>std::vector&lt;RingElem&gt;</CODE>, all of whose entries belong to the
 same <A HREF="ring.html"><CODE>ring</CODE></A>, as a matrix in three ways:
 </P>
+
 <UL>
 <LI><CODE>ColMat(v)</CODE>  -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as a column matrix
 <LI><CODE>RowMat(v)</CODE>  -- view a <CODE>vector&lt;RingElem&gt;</CODE> <CODE>v</CODE> as a row matrix
@@ -107,9 +116,9 @@ where the entries of <CODE>v</CODE> are row 1, then row 2, and so on.
 where the entries of <CODE>v</CODE> are col 1, then col 2, and so on.
 </UL>
 
-<P></P>
 <A NAME="toc6"></A>
 <H4>Matrix Views of a Matrix</H4>
+
 <UL>
 <LI><CODE>transpose(M)</CODE>         -- transposed <I>view</I> of the matrix <CODE>M</CODE>
 <LI><CODE>submat(M, rows, cols)</CODE>-- submatrix <I>view</I> into <CODE>M</CODE>; the
@@ -120,12 +129,14 @@ where the entries of <CODE>v</CODE> are col 1, then col 2, and so on.
 
 <A NAME="toc7"></A>
 <H4>Matrix Views of Several Matrices</H4>
+
 <P>
 The following pseudo-constructors assemble several matrices into a bigger one;
 the argument matrices must all have the same <CODE>BaseRing</CODE>.  Be careful about
 passing temporaries to these functions: they <B>only make references</B> to the
 submatrices <CODE>A</CODE>, <CODE>B</CODE> etc
 </P>
+
 <UL>
 <LI><CODE>ConcatVer(A, B)</CODE>     -- matrix <I>view</I> with the rows of <CODE>A</CODE> above those of <CODE>B</CODE>
 </UL>
@@ -198,13 +209,17 @@ submatrices <CODE>A</CODE>, <CODE>B</CODE> etc
 <P>
   <B>NB</B> the boundaries of the four submatrices must be aligned.
 </P>
+
 <A NAME="toc8"></A>
 <H3>Operations on ConstMatrixView, MatrixView</H3>
+
 <P>
 See <A HREF="matrix.html#operations"><CODE>matrix</CODE> operations</A>
 </P>
+
 <A NAME="toc9"></A>
 <H2>Maintainer documentation for MatrixView</H2>
+
 <P>
 Most of the implementations are quite straightforward; the tricky part was
 getting the design of the abstract classes right (well, I hope it is right
@@ -243,8 +258,10 @@ I could not see an elegant way to make them simpler (or to avoid repeating
 similar structure in several places in the code).  See Bugs about implementing
 <CODE>BlockMat</CODE> in terms of <CODE>ConcatVer</CODE> and <CODE>ConcatHor</CODE>.
 </P>
+
 <A NAME="toc10"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 There is an appalling amount of code duplication in the implementations.
 I do not yet see a good way of reducing this.  I hope someone will sooner
@@ -280,11 +297,14 @@ suitable calls to <CODE>ConcatVer</CODE> and <CODE>ConcatHor</CODE>.
 instead of MatrixView because the latter would give no practical
 advantage and hide the cost of accessing the entries.
 </P>
+
 <A NAME="toc11"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2014</B>
 </P>
+
 <UL>
 <LI>April (v0.99533)
   <UL>
@@ -300,7 +320,6 @@ advantage and hide the cost of accessing the entries.
   </UL>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/MatrixView.html -i txt/MatrixView.txt -->
 </BODY></HTML>

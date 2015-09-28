@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      PPMonoid</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      PPMonoid</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005-2007,2010,2013-2014 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      PPMonoid</H1>
+<FONT SIZE="4"><I>      &copy;  2005-2007,2010,2013-2014 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for the classes PPMonoid, PPMonoidElem and PPMonoidBase</A>
       <UL>
@@ -47,8 +48,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for the classes PPMonoid, PPMonoidElem and PPMonoidBase</H2>
+
 <P>
 The classes <CODE>PPMonoid</CODE> and <CODE>PPMonoidElem</CODE> are analogous to <A HREF="ring.html"><CODE>ring</CODE></A> and
 <CODE>RingElem</CODE>.  A <CODE>PPMonoid</CODE> represents a (multiplicative) power product
@@ -70,6 +73,7 @@ exponents.
 <P>
 The implementations of <CODE>PPMonoid</CODE>s are optimized for different uses:
 </P>
+
 <UL>
 <LI><CODE>PPMonoidEv</CODE>:   stores the <I>Exponent vector</I>;
                it is good for accessing the exponents, but slow for ordering;
@@ -81,9 +85,9 @@ The implementations of <CODE>PPMonoid</CODE>s are optimized for different uses:
                but uses more memory and takes more time to assign.    
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-PPMonoidElem1.C">ex-PPMonoidElem1.C</A>
 <LI><A HREF="../../examples/index.html#ex-PPMonoidElem2.C">ex-PPMonoidElem2.C</A>
@@ -91,6 +95,7 @@ The implementations of <CODE>PPMonoid</CODE>s are optimized for different uses:
 
 <A NAME="toc3"></A>
 <H3>Operations PPMonoids</H3>
+
 <P>
 Recall that every <CODE>PPMonoid</CODE> is graded, and has a degree-compatible total
 arithmetical ordering; the grading and ordering must be specified when the
@@ -107,8 +112,10 @@ indeterminates, and the <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A>.  
 find out what the true limit is (see <I>Bugs</I> section), and no warning
 is given should the limit be exceeded: you just get a wrong answer.
 </P>
+
 <A NAME="toc4"></A>
 <H4>Pseudo-constructors of PPMonoid</H4>
+
 <P>
 To create a <CODE>PPMonoid</CODE> use the function <CODE>NewPPMonoid</CODE> (the default
 currently chooses <CODE>PPMonoidEv</CODE>).  To create a <CODE>PPMonoid</CODE> object of
@@ -118,6 +125,7 @@ concrete monoid classes:
 <P>
 Given <CODE>PPO</CODE> a <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A> or <CODE>PPOrderingCtor</CODE> (<I>i.e.</I> <CODE>lex</CODE>, <CODE>StdDegLex</CODE>, or <CODE>StdDegRevLex</CODE>), and <CODE>IndetNames</CODE> a <CODE>vector</CODE> of <A HREF="symbol.html"><CODE>symbol</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>NewPPMonoid(IndetNames, PPO)</CODE> -- same as <CODE>NewPPMonoidEv</CODE>
 <LI><CODE>NewPPMonoidEv(IndetNames, PPO)</CODE>
@@ -126,9 +134,9 @@ Given <CODE>PPO</CODE> a <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A> o
 <LI><CODE>NewPPMonoidEvOv(IndetNames, PPO)</CODE>
 </UL>
 
-<P></P>
 <A NAME="operations"></A>
 <H4>Operations</H4>
+
 <UL>
 <LI><CODE>cout &lt;&lt; PPM</CODE>     -- print <CODE>PPM</CODE> on <CODE>cout</CODE>
 <LI><CODE>NumIndets(PPM)</CODE>  -- number of indeterminates
@@ -146,6 +154,7 @@ Given <CODE>PPO</CODE> a <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A> o
 <P>
 These pseudo-constructors are described in the section about <CODE>PPMonoidElem</CODE>s
 </P>
+
 <UL>
 <LI><CODE>one(PPM)</CODE>
 <LI><CODE>indet(PPM, i)</CODE>
@@ -155,6 +164,7 @@ These pseudo-constructors are described in the section about <CODE>PPMonoidElem<
 
 <A NAME="toc6"></A>
 <H3>Summary of functions for PPMonoidElems</H3>
+
 <P>
 See also some example programs in the <CODE>CoCoALib/examples/</CODE> directory.
 </P>
@@ -178,6 +188,7 @@ refer to the i-th indeterminate in <CODE>PPM</CODE>.  Let <CODE>pp</CODE> be a n
 <CODE>PPMonoidElem</CODE>, and <CODE>pp1</CODE> and <CODE>pp2</CODE> be <CODE>const PPMonoidElem</CODE> (all belonging to <CODE>PPM</CODE>).
 Let <CODE>expv</CODE> be a <CODE>vector&lt;long&gt;</CODE> of size equal to the number of indeterminates.
 </P>
+
 <UL>
 <LI><CODE>PPMonoidElem t(PPM)</CODE> -- create new PP in <CODE>PPM</CODE>, value is 1
 <LI><CODE>PPMonoidElem t(PPM, expv)</CODE> -- create new PP in <CODE>PPM</CODE>, value is product x[i]^expv[i]
@@ -239,19 +250,23 @@ Let <CODE>expv</CODE> be a <CODE>vector&lt;long&gt;</CODE> of size equal to the 
 
 <A NAME="toc7"></A>
 <H4>Operations on collections of PPMonoidElem</H4>
+
 <UL>
 <LI><CODE>IsFactorClosed(S)</CODE>  -- says whether the <CODE>std::vector&lt;PPMonoidElem&gt;</CODE> S is factor closed; error if S is empty.
 </UL>
 
 <A NAME="toc8"></A>
 <H2>Library Contributor Documentation</H2>
+
 <P>
 This section comprises two parts: the first is about creating a new type
 of PP monoid; the second comments about calling the member functions of
 <CODE>PPMonoidBase</CODE> directly.
 </P>
+
 <A NAME="toc9"></A>
 <H3>To add a new type of concrete PPMonoid class</H3>
+
 <P>
 My first suggestion is to look at the code implementing <CODE>PPMonoidEv</CODE>.
 This is a simple PP monoid implementation: the values are represented as
@@ -285,6 +300,7 @@ Here is a summary of the member functions which must be implemented.  All
 the functions may be called for a <B>const</B> <CODE>PPMonoid</CODE>, for brevity the <CODE>const</CODE>
 qualifier is omitted.  I use two abbreviations:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>RawPP</CODE></TD>
@@ -304,6 +320,7 @@ pair of arguments may be identical).
 <B>Constructors</B>: these all allocate memory which must eventually be freed (by
 calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
 </P>
+
 <UL>
 <LI><CODE>PPMonoidElemRawPtr PPMonoidBase::myNew()</CODE>
    -- initialize pp to the identity
@@ -316,6 +333,7 @@ calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
 <P>
 <B>Destructor</B>: there is only one of these, its argument must be initialized
 </P>
+
 <UL>
 <LI><CODE>void PPMonoidBase::myDelete(PPMonoidElemRawPtr pp)</CODE>
   -- destroy <CODE>pp</CODE>, frees memory
@@ -324,6 +342,7 @@ calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
 <P>
 <B>Assignment</B> etc:
 </P>
+
 <UL>
 <LI><CODE>void PPMonoidBase::mySwap(RawPP pp1, RawPP pp2)</CODE>
   -- swap the values of <CODE>pp1</CODE> and <CODE>pp2</CODE>
@@ -338,6 +357,7 @@ calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
             aliasing is permitted (<I>i.e.</I> arguments need not be distinct);
             <CODE>myDiv</CODE> result is <B>undefined</B> if the quotient does not exist!
 </P>
+
 <UL>
 <LI><CODE>const PPMonoidElem&amp; myOne()</CODE>
   -- reference to 1 in the monoid
@@ -362,6 +382,7 @@ calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
    each PP monoid has associated with it a <B>term ordering</B>, <I>i.e.</I> a total
    ordering which respects the monoid operation (multiplication)
 </P>
+
 <UL>
 <LI><CODE>bool myIsCoprime(ConstRawPP pp1, ConstRawPP pp2)</CODE>
   -- true iff gcd(pp1, pp2) is 1
@@ -376,6 +397,7 @@ calling <CODE>myDelete</CODE>); the result is a pointer to the memory allocated.
 <P>
 Sundries:
 </P>
+
 <UL>
 <LI><CODE>degree myDeg(ConstRawPP t)</CODE>
   -- total degree
@@ -394,6 +416,7 @@ Sundries:
 <P>
 Query functions:
 </P>
+
 <UL>
 <LI><CODE>long myNumIndets()</CODE>
    -- number of indeterminates generating the monoid
@@ -403,6 +426,7 @@ Query functions:
 
 <A NAME="toc10"></A>
 <H3>To add a new member function to PPMonoidBase</H3>
+
 <P>
 You will have to edit <CODE>PPMonoid.H</CODE> and possibly <CODE>PPMonoid.C</CODE> (<I>e.g.</I> if there is
 to be a default definition).  Arguments representing PPs should be of type
@@ -414,8 +438,10 @@ If you do add a new pure virtual member function, you will have to add
 definitions to all the existing concrete PP monoid classes (otherwise they
 will become uninstantiable).  Don't forget to update the documentation too!
 </P>
+
 <A NAME="toc11"></A>
 <H3>Calculating directly with raw PPs</H3>
+
 <P>
 Values of type <CODE>PPMonoidElem</CODE> are intended to be simple and safe to use
 but with some performance penalty.  There is also a "fast, ugly, unsafe"
@@ -442,6 +468,7 @@ The model for creation/destruction and use of raw PPs is as follows:
 <P>
 Here is some pseudo C++ code to give an idea
 </P>
+
 <PRE>
     const PPMonoid&amp; M = ...; // A PPMonoid from somewhere
   
@@ -453,7 +480,7 @@ Here is some pseudo C++ code to give an idea
   
     M-&gt;myDelete(t);          // "destroy" the value t held; t points into hyperspace again.
 </PRE>
-<P></P>
+
 <P>
 NOTE: the only functions which take a pointer into hyperspace are <CODE>PPMonoidBase::myNew</CODE>;
       many functions, <I>e.g.</I> <CODE>PPMonoidBase::myMul</CODE>, write their result into the first argument
@@ -466,8 +493,10 @@ NOTE: if an exception is thrown after <CODE>M-&gt;myNew</CODE> and before <CODE>
       value then it is better to create a full <CODE>PPMonoidElem</CODE> and then let <CODE>t</CODE>
       be its <CODE>RawPtr</CODE>; this should avoid memory leaks.
 </P>
+
 <A NAME="toc12"></A>
 <H2>Maintainer documentation for PPMonoid, PPMonoidElem, and PPMonoidBase</H2>
+
 <P>
 See subsection below about thread-safety in <CODE>PPMonoidOV</CODE>.
 </P>
@@ -540,6 +569,7 @@ monoids; the distinction is to keep track of constness and ownership.
 I have used inheritance to allow natural automatic conversion among
 these three classes (analogously to <CODE>RingElem</CODE>, <CODE>ConstRefRingElem</CODE>)
 </P>
+
 <UL>
 <LI>A <CODE>PPMonoidElem</CODE> is the owner of its value; the value will be deleted
   when the object ceases to exist.
@@ -570,8 +600,10 @@ is checked by the syntactically nice equivalent operations (see the code
 in PPMonoid.C).  This permits a programmer to choose between safe clean
 code (with nice syntax) or faster unsafe code (albeit with uglier syntax).
 </P>
+
 <A NAME="toc13"></A>
 <H4>Thread-safety and CoCoA_THREADSAFE_HACK</H4>
+
 <P>
 The impl in <CODE>PPMonoidOV</CODE> using the CPP flag <CODE>CoCoA_THREADSAFETY_HACK</CODE>
 to select between two impl strategies.  If the CPP flag is not set, then
@@ -579,11 +611,14 @@ to select between two impl strategies.  If the CPP flag is not set, then
 gain speed; if the flag is set then buffers are allocated locally in
 several functions.
 </P>
+
 <A NAME="toc14"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 The section on "Advanced Use" is a bit out of date and too long.
 </P>
+
 <UL>
 <LI>(1) Should more operations on <CODE>PPMonoidElem</CODE>s be inlined?
     With the current design, since speed is not so important for <CODE>PPMonoidElem</CODE>s.
@@ -639,8 +674,6 @@ The section on "Advanced Use" is a bit out of date and too long.
 <P></P>
 </UL>
 
-<P></P>
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/PPMonoid.html -i txt/PPMonoid.txt -->
 </BODY></HTML>

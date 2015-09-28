@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      symbol</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      symbol</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2007,2008,2012,2014 John Abbott and Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      symbol</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2007,2008,2012,2014 John Abbott and Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -37,8 +38,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-symbol1.C">ex-symbol1.C</A>
 <LI><A HREF="../../examples/index.html#ex-symbol2.C">ex-symbol2.C</A>
@@ -46,9 +49,9 @@
 <LI><A HREF="../../examples/index.html#ex-PolyRing2.C">ex-PolyRing2.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 <CODE>symbol</CODE> is short for <I>Symbolic Name</I>.  A value of type <CODE>symbol</CODE>
 represents a <I>variable name</I> possibly with some integer subscripts
@@ -59,16 +62,17 @@ for a <A HREF="PPMonoid.html"><CODE>PPMonoid</CODE></A>.
 <P>
 A <CODE>symbol</CODE> value has two components:
 </P>
+
 <UL>
 <LI><B>head</B> -- a string starting with a letter followed by letters, digits and <CODE>_</CODE>s
               (<B>note</B> no other characters allowed)
 <LI><B>subscripts</B> -- a (possibly empty) vector of machine integers
 </UL>
 
-<P></P>
 <P>
 Examples of <CODE>symbol</CODE>s are: (in standard printed forms)
 </P>
+
 <TABLE ALIGN="center" CELLPADDING="4">
 <TR>
 <TD><CODE>x</CODE>, <CODE>X</CODE>, <CODE>alpha</CODE>, <CODE>z_alpha</CODE>, <CODE>x[2]</CODE>, <CODE>gamma[-2,3,-9]</CODE></TD>
@@ -81,6 +85,7 @@ they are useful for building (<I>temporary</I>) polynomial extensions of
 unknown coefficient rings (which may contain any symbol) to guarantee
 no name conflicts.
 </P>
+
 <UL>
 <LI><B>head</B> -- is the <I>empty</I> string
 <LI><B>subscripts</B> -- exactly one subscript
@@ -92,14 +97,17 @@ than that of any previous anonymous symbol.  For better readability,
 an anonymous symbol prints out as a <B>hash sign</B> followed by the
 subscript: <I>e.g.</I> <CODE>#[12]</CODE>
 </P>
+
 <A NAME="constructors"></A>
 <H3>Constructors</H3>
+
 <P>
 Let
 <CODE>head</CODE> be a <CODE>std::string</CODE>,
 <CODE>ind</CODE>, <CODE>ind1</CODE>, <CODE>ind2</CODE>, <CODE>n</CODE> machine integers,
 <CODE>inds</CODE> a <CODE>std::vector&lt;long&gt;</CODE>.
 </P>
+
 <UL>
 <LI><CODE>symbol(head)</CODE> -- a <CODE>symbol</CODE> with no subscripts
 <LI><CODE>symbol(head, ind)</CODE> -- a <CODE>symbol</CODE> with a single subscript
@@ -108,15 +116,16 @@ Let
 <LI><CODE>NewSymbol()</CODE> -- a new anonymous symbol (printed form is like this <CODE>#[12]</CODE>)
 </UL>
 
-<P></P>
 <A NAME="toc4"></A>
 <H4>Creating a vector of symbols</H4>
+
 <P>
 Several polynomial ring pseudo-constructors expect a <CODE>vector</CODE> of
 <CODE>symbol</CODE>s to specify the names of the indeterminates.  There are
 several convenience functions for constructing commonly used
 collections of <CODE>symbol</CODE>s.
 </P>
+
 <UL>
 <LI><CODE>symbols(hd1)</CODE> -- create vector of length 1 containing <CODE>symbol(hd1)</CODE>
 <LI><CODE>symbols(hd1,hd2)</CODE> --         ... length 2...
@@ -131,12 +140,13 @@ collections of <CODE>symbol</CODE>s.
 <LI><CODE>NewSymbols(n)</CODE> -- create vector of <CODE>n</CODE> new anonymous symbols
 </UL>
 
-<P></P>
 <A NAME="operations"></A>
 <H3>Operations on symbols</H3>
+
 <P>
 Let <CODE>sym</CODE>, <CODE>sym1</CODE>, and <CODE>sym2</CODE> be objects of type <CODE>symbol</CODE>
 </P>
+
 <UL>
 <LI><CODE>head(sym)</CODE>       --  head of <CODE>sym</CODE> as a const ref to <CODE>std::string</CODE>
 <LI><CODE>NumSubscripts(sym)</CODE> --  number of subscripts <CODE>sym</CODE> has (0 if sym has no subscripts)
@@ -156,18 +166,18 @@ Let <CODE>sym</CODE>, <CODE>sym1</CODE>, and <CODE>sym2</CODE> be objects of typ
                   (expected format is x, y[1], z[2,3], etc.)
 </UL>
 
-<P></P>
 <A NAME="toc6"></A>
 <H4>Operations on vectors of symbols</H4>
+
 <UL>
 <LI><CODE>AreDistinct(vecsyms)</CODE> -- true iff all symbols are distinct
 <LI><CODE>AreArityConsistent(vecsyms)</CODE> -- true iff all symbols with the same head
                                      have the same arity
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H2>Maintainer documentation for symbol</H2>
+
 <P>
 <B>Note:</B> I have used <CODE>MachineInt</CODE> as the type for fn args containing
 index values because it is <I>safer</I>, and I believe that the run-time
@@ -202,8 +212,10 @@ is simple, and is probably fast enough.
 <P>
 The function <CODE>symbol::myInput</CODE> is a stop-gap implementation.
 </P>
+
 <A NAME="toc8"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 The member function <CODE>myInput</CODE> handles white space wrongly.  For CoCoALib
 whitespace is space, TAB, or backslash-newline; newline without backslash
@@ -219,6 +231,6 @@ I wonder what sending a <CODE>symbol</CODE> on an OpenMath channel would mean
 name is by definition devoid of semantics).
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/symbol.html -i txt/symbol.txt -->
 </BODY></HTML>

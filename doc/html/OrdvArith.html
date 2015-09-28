@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      OrdvArith</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      OrdvArith</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2014 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      OrdvArith</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2014 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for OrdvArith</A>
       <UL>
@@ -37,8 +38,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for OrdvArith</H2>
+
 <P>
 <CODE>OrdvArith</CODE> objects are "low level" values, and thus probably of
 little interest to most users of CoCoALib.  They perform arithmetic
@@ -55,18 +58,20 @@ rather than convenience; as a consequence the member fns listed below
 expect the caller to have allocated the memory used to contain the
 results of computations (<I>e.g.</I> in the parameter <CODE>ordv</CODE>).
 </P>
+
 <A NAME="toc2"></A>
 <H3>Initializers and Converters for OrdvElem</H3>
+
 <P>
 These fns are all member fns of <CODE>OrdvArith</CODE>.
 </P>
+
 <UL>
 <LI><CODE>myAssignZero(ordv)</CODE>  set <CODE>ordv</CODE> to all zeros
 <LI><CODE>myAssignFromExpv(ordv, expv)</CODE>  set <CODE>ordv</CODE> from given exponent vector <CODE>expv</CODE>
 <LI><CODE>myComputeExpv(expv, ordv)</CODE>  extract exponent vector from <CODE>ordv</CODE>
 </UL>
 
-<P></P>
 <P>
 Note: the two functions which convert between <CODE>expv</CODE> and <CODE>ordv</CODE>
     representations might be quite slow, especially if a general
@@ -74,11 +79,14 @@ Note: the two functions which convert between <CODE>expv</CODE> and <CODE>ordv</
     the conversion is not instant because order vectors are held in a
     packed representation.
 </P>
+
 <A NAME="toc3"></A>
 <H3>Arithmetic operations on OrdvElem</H3>
+
 <P>
 These fns are all member fns of <CODE>OrdvArith</CODE>.
 </P>
+
 <UL>
 <LI><CODE>myMul(ordv, ordv1, ordv2)</CODE>  put into <CODE>ordv</CODE> product of <CODE>ordv1</CODE> and <CODE>ordv2</CODE>
 <LI><CODE>myMulIndetPower(ordv, x, n)</CODE>  multiply <CODE>ordv</CODE> by <CODE>x^n</CODE>
@@ -86,17 +94,19 @@ These fns are all member fns of <CODE>OrdvArith</CODE>.
 <LI><CODE>myPower(ordv, ordv1, n)</CODE>  put into <CODE>ordv</CODE> the <CODE>n</CODE>-th power of <CODE>ordv1</CODE>
 </UL>
 
-<P></P>
 <P>
 Note: since order vectors are linearly related to exponent vectors, the
     functions <CODE>myMul</CODE> and <CODE>myDiv</CODE> actually compute the sum and difference of the
     order vectors.  No check is made for over-/under-flow!
 </P>
+
 <A NAME="toc4"></A>
 <H3>Other operations on OrdvElem</H3>
+
 <P>
 These fns are all member fns of <CODE>OrdvArith</CODE>.
 </P>
+
 <UL>
 <LI><CODE>myCmp(ordv1, ordv2)</CODE>  compare <CODE>ordv1</CODE> with <CODE>ordv2</CODE>; result is -1,0,+1 according as <CODE>ordv1 &lt; = &gt; ordv2</CODE>
 <LI><CODE>myStdDeg(ordv1)</CODE>  compute std degree of <CODE>ordv1</CODE>
@@ -107,9 +117,9 @@ These fns are all member fns of <CODE>OrdvArith</CODE>.
 <LI><CODE>myIsIndet(x, ordv1)</CODE>  test whether <CODE>ordv1</CODE> is an indet; if so, put index into <CODE>x</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc5"></A>
 <H4>Background about matrices and PP orderings</H4>
+
 <P>
 This section is for the curious.
 </P>
@@ -145,8 +155,10 @@ Certain special orderings are recognized, so that special relationships
 between the exponent vector and order vector can be exploited to enable
 faster computation.
 </P>
+
 <A NAME="toc6"></A>
 <H2>Maintainer documentation for OrdvArith</H2>
+
 <P>
 See subsection below about thread-safety!
 </P>
@@ -206,8 +218,10 @@ necessary to achieve acceptable run-time performance.
 The member function <CODE>myMulIndetPower</CODE> is not pure because a reasonable
 generic implementation exists.  Similarly, myOutput(OMOut, ordv) is not pure.
 </P>
+
 <A NAME="toc7"></A>
 <H4>Threadsafety and CoCoA_THREADSAFE_HACK</H4>
+
 <P>
 The code contains some <CODE>#if</CODE> blocks to distinguish between
 single-threaded and multi-threaded run-time environments.  In a
@@ -218,8 +232,10 @@ used, but each function needing to do such conversions creates
 appropriate buffers in local variables (so there are lots of #if
 directives).
 </P>
+
 <A NAME="toc8"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 In some ways, <CODE>myCmp</CODE> could simply be operator(); thus calls would look
 like <CODE>ord(ordv1, ordv2)</CODE> where ord is an object of type PPOrdering.
@@ -254,6 +270,6 @@ The default implementation of <CODE>myIsIndet</CODE> is not very efficient, but 
 really worth writing many different (efficient) implementations?
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/OrdvArith.html -i txt/OrdvArith.txt -->
 </BODY></HTML>

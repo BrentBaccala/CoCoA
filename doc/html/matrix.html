@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      matrix</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      matrix</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2008,2011 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      matrix</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2008,2011 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for the classes matrix, MatrixView and ConstMatrixView</A>
       <UL>
@@ -36,8 +37,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for the classes matrix, MatrixView and ConstMatrixView</H2>
+
 <P>
 CoCoALib offers two distinct concepts for dealing with matrices: one
 is an explicit implementation of a matrix, the other is a way to "view"
@@ -63,8 +66,10 @@ structure of the matrix, then use <CODE>ConstMatrixView</CODE> or <CODE>MatrixVi
 If the structure of the matrix parameter may be modified then you must use
 <CODE>matrix&amp;</CODE> as the parameter type.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-matrix1.C">ex-matrix1.C</A>
 <LI><A HREF="../../examples/index.html#ex-matrix2.C">ex-matrix2.C</A>
@@ -72,9 +77,11 @@ If the structure of the matrix parameter may be modified then you must use
 
 <A NAME="toc3"></A>
 <H3>Constructors and Pseudo-constructors</H3>
+
 <P>
 The following create a <CODE>matrix</CODE>:
 </P>
+
 <UL>
 <LI><CODE>NewDenseMat(R, r, c)</CODE>  -- (see <A HREF="DenseMatrix.html"><CODE>DenseMatrix</CODE></A>)
 <LI><CODE>NewSparseMat(R, r, c)</CODE> -- NOT YET IMPLEMENTED!!
@@ -85,6 +92,7 @@ The following create <I>matrix views</I>: for instance, changing an entry in
 <CODE>RowMat(v)</CODE> will also change the vector <CODE>v</CODE>,
 see <A HREF="MatrixView.html#PseudoConstructors"><CODE>MatrixView</CODE> PseudoConstructors</A> for more details.
 </P>
+
 <UL>
 <LI><CODE>ZeroMat(R, r, c)</CODE>
 <LI><CODE>IdentityMat(R, n)</CODE>
@@ -104,6 +112,7 @@ see <A HREF="MatrixView.html#PseudoConstructors"><CODE>MatrixView</CODE> PseudoC
 The following create a <CODE>matrix</CODE> and come from <A HREF="MatrixSpecial.html"><CODE>MatrixSpecial</CODE></A>.
 See there for more details.
 </P>
+
 <UL>
 <LI><CODE>jacobian(f, indets)</CODE>
 <LI><CODE>TensorMat(M1, M2)</CODE>
@@ -111,6 +120,7 @@ See there for more details.
 
 <A NAME="operations"></A>
 <H3>Operations on ConstMatrixView, MatrixView, matrix</H3>
+
 <UL>
 <LI><CODE>RingOf(M)</CODE>    -- the ring to which the matrix entries belong
 <LI><CODE>NumRows(M)</CODE>   -- the number of rows in <CODE>M</CODE> (may be zero)
@@ -130,6 +140,7 @@ See there for more details.
 <P>
 <B>NB indices start from 0</B>
 </P>
+
 <UL>
 <LI><CODE>M(i,j)</CODE>         -- the (<CODE>i</CODE>,<CODE>j</CODE>) entry of <CODE>M</CODE>
 <LI><CODE>IsZeroRow(M,i)</CODE> -- true iff row <CODE>i</CODE> of <CODE>M</CODE> is zero
@@ -139,6 +150,7 @@ See there for more details.
 <P>
 The following come from <A HREF="MatrixArith.html"><CODE>MatrixArith</CODE></A>, see there for more details.
 </P>
+
 <UL>
 <LI><CODE>*</CODE> <CODE>+</CODE> <CODE>-</CODE> <CODE>/</CODE>
 <LI><CODE>det(M)</CODE>
@@ -150,9 +162,9 @@ The following come from <A HREF="MatrixArith.html"><CODE>MatrixArith</CODE></A>,
 <LI><CODE>LinKer(M)</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc5"></A>
 <H3>Operations on MatrixView, matrix</H3>
+
 <UL>
 <LI><CODE>M-&gt;myIsWritable(i,j)</CODE> -- true iff posn <CODE>(i,j)</CODE> can be written to
 <LI><CODE>SetEntry(M,i,j,val)</CODE> -- set entry <CODE>(i,j)</CODE> of matrix <CODE>M</CODE> to <CODE>val</CODE> 
@@ -171,11 +183,14 @@ The following come from <A HREF="MatrixArith.html"><CODE>MatrixArith</CODE></A>,
   Calling <CODE>SetEntry</CODE> on a position which is not writable
   will throw <CODE>CoCoA::ERR::BadMatrixSetEntry</CODE>
 </P>
+
 <A NAME="toc6"></A>
 <H3>Operations on matrix</H3>
+
 <P>
 With sanity checks
 </P>
+
 <UL>
 <LI><CODE>SwapRows(M,i1,i2)</CODE>   -- swap rows <CODE>i1</CODE> and <CODE>i2</CODE>
 <LI><CODE>SwapCols(M,j1,j2)</CODE>   -- swap columns <CODE>j1</CODE> and <CODE>j2</CODE>
@@ -183,10 +198,10 @@ With sanity checks
 <LI><CODE>DeleteCol(M,j)</CODE>      -- delete column <CODE>j</CODE> and moves up the following cols
 </UL>
 
-<P></P>
 <P>
 Without sanity checks
 </P>
+
 <UL>
 <LI><CODE>M-&gt;myResize(r,c)</CODE>       -- change size of <CODE>M</CODE> to <CODE>r</CODE>-by-<CODE>c</CODE> (new entries are zero)
 <LI><CODE>M-&gt;myRowMul(i,r)</CODE>       -- multiply row <CODE>i</CODE> by <CODE>r</CODE>
@@ -197,7 +212,6 @@ Without sanity checks
 <LI><CODE>M-&gt;mySwapCols(j1,j2)</CODE>   -- swap columns <CODE>j1</CODE> and <CODE>j2</CODE>
 </UL>
 
-<P></P>
 <P>
 <B>NOTE:</B> these are not permitted on <A HREF="MatrixView.html"><CODE>MatrixView</CODE></A> because of various problems which
   could arise <I>e.g.</I> with aliasing in block matrices (see maintainer documentation).
@@ -210,14 +224,17 @@ At the moment assignment of matrices is not allowed.  The only way to make
 a copy of a matrix (view) is by calling a genuine constructor (so far only
 <CODE>NewDenseMat</CODE> comes into this category).
 </P>
+
 <A NAME="toc7"></A>
 <H3>Utility functions</H3>
+
 <UL>
 <LI><CODE>IsRectangular(VV)</CODE> -- says whether a <CODE>vector</CODE> of <CODE>vector</CODE> is rectangular
 </UL>
 
 <A NAME="toc8"></A>
 <H2>Library contributor documentation</H2>
+
 <P>
 The classes <CODE>ConstMatrixView</CODE> , <CODE>MatrixView</CODE> and <CODE>matrix</CODE> are
 just reference counting smart-pointers to objects of type derived from
@@ -232,6 +249,7 @@ than <CODE>ConstMatrixViewBase</CODE> because of the way <CODE>BlockMat</CODE> i
 The base class <CODE>ConstMatrixViewBase</CODE> declares the following pure virtual
 member fns:
 </P>
+
 <UL>
 <LI><CODE>myRing()</CODE>           -- returns the ring to which the matrix entries belong
 <LI><CODE>myNumRows()</CODE>        -- returns the number of rows in the matrix
@@ -257,6 +275,7 @@ member fns:
 <P>
 These are the additional virtual functions present in <CODE>MatrixViewBase</CODE>:
 </P>
+
 <UL>
 <LI><CODE>myIsWritable(i,j)</CODE>  -- true iff entry <CODE>(i,j)</CODE> can be modified; <CODE>i</CODE> &amp; <CODE>j</CODE> are unchecked
 <LI><CODE>mySetEntry(i,j,value)</CODE> -- set entry <CODE>(i,j)` to ``value</CODE> (integer, rational, RingElem)
@@ -266,6 +285,7 @@ These are the additional virtual functions present in <CODE>MatrixViewBase</CODE
 <P>
 These are the additional virtual functions present in <CODE>MatrixBase</CODE>:
 </P>
+
 <UL>
 <LI><CODE>myRowMul(i,r)</CODE>      -- multiply row i by r
 <LI><CODE>myColMul(j,r)</CODE>      -- multiply column j by r
@@ -278,6 +298,7 @@ These are the additional virtual functions present in <CODE>MatrixBase</CODE>:
 <P>
 <B>Default definitions:</B>
 </P>
+
 <UL>
 <LI>IamEqual, IamSymmetric, IamAntiSymmetric, IamDiagonal,
    myMulByRow, myMulByCol, myIsZeroRow, myIsZeroCol, myOutput all have
@@ -288,6 +309,7 @@ These are the additional virtual functions present in <CODE>MatrixBase</CODE>:
 
 <A NAME="toc9"></A>
 <H2>Maintainer documentation for the matrix classes</H2>
+
 <P>
 I shall assume that you have already read the User Documentation and Library
 Contributor Documentation.
@@ -358,8 +380,10 @@ base classes, to prohibit/discourage improper use of pointers to these classes.
 The default <I>dense</I> definition of <CODE>MatrixBase::myOutput</CODE> seems a reasonable
 starting point -- but see the bugs section below!
 </P>
+
 <A NAME="toc10"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 The use of <CODE>std::vector&lt;RingElem&gt;</CODE> should be replaced by <CODE>ModuleElem</CODE> which
 automatically guarantees that all its components are in the same ring.
@@ -407,28 +431,29 @@ relatively cheap, but must beware of the consequences for iterators
 Would it be useful/helpful/interesting to have row-iterators and col-iterators
 for matrices?
 </P>
+
 <A NAME="toc11"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2012</B>
 </P>
+
 <UL>
 <LI>April: added SwapRows, SwapCols
 <LI>March: changed printing style
 </UL>
 
-<P></P>
 <P>
 <B>2011</B>
 </P>
+
 <UL>
 <LI>February: IsSymmetric, IsAntiSymmetric, IsDiagonal, operator==
   default and some optimized implementations.
 <LI>February (v0.9942): first release of <A HREF="MatrixSpecial.html"><CODE>MatrixSpecial</CODE></A> files
 </UL>
 
-<P></P>
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/matrix.html -i txt/matrix.txt -->
 </BODY></HTML>

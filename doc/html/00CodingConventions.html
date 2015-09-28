@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      Coding Conventions</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      Coding Conventions</H1>
-<FONT SIZE="4">
-<I>      &copy;  2007-2010 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      Coding Conventions</H1>
+<FONT SIZE="4"><I>      &copy;  2007-2010 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User and contributor documentation</A>
       <UL>
@@ -50,8 +51,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User and contributor documentation</H2>
+
 <P>
 This page summarises the coding conventions used in CoCoALib.  This
 document is useful primarily to contributors, but some users may find
@@ -75,8 +78,10 @@ Another book offering useful guidance is <B>C++ Coding Standards</B> by
 Alexandrescu and Sutter; it is a good starting point for setting
 coding standards.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Names of CoCoA types, functions, variables</H3>
+
 <P>
 All code and "global" variables must be inside the namespace <CODE>CoCoA</CODE>
 (or in an anonymous namespace); the only exception is code which is
@@ -91,6 +96,7 @@ rigorously (plus some common sense); doing so will facilitate
 maintenance, development and use of the code.
 (The first three rules follow the convention implicit in <B>NTL</B>)
 </P>
+
 <UL>
 <LI>single word names are all lower-case (<I>e.g.</I> <CODE>ring</CODE>);
 <LI>multiple word names have the first letter of each word capitalized,
@@ -114,7 +120,6 @@ maintenance, development and use of the code.
   <CODE>protected</CODE> rather than <CODE>public</CODE>.
 </UL>
 
-<P></P>
 <P>
 It is best to choose a name for your function which differs from the
 names of functions in the C++ standard library, otherwise it can become
@@ -127,12 +132,15 @@ If you are overloading a C++ operator then write the keyword
 <CODE>operator</CODE> attached to the operator symbol (with no intervening
 space).  See <CODE>ring.H</CODE> for some examples.
 </P>
+
 <A NAME="toc3"></A>
 <H3>Order in function arguments</H3>
+
 <P>
 When a function has more than one argument we follow the first
 applicable of the following rules:
 </P>
+
 <OL>
 <LI>the non-const references are the first args, e.g.
  <UL>
@@ -164,7 +172,6 @@ applicable of the following rules:
 <LI>the more structured objects go first, e.g. ... (??? is this ever used ???)
 </OL>
 
-<P></P>
 <P>
 <B>IMPORTANT</B> we are trying to define a <B>good set of few rules</B>
 which is easy to apply and, above all, respects <I>common sense</I>.
@@ -172,8 +179,10 @@ If you meet a function in CoCoALib not following these rules let
 us know: we will fix it, or fix the rules, or call it an interesting
 exception ;-)
 </P>
+
 <A NAME="toc4"></A>
 <H4>Explanation notes, exceptions, and more examples</H4>
+
 <UL>
 <LI>We don't think we have any function with 1 and 2 colliding
 <LI>The <I>main actor</I> is the object which is going to be worked on
@@ -199,6 +208,7 @@ exception ;-)
 
 <A NAME="toc5"></A>
 <H3>Abbreviations</H3>
+
 <P>
 The overall idea is that if a given concept in a class or function
 name always has the same name: either always the full name, or always
@@ -208,6 +218,7 @@ unique meaning.
 <P>
 Here is a list for common abbreviations
 </P>
+
 <UL>
 <LI><CODE>col</CODE> -- column
 <LI><CODE>ctor</CODE> -- constructor
@@ -220,10 +231,10 @@ Here is a list for common abbreviations
 <LI><CODE>pos</CODE> -- positive (or should it be <CODE>positive</CODE>?  what about <CODE>IsPositive(BigInt N)</CODE>?)
 </UL>
 
-<P></P>
 <P>
 Here is a list of names that are written in full
 </P>
+
 <UL>
 <LI><CODE>assign</CODE>
 <LI><CODE>one</CODE> -- not <CODE>1</CODE>
@@ -232,12 +243,15 @@ Here is a list of names that are written in full
 
 <A NAME="toc6"></A>
 <H2>Contributor documentation</H2>
+
 <A NAME="toc7"></A>
 <H3>Guidelines from Alexandrescu and Sutter</H3>
+
 <P>
 Here I paraphrase some of the suggestions from their book, picking out the
 ones I think are less obvious and are most likely to be relevant to CoCoALib.
 </P>
+
 <UL>
 <LI>Write correct, clean and simple code at first; optimize later.
 <LI>Keep track of object ownership; document any "unusual" behaviour.
@@ -256,6 +270,7 @@ ones I think are less obvious and are most likely to be relevant to CoCoALib.
 
 <A NAME="toc8"></A>
 <H3>Use of ``#define``</H3>
+
 <P>
 Excluding the <I>read once trick</I> for header files, <CODE>#define</CODE>
 should be avoided (even in experimental code).  C++ is rich enough that
@@ -269,8 +284,10 @@ If you must define a preprocessor symbol, its name should begin with
 the prefix <CODE>CoCoA_</CODE>, and the remaining letters should all be
 capital.
 </P>
+
 <A NAME="toc9"></A>
 <H3>Header Files</H3>
+
 <P>
 The <I>read once trick</I> uses preprocessor symbols starting
 with <CODE>CoCoA_</CODE> and then finishing with the file
@@ -301,8 +318,10 @@ a <CODE>using</CODE> command for each system symbol used in the file; these
 commands appear right after the <CODE>#include</CODE> directive which
 imported the symbol.
 </P>
+
 <A NAME="toc10"></A>
 <H3>Curly brackets and indentation</H3>
+
 <P>
 Sutter claims curly bracket positioning doesn't matter: he's wrong!
 Matching curly brackets should be either vertically or horizontally
@@ -315,8 +334,10 @@ universal interpretation.
 The <CODE>else</CODE> keyword indents the same as its matching
 <CODE>if</CODE>.
 </P>
+
 <A NAME="toc11"></A>
 <H3>Inline Functions</H3>
+
 <P>
 Use <CODE>inline</CODE> sparingly.  <CODE>inline</CODE> is useful in two
 circumstances: for a short function which is called very many times (at
@@ -330,8 +351,10 @@ There are two potential disadvantages to <CODE>inline</CODE> functions:
 they may force implementation details to be publicly visible, and they
 may cause code bloat.
 </P>
+
 <A NAME="toc12"></A>
 <H3>Exception Safety</H3>
+
 <P>
 <I>Exception Safety</I> is an expression invented/promulgated by Sutter to
 mean that a procedure behaves well when an exception is thrown during its
@@ -347,8 +370,10 @@ should be clearly marked as such.
 <P>
 Consult one of Sutter's (irritating) books for more details.
 </P>
+
 <A NAME="toc13"></A>
 <H3>Dumb/Raw Pointers</H3>
+
 <P>
 If you're using dumb/raw pointers, improve your design!
 </P>
@@ -358,8 +383,10 @@ or <CODE>std::auto_ptr&amp;lt;...&amp;gt;</CODE> if you can.  Note
 that it is especially hard writing exception safe code which contains dumb/raw
 pointers.
 </P>
+
 <A NAME="toc14"></A>
 <H3>Preprocessor Symbols for Controlling Debugging</H3>
+
 <P>
 During development it will be useful to have functions perform
 <I>sanity checks</I> on their arguments.  For general use, these checks
@@ -390,10 +417,13 @@ the gathering of statistics.
 debugging on and off in different sections of the code, though I do
 accept that we may need more than just one or two symbols.
 </P>
+
 <A NAME="toc15"></A>
 <H3>Errors and Exceptions</H3>
+
 <A NAME="toc16"></A>
 <H4>During development</H4>
+
 <P>
 Conditions we want to verify <B>solely during development</B> (i.e. when
 compiling with <CODE>-DCoCoA_DEBUG</CODE>) can be checked simply by using
@@ -404,12 +434,14 @@ file and line number of the failing assertion.  If the compilation
 option <CODE>-DCoCoA_DEBUG</CODE> is not enabled then the macro does
 nothing whatsoever.  An example of its use is:
 </P>
+
 <PRE>
     CoCoA_ASSERT(index &lt;= 0 &amp;&amp; index &lt; length);
 </PRE>
-<P></P>
+
 <A NAME="toc17"></A>
 <H4>Always</H4>
+
 <P>
 A different mechanism is to be used for conditions which must be
 checked even <B>after development is completed</B>.
@@ -426,10 +458,12 @@ and <CODE>location</CODE> is a string saying where the error was detected
 (e.g. the name of the function which discovered it).
 Here is an example
 </P>
+
 <PRE>
     if (trouble)
       CoCoA_ERROR(ERR::DivByZero, "applying partial ring homomorphism");
 </PRE>
+
 <P>
 The macro <CODE>CoCoA_ERROR</CODE> never returns: it will throw
 a <CODE>CoCoA::ErrorInfo</CODE> object.  See the example programs for the
@@ -437,8 +471,10 @@ recommended way of catching and handling exceptions: so that an informative
 message can be printed out.  See <CODE>error.txt</CODE> for advice on
 debugging when an unexpected CoCoA error is thrown.
 </P>
+
 <A NAME="toc18"></A>
 <H3>Functions Returning Complex Values</H3>
+
 <P>
 C++ tends to copy the return value of a function; this is undesirable if the
 value is potentially large and complex.  An obvious alternative is to supply
@@ -446,12 +482,14 @@ as argument a reference into which the result will be placed.  If you choose
 to return the value via a reference argument then make the reference argument
 <B>the first one</B>.
 </P>
+
 <PRE>
     myAdd(rawlhs, rawx, rawy);  // stands for:  lhs = x + y
 </PRE>
-<P></P>
+
 <A NAME="toc19"></A>
 <H3>Spacing and Operators</H3>
+
 <P>
 All <B>binary operators</B> should have one space before and one space after
 the operator name (unless both arguments are particularly short and simple).
@@ -460,13 +498,13 @@ any spaces.
 Avoid spaces between <B>function</B> names and the immediately
 following bracket.
 </P>
+
 <PRE>
   expr1 + expr2;
   !expr;
   UsefulFunction(args);
 </PRE>
-<P></P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/00CodingConventions.html -i txt/00CodingConventions.txt -->
 </BODY></HTML>

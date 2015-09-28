@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      factorization</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      factorization</H1>
-<FONT SIZE="4">
-<I>      &copy;  2012,2014 John Abbott, Anna Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      factorization</H1>
+<FONT SIZE="4"><I>      &copy;  2012,2014 John Abbott, Anna Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -33,15 +34,17 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-factor1.C">ex-factor1.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 In CoCoALib <CODE>factorization</CODE> is a template class for representing
 (partial) factorizations.  Conceptually it comprises a <B>list of factors</B>
@@ -60,8 +63,10 @@ the <CODE>factorization</CODE>.  Naturally the vectors returned by
 See also: <CODE>factor</CODE>, <CODE>SqFreeFactor</CODE>, <CODE>ContentFreeFactor</CODE> (see section <A HREF="factor.html"><CODE>factor</CODE></A>),
 <CODE>SmoothFactor</CODE> (see section <A HREF="NumTheory.html"><CODE>NumTheory</CODE></A>)
 </P>
+
 <A NAME="toc3"></A>
 <H3>Constructor</H3>
+
 <UL>
 <LI><CODE>factorization(remfactor)</CODE> specifies an initial remaining factor, the factor/multiplicity lists are empty
 <LI><CODE>factorization(facs, mults, remfactor)</CODE> specifies initial values for the 3 components
@@ -69,9 +74,11 @@ See also: <CODE>factor</CODE>, <CODE>SqFreeFactor</CODE>, <CODE>ContentFreeFacto
 
 <A NAME="accessors"></A>
 <H3>Accessors</H3>
+
 <P>
 Let <CODE>FactorInfo</CODE> be of type <CODE>factorization&lt;T&gt;</CODE>.  These are the accessor functions:
 </P>
+
 <UL>
 <LI><CODE>FactorInfo.myFactors()</CODE> all the factors as a read-only <CODE>std::vector</CODE>
 <LI><CODE>FactorInfo.myMultiplicities()</CODE> all the multiplicities as a <CODE>std::vector&lt;long&gt;</CODE> (read-only)
@@ -82,6 +89,7 @@ Let <CODE>FactorInfo</CODE> be of type <CODE>factorization&lt;T&gt;</CODE>.  The
 For <B>better readability of code</B> using <CODE>factorization</CODE> we recommend using const ref
 aliases for the lists of factors and multiplicities; for instance
 </P>
+
 <PRE>
     const factorization&lt;RingElem&gt; FactorInfo = factor(f);
     const vector&lt;RingElem&gt;&amp; facs = FactorInfo.myFactors();
@@ -89,12 +97,14 @@ aliases for the lists of factors and multiplicities; for instance
     ...
     // code using the arrays "facs" and "mults"
 </PRE>
-<P></P>
+
 <A NAME="operations"></A>
 <H3>Operations</H3>
+
 <P>
 Let <CODE>facs</CODE> be of type <CODE>factorization&lt;T&gt;</CODE>.  These are the operations available:
 </P>
+
 <UL>
 <LI><CODE>facs.myAppend(fac, mult)</CODE> appends a new factor with its multiplicity
 <LI><CODE>facs.myNewRemainingFactor(RemFac)</CODE> sets <CODE>RemFac</CODE> as the remaining factor
@@ -102,6 +112,7 @@ Let <CODE>facs</CODE> be of type <CODE>factorization&lt;T&gt;</CODE>.  These are
 
 <A NAME="toc6"></A>
 <H2>Maintainer documentation</H2>
+
 <P>
 Being template code it's all in the header file.
 It's mostly fairly straightfoward.
@@ -120,6 +131,7 @@ belong to the same ring (equiv. that they belong to ring of <CODE>myRemainingFac
 <P>
 In CoCoALib there are just 4 instantiations of this template:
 </P>
+
 <UL>
 <LI><CODE>factorization&lt;BigInt&gt;</CODE> for the fns <CODE>factor</CODE> and <CODE>SmoothFactor</CODE> in <CODE>NumTheory</CODE>
 <LI><CODE>factorization&lt;RingElem&gt;</CODE> for the fns <CODE>factor</CODE> and <CODE>SqFreeFactor</CODE> and <CODE>ContentFreeFactor</CODE> in <CODE>PolyRing</CODE> (actually <CODE>TmpFactor</CODE>)
@@ -129,6 +141,7 @@ In CoCoALib there are just 4 instantiations of this template:
 
 <A NAME="toc7"></A>
 <H2>Bugs, shortcomings and other ideas</H2>
+
 <P>
 It would be safer to have pairs of factor-and-multiplicity rather than
 two separate vectors whose length must be the same.  However it may be
@@ -154,11 +167,14 @@ Bruns/Soeger asked whether requiring all factors to be in the same ring
 is necessary (esp. once CoCoA allows arithmetic between different rings).
 They cite the example of factors in ZZ[x] and remaining factor in QQ.
 </P>
+
 <A NAME="toc8"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2014</B>
 </P>
+
 <UL>
 <LI>March: fields are now private: new accessor fns; new append fn, and new fn to update rem factor
 </UL>
@@ -166,13 +182,13 @@ They cite the example of factors in ZZ[x] and remaining factor in QQ.
 <P>
 <B>2012</B>
 </P>
+
 <UL>
 <LI>October: chose "myMultiplicities" rather than "myExponents" as the field name.
 <LI>April: first version of doc (v0.9950)
 <P></P>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/factorization.html -i txt/factorization.txt -->
 </BODY></HTML>

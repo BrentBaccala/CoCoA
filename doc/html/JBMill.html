@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      JBMill</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      JBMill</H1>
-<FONT SIZE="4">
-<I>      &copy;  2011-2013 Mario Albert</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      JBMill</H1>
+<FONT SIZE="4"><I>      &copy;  2011-2013 Mario Albert</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for Janet Basis</A>
       <UL>
@@ -53,13 +54,17 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for Janet Basis</H2>
+
 <P>
 The files <CODE>JBDatastructure.H</CODE>, <CODE>JBSets.H</CODE> and <CODE>JBEnv</CODE> intodruces several classes for computing and working with <B>Janet Basis</B>. A normal user of the CoCoa library will use only the class <A HREF="JBMill.html"><CODE>JBMill</CODE></A>. With this class the user can do anything, which is related to Janet Bases. Starting with the computation of the Janet Basis for degree compatible orderings up to computing e.g. extremal betti numbers. 
 </P>
+
 <A NAME="toc2"></A>
 <H3>Computing a Janet Basis</H3>
+
 <P>
 There are several ways to compute a Jane Basis:
 In the following let <CODE>gens</CODE> a C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s (all elements in gens must be in the same ring), <CODE>I</CODE> an ideal, <CODE>crits</CODE> a C++ bitset&lt;3&gt;, <CODE>output</CODE> a flag, which specifies the Output (allowed flags are <CODE>GB</CODE> or <CODE>JB</CODE> (default is <CODE>JB</CODE>)) and <CODE>flag</CODE> a flag, which specifies the used algorithm (allowed flags are <CODE>TQDegree</CODE>, <CODE>TQBlockHigh</CODE>, <CODE>TQBlockLow</CODE> (default is <CODE>TQBlockLow</CODE>)). <CODE>crits</CODE> specifies the used involutive criteria (by default there are all three activated). <CODE>gens</CODE> or <CODE>I</CODE> contains the input set.  
@@ -67,6 +72,7 @@ In the following let <CODE>gens</CODE> a C++ vector of <A HREF="RingElem.html"><
 <P>
 The following algorithms only compute a Groeber Basis (resp. Janet Basis). The output is always a C++ vector of <A HREF="RingElem.html"><CODE>RingElem</CODE></A>s.
 </P>
+
 <UL>
 <LI><CODE>JanetBasis(gens, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
 <LI><CODE>JanetBasis(I, crits, output, strategy)</CODE> --  <CODE>crits</CODE>, <CODE>output</CODE> and <CODE>strategy</CODE> are not necessary. If they are not specified the algorithm uses the default values.
@@ -79,11 +85,14 @@ The following algorithms returns a <CODE>JBMill</CODE>
 
 <A NAME="toc3"></A>
 <H3>Using the JBMill</H3>
+
 <A NAME="toc4"></A>
 <H4>Always Works</H4>
+
 <P>
 In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis contained in <CODE>mill</CODE> generate the Ideal I which is a subset of the PolyRing P.
 </P>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBReturnJB(mill)</CODE></TD>
@@ -173,6 +182,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc5"></A>
 <H4>The Basis must be monomial</H4>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBComplementaryDecomposition(mill)</CODE></TD>
@@ -186,6 +196,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc6"></A>
 <H4>The Basis must be Pommaret</H4>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBMaxStronglyIndependentSet(mill)</CODE></TD>
@@ -199,6 +210,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc7"></A>
 <H4>The Basis must be a Pommaret and Homogenous</H4>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBDepth(mill)</CODE></TD>
@@ -220,6 +232,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc8"></A>
 <H4>The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex</H4>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBRegularity(mill)</CODE></TD>
@@ -245,6 +258,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc9"></A>
 <H4>The Basis must be a Pommaret and Homogenous and the ordering must be degrevlex and the ideal must be CohenMacaulay</H4>
+
 <TABLE BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>JBSocle(mill)</CODE></TD>
@@ -254,6 +268,7 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc10"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-Janet1.C">ex-Janet.C</A>
 <LI><A HREF="../../examples/index.html#ex-Janet2.C">ex-Janet2.C</A>
@@ -262,16 +277,21 @@ In the following let <CODE>mill</CODE> be a <CODE>JBMill</CODE>. The Janet Basis
 
 <A NAME="toc11"></A>
 <H2>Maintainer documentation for JBDatastructure.C, JBSets.C, JBEnv.C</H2>
+
 <P>
 We only explain the basic structure because there is very much code (~5500 loc). The implementation is divided in three parts:
 </P>
+
 <A NAME="toc12"></A>
 <H3>JBDatastructure.C</H3>
+
 <P>
 Here we define the basic datastructures, which are necessary to compute Janet-Bases fast. 
 </P>
+
 <A NAME="toc13"></A>
 <H4>JanetTriple</H4>
+
 <P>
 These class contains three informations. 
 First of all it contains the polynomial of our generating set. 
@@ -280,8 +300,10 @@ Normally the ancestor is the leading monomial of the polynomial contained in the
 But if the polynomial is the result of an involutive prolongation the ancestor is the leading monomial of the origin polynomial. 
 The last part contains a C++ <CODE>vector&lt;bool&gt;</CODE> which shows with which variables we already prolonged.
 </P>
+
 <A NAME="toc14"></A>
 <H4>JanetTree</H4>
+
 <P>
 The most important datastructure, but maybe also the worst one...
 The <CODE>JanetTree</CODE> is a binary tree where we order the generating set in variable and degree direction. 
@@ -291,8 +313,10 @@ The <CODE>JanetTree</CODE> contains only in the leafs a reference to the JaneTri
 The nodes contain a Handle class, which are either an internal handle class (no <CODE>``JanetTriple``</CODE>) or a leaf class (contain only a triple)
 Apart from that the nodes only contains datas about their position.
 </P>
+
 <A NAME="toc15"></A>
 <H3>JBSets.C</H3>
+
 <P>
 The algorithms for computing Janet-Bases dealing mainly with to sets <CODE>T</CODE> and <CODE>Q</CODE> (and <CODE>P</CODE>), which contain <CODE>JanetTriple</CODE>. 
 In every iteration some elements goes from <CODE>T</CODE> to <CODE>Q</CODE> and vica versa. 
@@ -306,23 +330,31 @@ The Sets <CODE>T</CODE>, <CODE>Q</CODE> and <CODE>P</CODE> contain only Pointers
 <P>
 In addition this class contains some useful functions to deal and manipulating elements in <CODE>T</CODE>, <CODE>Q</CODE> and <CODE>P</CODE>.
 </P>
+
 <A NAME="toc16"></A>
 <H3>JBEnv.C</H3>
+
 <P>
 This is the <I>main file</I>.
 </P>
+
 <A NAME="toc17"></A>
 <H4>JBEnv</H4>
+
 <P>
 The class <CODE>JBEnv</CODE> contains the basic informations about the ring.
 </P>
+
 <A NAME="toc18"></A>
 <H4>JBFlag</H4>
+
 <P>
 This class stores informations about the options which we use in the computation
 </P>
+
 <A NAME="toc19"></A>
 <H4>JBMill</H4>
+
 <P>
 In short: Everything else!
 The class contains the main algorithms for computing Janet Basis (<CODE>DegreeTQ</CODE> and <CODE>BlockTQ</CODE>). 
@@ -330,14 +362,16 @@ And every function which deals with the JanetBase.
 Maybe this is not a wise decision because this class gets very big.
 For the implemented algorithms I refer to the literature...
 </P>
+
 <A NAME="toc20"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 <B>TODO Index.html in examples</B>
 <U><B>The code requires tests! Immediately!</B></U>
 we always assume that <CODE>x1&gt;x2&gt;x3&gt; ... &gt; xn</CODE>
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/JBMill.html -i txt/JBMill.txt -->
 </BODY></HTML>

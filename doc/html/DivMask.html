@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      DivMask</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      DivMask</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005-2012 John Abbott, Anna Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      DivMask</H1>
+<FONT SIZE="4"><I>      &copy;  2005-2012 John Abbott, Anna Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -36,16 +37,18 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-DivMask1.C">ex-DivMask1.C</A>
 <LI><A HREF="../../examples/index.html#ex-DivMask2.C">ex-DivMask2.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 The main reason for creating a <CODE>DivMask</CODE> is to permit a quick, coarse
 test of divisibility between power products -- but before you read on, you
@@ -79,23 +82,24 @@ bits in the bitset, but they all satisfy the following guiding principle:
 	<BLOCKQUOTE>
 	if <CODE>t1</CODE> divides <CODE>t2</CODE> then <CODE>(DivMask(t1) &amp; DivMask(t2)) == DivMask(t1)</CODE>
 	</BLOCKQUOTE>
-<P></P>
 	<BLOCKQUOTE>
 	<I>i.e.</I> <CODE>DivMask(t1)</CODE> is a "subset" of <CODE>DivMask(t2)</CODE>
 	</BLOCKQUOTE>
-<P></P>
 <P>
 There are no other guarantees: in particular, the converse of the guiding
 principle does not hold in general.
 </P>
+
 <A NAME="constructors"></A>
 <H3>Constructors and pseudo-constructors</H3>
+
 <P>
 You can create five different sorts of <CODE>DivMaskRule</CODE>:
 </P>
 <P>
 WORK-IN-PROGRESS: explain what a DivMaskRule is
 </P>
+
 <DL>
 <DT> <CODE>NewDivMaskNull();</CODE></DT><DD>
     no bit is ever set (relatively fast, but otherwise pretty useless).
@@ -141,12 +145,15 @@ WORK-IN-PROGRESS: explain what a DivMaskRule is
 
 <A NAME="operations"></A>
 <H3>Operations</H3>
+
 <A NAME="toc5"></A>
 <H4>Operations with DivMaskRule</H4>
+
 <P>
 The type <CODE>DivMaskRule</CODE> is used to set the bits in a <CODE>DivMask</CODE> object.
 The possible function calls are:
 </P>
+
 <UL>
 <LI><CODE>DMR-&gt;myAssignFromExpv(mask, exps, NumIndets)</CODE> 
    -- sets mask according to PP with exponent vector exps.
@@ -162,6 +169,7 @@ The possible function calls are:
 
 <A NAME="toc6"></A>
 <H4>Operations with DivMask</H4>
+
 <P>
 The value of a <CODE>DivMask</CODE> object may be set any number of times (even using
 different <CODE>DivMaskRule</CODE>s on each occasion).  Any two <CODE>DivMask</CODE>s may be
@@ -173,25 +181,26 @@ There are a few comparison functions on <CODE>DivMask</CODE> objects -- these ar
 guaranteed to be very fast and independent of the <CODE>DivMaskRule</CODE>,
 unlike <CODE>myAssignFromExpv</CODE>
 </P>
+
 <UL>
 <LI><CODE>dm1 == dm2</CODE>         -- true iff the bitsets are equal
 <LI><CODE>dm1 != dm2</CODE>         -- false iff the bitsets are equal
 <LI><CODE>IsSubset(dm1, dm2)</CODE> -- true if every bit set in dm1 is set in dm2
 </UL>
 
-<P></P>
 <P>
 You can read the bits held inside a <CODE>DivMask</CODE> object using this function:
 </P>
+
 <UL>
 <LI><CODE>bits(dm)</CODE>  -- gives read-only access to the bitset inside the <CODE>DivMask</CODE>,
                the type of the result is <CODE>DivMask::mask_t</CODE> which is a
                typedef for a <CODE>std::bitset</CODE>.
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H2>Maintainer documentation</H2>
+
 <P>
 The class <CODE>DivMask</CODE> is pretty simple: we don't use a naked
 <CODE>bitset</CODE> to ensure that only a <CODE>DivMaskRule</CODE> can set the value.
@@ -199,10 +208,11 @@ Use of bitwise-and for modular reduction restricts <CODE>ourMaskWidth</CODE> to
 being a power of 2.  There are no member functions, and just one
 friend function (giving read access to the bitset):
 </P>
+
 <PRE>
      friend const mask_t bits(const DivMask&amp; dm);
 </PRE>
-<P></P>
+
 <P>
 The class <CODE>DivMaskRuleBase</CODE> is an abstract base class with an intrusive
 reference count: every concrete divmask rule must be derived from this
@@ -249,8 +259,10 @@ and subsequent bits will be in positions separated by multiples
 of step (where step is <CODE>24*floor(var/ourMaskWidth)+13</CODE> -- this was chosen because
 it happened to make <CODE>DivMaskHashingImpl</CODE> perform well in the CoCoALib tests).
 </P>
+
 <A NAME="toc8"></A>
 <H2>Bugs, Shortcomings, and other ideas</H2>
+
 <P>
 Publicly visible use of <CODE>SmallExponent_t</CODE> is most unfortunate; how to fix it?
 </P>
@@ -278,11 +290,14 @@ second possibility would exclude some ideas for implementing DivMasks
 <P>
 Documentation is too sarcastic.
 </P>
+
 <A NAME="toc9"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2006</B>
 </P>
+
 <UL>
 <LI>August:
 Removed almost all publicly visible references to SmallExponent_t;
@@ -293,8 +308,6 @@ DivMask remains to sorted out.
 Added new DivMask type: DivMaskHashingImpl.
 </UL>
 
-<P></P>
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/DivMask.html -i txt/DivMask.txt -->
 </BODY></HTML>

@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      RingHom</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      RingHom</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2010 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      RingHom</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2010 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for the files RingHom.H and RingHom.C</A>
       <UL>
@@ -44,8 +45,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for the files RingHom.H and RingHom.C</H2>
+
 <P>
 The class <CODE>RingHom</CODE> is intended to represent homomorphisms between rings.
 Currently there is no way to represent more general maps between rings.
@@ -57,8 +60,10 @@ The main operations available for <CODE>RingHom</CODE>s are application to a
 <A HREF="RingElem.html"><CODE>RingElem</CODE></A>, and composition: both operations use function application
 syntax (see below for details).
 </P>
+
 <A NAME="examples"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-RingHom1.C">ex-RingHom1.C</A>
 <LI><A HREF="../../examples/index.html#ex-RingHom2.C">ex-RingHom2.C</A>
@@ -67,15 +72,16 @@ syntax (see below for details).
 <LI><A HREF="../../examples/index.html#ex-RingHom5.C">ex-RingHom5.C</A>
 </UL>
 
-<P></P>
 <A NAME="constructors"></A>
 <H3>Constructors</H3>
+
 <P>
 Here is a complete list of pseudo-constructors for ring homomorphisms
 (some are defined in other files, <I>e.g.</I> <CODE>QuotientRing.H</CODE> or <CODE>FractionField.H</CODE>).
 You should check also  the documentation for <A HREF="CanonicalHom.html"><CODE>CanonicalHom</CODE></A> which tries to
 offer an easy way of building certain simple canonical homomorphisms.
 </P>
+
 <UL>
 <LI><CODE>IdentityHom(R)</CODE> --
   where <CODE>R</CODE> may be any <A HREF="ring.html"><CODE>ring</CODE></A>, gives the identity homomorphism on <CODE>R</CODE>
@@ -83,6 +89,7 @@ offer an easy way of building certain simple canonical homomorphisms.
 
 <A NAME="toc4"></A>
 <H4>Embeddings</H4>
+
 <UL>
 <LI><CODE>ZZEmbeddingHom(R)</CODE> --
          gives the unique homomorphism from <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A> to the <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>
@@ -104,6 +111,7 @@ offer an easy way of building certain simple canonical homomorphisms.
 
 <A NAME="toc5"></A>
 <H4>Induced homomorphisms</H4>
+
 <UL>
 <LI><CODE>InducedHom(RmodI, phi)</CODE> --
          where <CODE>RmodI</CODE> is a <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, gives the homomorphism
@@ -120,6 +128,7 @@ offer an easy way of building certain simple canonical homomorphisms.
 
 <A NAME="toc6"></A>
 <H4>Homomorphisms on polynomial rings</H4>
+
 <UL>
 <LI><CODE>PolyAlgebraHom(Rx, Ry, xImages)</CODE> -- where
  <UL>
@@ -146,6 +155,7 @@ offer an easy way of building certain simple canonical homomorphisms.
 
 <A NAME="toc7"></A>
 <H3>Applying a RingHom</H3>
+
 <P>
 A <CODE>RingHom</CODE> may applied using natural syntax:
 -  let phi be an object of type <CODE>RingHom</CODE>
@@ -154,12 +164,14 @@ A <CODE>RingHom</CODE> may applied using natural syntax:
 -  let N be an object of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>
 -  let q be an object of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>
 </P>
+
 <PRE>
     phi(x)  applies phi to x; error if owner(x) != domain(phi)
     phi(n)  applies phi to the image of n in domain(phi)
     phi(N)  applies phi to the image of N in domain(phi)
     phi(q)  applies phi to the image of q in domain(phi)
 </PRE>
+
 <P>
 In all cases the result is a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> belonging to the codomain of
 phi.  Currently <I>partial</I> homomorphisms are allowed, so applying a
@@ -173,42 +185,53 @@ domain of the <CODE>RingHom</CODE>) then an exception is thrown with code
 lies outside the domain then an exception with code
 <CODE>ERR::BadRingHomArg2</CODE> is thrown.
 </P>
+
 <A NAME="toc8"></A>
 <H3>Composition</H3>
+
 <P>
 Two <CODE>RingHom</CODE>s may be composed using a fairly natural syntax: if we have
 two <CODE>RingHom</CODE>s phi:R -&gt; S  and theta:S -&gt; T then their composition may
 be computed using the syntax
 </P>
+
 <PRE>
    theta(phi)   the composite homomorphism "apply phi first then theta"
 </PRE>
-<P></P>
+
 <P>
 If the domain of the outer homomorphism is different from the codomain of
 the inner homomorphism then an exception is thrown with code
 <CODE>ERR::BadCompose</CODE>.
 </P>
+
 <A NAME="toc9"></A>
 <H3>Domain and Codomain</H3>
+
 <P>
 We may ask for the domain and codomain of a <CODE>RingHom</CODE> phi:
 </P>
+
 <PRE>
     domain(phi)       gives a const ref to the domain
     codomain(phi)     gives a const ref to the codomain
 </PRE>
+
 <P>
 Note that the domain and codomain are merely <A HREF="ring.html"><CODE>ring</CODE></A>s, they "forget"
 any special ring type (such as <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A>).
 </P>
+
 <A NAME="toc10"></A>
 <H3>Kernel</H3>
+
 <P>
 Currently it is not possible to ask for the kernel of a <CODE>RingHom</CODE>.
 </P>
+
 <A NAME="toc11"></A>
 <H3>Member Functions for Operations on Raw Values</H3>
+
 <P>
 All operations on a <CODE>RingHom</CODE> are invisibly converted into member function
 calls on a <CODE>RingHomBase</CODE>.  It is possible to call these member functions
@@ -217,8 +240,10 @@ any sanity checking on their arguments (so they should be slightly faster
 but if you hand in incompatible arguments, you'll probably get an ugly
 crash).
 </P>
+
 <A NAME="toc12"></A>
 <H2>Maintainer documentation for the files RingHom.H and RingHom.C</H2>
+
 <P>
 These files contain two "generic" classes (<CODE>RingHom</CODE> and <CODE>RingHomBase</CODE>), and
 a trivial concrete class representing the identity ring homomorphism,
@@ -232,12 +257,14 @@ pointer" class to objects of type <CODE>RingHomBase</CODE>; this latter type is
 designed to support intrusive reference counting.  Beyond its role as a
 smart pointer <CODE>RingHom</CODE> offers four "function application" syntaxes:
 </P>
+
 <PRE>
     RingElem RingHom::operator()(ConstRefRingElem x) const;
     RingElem RingHom::operator()(long n) const;
     RingElem RingHom::operator()(const BigInt&amp; N) const;
     RingHom RingHom::operator()(const RingHom&amp;) const;
 </PRE>
+
 <P>
 The first three support a natural syntax for applying the homomorphism to a
 ring element, a small integer, or a large integer.  The last offers a
@@ -256,28 +283,32 @@ lead to a confusing and complex implementation (which probably would never
 have worked as I hoped).  The two <A HREF="ring.html"><CODE>ring</CODE></A> fields may be read using the accessor
 functions:
 </P>
+
 <PRE>
       const ring&amp; myDomain() const;
       const ring&amp; myCodomain() const;
 </PRE>
-<P></P>
+
 <P>
 A concrete class implementing a ring homomorphism must supply definition
 for the following (pure virtual) functions:
 </P>
+
 <PRE>
       virtual void myApply(RingBase::RawValue&amp; image, RingBase::ConstRawValue arg) const;
       virtual void myOutputSelf(std::ostream&amp; out) const;
 </PRE>
-<P></P>
+
 <P>
 DO NOTE THAT the two arguments to <CODE>myApply</CODE> normally belong to
 DIFFERENT rings.  <CODE>arg</CODE> belongs to <CODE>myDomain()</CODE> whereas <CODE>image</CODE>
 belongs to <CODE>myCodomain()</CODE>.  The function <CODE>myOutputSelf</CODE> should
 print out a useful description of the homomorphism.
 </P>
+
 <A NAME="toc13"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 Cannot compute a kernel of a RingHom.
 </P>
@@ -300,6 +331,7 @@ homomorphisms.
 Some special cases of homomorphic embeddings R --&gt; S:
 (may belong with the special types of ring to which they are associated)
 </P>
+
 <UL>
 <LI>(a) S is an identical copy of R
 <LI>(b) S is the same (poly)ring as R but with a different term ordering
@@ -312,14 +344,16 @@ Some special cases of homomorphic embeddings R --&gt; S:
 <LI>(h) S is the fraction field of R
 </UL>
 
-<P></P>
 <A NAME="toc14"></A>
 <H2>Some very old notes about implementing rings</H2>
+
 <P>
 This all needs to be sorted out!
 </P>
+
 <A NAME="toc15"></A>
 <H3>Mapping elements between rings automatically</H3>
+
 <P>
 How to decide whether a value can be mapped into the current_ring?
 </P>
@@ -332,6 +366,7 @@ current_ring e.g. Z inside Q(sqrt(2))[x,y,z].
 <P>
 One could argue that to create <CODE>Q(sqrt(2))[x,y,z]</CODE> we had to follow this path
 </P>
+
 <UL>
 <LI><CODE>Z</CODE> --&gt; fraction field <CODE>Q</CODE>
 <LI><CODE>Q</CODE> --&gt; polynomial ring (1 indet) or DUP extension <CODE>Q[gensym]</CODE>
@@ -401,10 +436,11 @@ retraction is to occur.  Obviously retraction can only be into rings
 <P>
 Other points to note:
 </P>
+
 <PRE>
   Q(x) = Z(x) = FrF(Z[x]) == FrF(FrF(Z)[x])
 </PRE>
-<P></P>
+
 <P>
 Q(alpha) = FrF(Z[alpha]) though denoms in Q(alpha) can be taken in Z
 </P>
@@ -414,6 +450,6 @@ is an ideal inside Q[alpha] whereas that on RHS is in Z[alpha].
 Furthermore Z[alpha]/I_alpha is <I>hairy</I> if the min poly of alpha is not monic!
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/RingHom.html -i txt/RingHom.txt -->
 </BODY></HTML>

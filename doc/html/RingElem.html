@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      RingElem</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      RingElem</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005-2010,2012 John Abbott, Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      RingElem</H1>
+<FONT SIZE="4"><I>      &copy;  2005-2010,2012 John Abbott, Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">Examples</A>
     <LI><A HREF="#toc2">User documentation</A>
@@ -55,8 +56,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-RingElem1.C">ex-RingElem1.C</A>
 <LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
@@ -69,9 +72,9 @@
 <LI><A HREF="../../examples/index.html#ex-NF.C">ex-NF.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation</H2>
+
 <P>
 The file <CODE>ring.H</CODE> introduces several classes used for representing
 rings and their elements.  A normal user of the CoCoA library will use
@@ -90,8 +93,10 @@ to which the value belongs, and the value itself.  For instance, this
 means that the zero elements of different rings are quite different
 objects.
 </P>
+
 <A NAME="constructors"></A>
 <H3>Constructors</H3>
+
 <P>
 Normally when creating a new <CODE>RingElem</CODE> we specify both the ring to
 which it belongs, and its initial value in that ring.  Let <CODE>R</CODE> be a
@@ -99,6 +104,7 @@ which it belongs, and its initial value in that ring.  Let <CODE>R</CODE> be a
 be a rational, <I>i.e.</I> a value of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>.  Let <CODE>r2</CODE> be a
 ring element.
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>RingElem r;</CODE></TD>
@@ -144,8 +150,13 @@ a zero divisor in the ring; if it does fail then an exception is
 thrown (with code <CODE>ERR::DivByZero</CODE>).
 </P>
 <P>
+<B>Note 3:</B> Passing a string as the constructor's second argument will automatically
+promote it to a symbol.
+</P>
+<P>
 You can create a copy of a ring element in the usual way:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>RingElem r(r2);</CODE></TD>
@@ -164,6 +175,7 @@ Naturally the last constructor works only if the denominator of the rational <CO
 These are not really constructors: you can get the zero and one of a
 <A HREF="ring.html"><CODE>ring</CODE></A> directly using the following:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>zero(R)</CODE></TD>
@@ -177,6 +189,7 @@ These are not really constructors: you can get the zero and one of a
 
 <A NAME="operations"></A>
 <H3>Operations on RingElems</H3>
+
 <P>
 <CODE>RingElem</CODE>s are designed to be easy and safe to use; the various checks
 do incur a certain run-time overhead, so a faster alternative is offered
@@ -184,12 +197,15 @@ do incur a certain run-time overhead, so a faster alternative is offered
 between <CODE>RingElem</CODE>s will fail if they do not belong to the same ring
 (the exception has code <CODE>ERR::MixedRings</CODE>).
 </P>
+
 <A NAME="toc5"></A>
 <H4>Assignment &amp; Swapping</H4>
+
 <P>
 Assigning an integer or rational to a <CODE>RingElem</CODE> wil automatically map
 the value into the ring to which the <CODE>RingElem</CODE> belongs.
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>r = n;</CODE></TD>
@@ -211,6 +227,7 @@ the value into the ring to which the <CODE>RingElem</CODE> belongs.
 
 <A NAME="toc6"></A>
 <H4>Arithmetic</H4>
+
 <P>
 Arithmetic operations between <CODE>RingElem</CODE>s will fail if they do not belong
 to the same ring (the exception has code <CODE>ERR::MixedRings</CODE>).  You may
@@ -224,6 +241,7 @@ and <CODE>r1</CODE>, <CODE>r2</CODE> be potentially const <CODE>RingElem</CODE>s
 Assume they are all associated to the same ring.
 Then the operations available are: (meanings are obvious)
 </P>
+
 <UL>
 <LI><CODE>cout &lt;&lt; r1</CODE>   -- output value of <CODE>r1</CODE> (decimal only, see notes)
 <LI><CODE>r1 == r2</CODE>     -- equality test 
@@ -241,12 +259,12 @@ Then the operations available are: (meanings are obvious)
 <LI><CODE>r^n</CODE>          -- <B>THIS DOES NOT WORK!!!</B> it does not even compile, you must use <CODE>power</CODE>
 </UL>
 
-<P></P>
 <P>
 Attempting to compute a <CODE>gcd</CODE> or <CODE>lcm</CODE> in a ring which not an
 effective GCD domain will produce an exception with code <CODE>ERR::NotTrueGCDDomain</CODE>.
 If <CODE>r1</CODE> or <CODE>r2</CODE> is a <CODE>BigRat</CODE> then an error is signalled at compile time.
 </P>
+
 <UL>
 <LI><CODE>gcd(r1, r2)</CODE>  -- an associate of the gcd
 <LI><CODE>lcm(r1, r2)</CODE>  -- an associate of the lcm
@@ -254,9 +272,9 @@ If <CODE>r1</CODE> or <CODE>r2</CODE> is a <CODE>BigRat</CODE> then an error is 
                                           <CODE>quot1=r1/gcd</CODE> and <CODE>quot2=r2/gcd</CODE>, here <CODE>r1</CODE> and <CODE>r2</CODE> must be <CODE>RingElem</CODE>.
 </UL>
 
-<P></P>
 <A NAME="toc7"></A>
 <H4>Queries</H4>
+
 <P>
 CoCoALib offers functions for querying various properties of <CODE>RingElem</CODE>s,
 and about relationships between <CODE>RingElems</CODE>.
@@ -265,6 +283,7 @@ and about relationships between <CODE>RingElems</CODE>.
 Let <CODE>r1</CODE> and <CODE>r2</CODE> be a (possibly const) <CODE>RingElem</CODE>s, and
 let <CODE>N</CODE> be a variable of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>, and <CODE>q</CODE> a variable of type <A HREF="BigRat.html"><CODE>BigRat</CODE></A>
 </P>
+
 <UL>
 <LI><CODE>owner(r1)</CODE>           -- the ring to which <CODE>r1</CODE> is associated
 <LI><CODE>IsZero(r1)</CODE>          -- true iff <CODE>r1</CODE> is zero               
@@ -284,14 +303,15 @@ let <CODE>N</CODE> be a variable of type <A HREF="BigInt.html"><CODE>BigInt</COD
    whose approx is put into d (false if overflow and <CODE>d</CODE> unchanged)
 </UL>
 
-<P></P>
 <P>
 Note that <CODE>IsDivisible</CODE> tests divisibility in the ring containing the
 values: so 1 is not divisible by 2 in <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>, but their images in
 <A HREF="RingQQ.html"><CODE>RingQQ</CODE></A> are divisible.
 </P>
+
 <A NAME="toc8"></A>
 <H4>Ordering</H4>
+
 <P>
 If the ring is an ordered domain then these functions may also be
 used.  You can discover whether CoCoALib thinks that the ring <CODE>R</CODE> is
@@ -309,6 +329,7 @@ Let <CODE>r1</CODE> and <CODE>r2</CODE> belong to an ordered ring.  Trying to us
 of  these functions on elements belonging to a ring which is not ordered
 will produce an exception with code <CODE>ERR::NotOrdDomain</CODE>.
 </P>
+
 <UL>
 <LI><CODE>sign(r1)</CODE> -- value is -1, 0 or +1 according as <CODE>r1</CODE> is negative, zero or positive 
 <LI><CODE>abs(r1)</CODE>            -- absolute value of <CODE>r1</CODE> 
@@ -326,19 +347,21 @@ will produce an exception with code <CODE>ERR::NotOrdDomain</CODE>.
 
 <A NAME="FiniteField"></A>
 <H4>More operations on RingElems of a finite field</H4>
+
 <P>
 If <CODE>owner(r)</CODE> is a finite field, or a polynomial ring whose coeffs are
 ini a finite field then the following functions may be used.  The <CODE>P</CODE>
 in the names of these function refers to the characteristic of the ring.
 </P>
+
 <UL>
 <LI><CODE>IsPthPower(r1)</CODE>      -- true iff <CODE>r1</CODE> has a p-th root where p is the ring characteristic (see also <CODE>PthRoot</CODE>)
 <LI><CODE>PthRoot(r1)</CODE>         -- returns the p-th root of <CODE>r1</CODE> (error if no p-th root exists)
 </UL>
 
-<P></P>
 <A NAME="FractionField"></A>
 <H4>More operations on RingElems of a FractionField</H4>
+
 <P>
  If <CODE>owner(r)</CODE> is a fraction field then the following functions may
 be used.  You can find out whether CoCoALib thinks that the ring <CODE>R</CODE>
@@ -349,6 +372,7 @@ is a fraction field by calling <CODE>IsFractionField(R)</CODE>: the result is
 Let <CODE>K</CODE> denote a <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
 Let <CODE>r</CODE> denote an element of <CODE>K</CODE>.
 </P>
+
 <UL>
 <LI><CODE>num(r)</CODE> -- gives a copy of the numerator of <CODE>r</CODE>
                  as an element of <CODE>BaseRing(K)</CODE>
@@ -356,15 +380,16 @@ Let <CODE>r</CODE> denote an element of <CODE>K</CODE>.
                  as an element of <CODE>BaseRing(K)</CODE>
 </UL>
 
-<P></P>
 <P>
 <B>Note:</B> the numerator and denominator are defined only upto
 multiples by a unit: so it is (theoretically) possible to have two
 elements of <CODE>FrF</CODE> which are equal but which have different
 numerators and denominators, for instance, (x-1)/(x-2) = (1-x)/(2-x)
 </P>
+
 <A NAME="QuotientRing"></A>
 <H4>More operations on RingElems of a QuotientRing</H4>
+
 <P>
 If <CODE>owner(r)</CODE> is a quotient ring then the following function may be
 called.  You can find out whether CoCoALib thinks that the ring <CODE>R</CODE>
@@ -379,6 +404,7 @@ In addition to the standard <CODE>RingElem</CODE> operations, elements of a
 Let <CODE>RmodI</CODE> denote a quotient ring.
 Let <CODE>r</CODE> denote a non-const element of <CODE>RmodI</CODE>.
 </P>
+
 <UL>
 <LI><CODE>CanonicalRepr(r)</CODE> -- produces a <A HREF="RingElem.html"><CODE>RingElem</CODE></A> belonging to <CODE>BaseRing(RmodI)</CODE>
  whose image under <CODE>QuotientingHom(RmodI)</CODE> is <CODE>r</CODE>.
@@ -386,9 +412,9 @@ Let <CODE>r</CODE> denote a non-const element of <CODE>RmodI</CODE>.
  an element of <A HREF="RingZZ.html"><CODE>RingZZ</CODE></A>.
 </UL>
 
-<P></P>
 <A NAME="RingTwinFloat"></A>
 <H4>More operations on RingElems of a RingTwinFloat</H4>
+
 <P>
 You can determine if an element belongs to a <I>twin-float</I> ring by
 calling <CODE>IsRingTwinFloat(owner(r))</CODE>: this yields <CODE>true</CODE> iff <CODE>r</CODE>
@@ -397,13 +423,13 @@ belongs to a twin-float ring.
 <P>
 Let <CODE>x</CODE>, <CODE>y</CODE> be <CODE>RingElem</CODE> belonging to a <CODE>RingTwinFloat</CODE>
 </P>
+
 <UL>
 <LI><CODE>DebugPrint(out, x)</CODE> -- print out both components of <CODE>x</CODE>
 <LI><CODE>IsPracticallyEqual(x, y)</CODE> --
             returns true if <CODE>IsZero(x-y)</CODE> otherwise false.
 </UL>
 
-<P></P>
 <P>
 In contrast the test <CODE>x==y</CODE> may throw a
     <CODE>RingTwinFloat::InsufficientPrecision</CODE> while
@@ -412,8 +438,10 @@ In contrast the test <CODE>x==y</CODE> may throw a
     criterion for an iterative approximation algorithm (<I>e.g.</I> see
     <CODE>test-RingTwinFloat4.C</CODE>).
 </P>
+
 <A NAME="PolyRing"></A>
 <H4>More operations on RingElems of a PolyRing</H4>
+
 <P>
 You can determine whether an element belongs to a <I>PolyRing</I> by
 calling <CODE>IsPolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
@@ -425,6 +453,7 @@ Let <CODE>f</CODE> denote a non-const element of <CODE>P</CODE>.
 Let <CODE>f1</CODE>, <CODE>f2</CODE> denote const elements of <CODE>P</CODE>.
 Let <CODE>v</CODE> denote a const vector of elements of <CODE>P</CODE>.
 </P>
+
 <UL>
 <LI><CODE>IsMonomial(f)</CODE>;   -- true iff <CODE>f</CODE> is non zero and of the form coeff*pp
 <LI><CODE>AreMonomials(v)</CODE>; -- true iff <CODE>v</CODE> is non zero and of the form coeff*pp
@@ -451,15 +480,18 @@ Let <CODE>v</CODE> denote a const vector of elements of <CODE>P</CODE>.
 <LI><CODE>deriv(f1, var)</CODE>   -- formal derivative of <CODE>f1</CODE> wrt. indet having index <CODE>var</CODE>.
 <LI><CODE>deriv(f1, x)</CODE>     -- derivative of <CODE>f1</CODE> w.r.t. <CODE>x</CODE>, <CODE>x</CODE> must be an indeterminate
                          (also works for f1 in <CODE>FractionField</CODE> of a <CODE>PolyRing</CODE>)
-</UL>
-
+<LI><CODE>f1 &lt;&lt; f2</CODE>         -- creates a RingHom mapping f1 (which must be an indeterminate)
+-                         to f2 and leaving all other indeterminates fixed
+<LI><CODE>f1 &lt;&lt; long</CODE>       -- creates a RingHom mapping f1 (which must be an indeterminate)
+-                         to the integer's image in the ring
 <P></P>
-<P>
 NOTE: to compute the <I>weighted degree</I> of a polynomial use the function
 <CODE>wdeg</CODE> defined for <CODE>RingElem</CODE> of a <A HREF="SparsePolyRing.html"><CODE>SparsePolyRing</CODE></A> (see below).
-</P>
+</UL>
+
 <A NAME="SparsePolyRing"></A>
 <H4>More operations on RingElems of a SparsePolyRing</H4>
+
 <P>
 You can determine whether an element belongs to a <I>sparse poly ring</I> by
 calling <CODE>IsSparsePolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
@@ -471,6 +503,7 @@ Let <CODE>f</CODE> denote a non-const element of <CODE>P</CODE>.
 Let <CODE>f1</CODE>, <CODE>f2</CODE> denote const elements of <CODE>P</CODE>.
 Let <CODE>expv</CODE> be a <CODE>vector&lt;long&gt;</CODE> of size equal to the number of indeterminates.
 </P>
+
 <UL>
 <LI><CODE>owner(f1)</CODE>    -- the owner of <CODE>f1</CODE> as a <CODE>ring</CODE>
 <LI><CODE>NumTerms(f1)</CODE> -- the number of terms in <CODE>f1</CODE> with non-zero coefficient.
@@ -499,11 +532,11 @@ Let <CODE>expv</CODE> be a <CODE>vector&lt;long&gt;</CODE> of size equal to the 
                         <CODE>c</CODE> is in <CODE>CoeffRing(P)</CODE>, and x[i] are the indets of <CODE>P</CODE>.
 </UL>
 
-<P></P>
 <P>
 Let <CODE>X</CODE> be an indet (<I>i.e.</I> a <CODE>RingElem</CODE> in <CODE>P</CODE>)
  or a vector of indices (<CODE>vector&lt;long&gt;</CODE>)
 </P>
+
 <UL>
 <LI><CODE>ContentWRT(f, X)</CODE> -- the content of <CODE>f</CODE> wrt the indet(s) <CODE>X</CODE>; result is a
                           <CODE>RingElem</CODE> in <CODE>P</CODE>
@@ -519,6 +552,7 @@ polynomial use <CODE>SparsePolyIter</CODE>s (see <A HREF="SparsePolyRing.html"><
 <P>
 We have still doubts on the usefulness of these two functions:
 </P>
+
 <UL>
 <LI><CODE>CmpWDegPartial(f1, f2, i)</CODE> -- compare the first <CODE>i</CODE> weighted
                           degrees of the LPPs of <CODE>f1</CODE> and <CODE>f2</CODE>;
@@ -531,6 +565,7 @@ We have still doubts on the usefulness of these two functions:
 Use the following two functions with great care: they throw an <B>error</B>
 if the <A HREF="PPOrdering.html"><CODE>PPOrdering</CODE></A> is not respected: (the coefficient <CODE>c</CODE> may be 0)
 </P>
+
 <UL>
 <LI><CODE>PushFront(f, c, t)</CODE>-- add to <CODE>f</CODE> the term <CODE>c</CODE>*t
                         where t is a PP belonging to <CODE>PPM(owner(f))</CODE>
@@ -551,8 +586,10 @@ The corresponding member functions <CODE>myPushFront/myPushBack</CODE> will not
 check the validity of these assumpions:  they should have a
 <CODE>CoCoA_ASSERT</CODE> to check in DEBUG mode.
 </P>
+
 <A NAME="DenseUPolyRing"></A>
 <H4>More operations on RingElems of a DenseUPolyRing</H4>
+
 <P>
 You can determine whether an element belongs to a <I>DenseUPolyRing</I> by
 calling <CODE>IsDenseUPolyRing(owner(r))</CODE>: the result is <CODE>true</CODE> iff <CODE>r</CODE>
@@ -562,6 +599,7 @@ belongs to a poly ring.
 Let <CODE>P</CODE> denote a <CODE>DenseUPolyRing</CODE>.
 Let <CODE>f</CODE> denote an element of <CODE>P</CODE>.
 </P>
+
 <UL>
 <LI><CODE>monomial(P,c,exp)</CODE>  -- <CODE>c</CODE>*x^<CODE>exp</CODE> as an element of <CODE>P</CODE>
                     with <CODE>c</CODE> an integer or in <CODE>CoeffRing(P)</CODE>
@@ -570,13 +608,13 @@ Let <CODE>f</CODE> denote an element of <CODE>P</CODE>.
                       (as a <CODE>ConstRingElem</CODE>, read-only)
 </UL>
 
-<P></P>
 <P>
 <B>WARNING</B> Use this functions with great care:  no checks on size and degree
 </P>
 <P>
 Let <CODE>f</CODE> denote a <I>non-const</I> element of <CODE>P</CODE>.
 </P>
+
 <UL>
 <LI><CODE>myAssignCoeff(f,c,d)</CODE> -- assigns the <CODE>d</CODE>-th coefficient
                               in <CODE>f</CODE> to <CODE>c</CODE>
@@ -586,6 +624,7 @@ Let <CODE>f</CODE> denote a <I>non-const</I> element of <CODE>P</CODE>.
 
 <A NAME="toc16"></A>
 <H3>Notes on operations</H3>
+
 <P>
 Operations combining elements of different rings will cause a run-time
 <B>error</B>.
@@ -614,14 +653,17 @@ The printing of ring elements is always in decimal regardless of the
 At this point, if you are new to CoCoALib, you should probably look
 at some of the example programs in the <CODE>examples/</CODE> directory.
 </P>
+
 <A NAME="toc17"></A>
 <H3>Writing functions with RingElems as arguments</H3>
+
 <P>
 One would normally expect to use the type <CODE>const RingElem&amp;</CODE> for
 read-only arguments which are <CODE>RingElem</CODE>s, and <CODE>RingElem&amp;</CODE> for
 read-write arguments.  Unfortunately, doing so would lead to problems
 with the CoCoA library.  <B>INSTEAD</B> you should use the types:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>ConstRefRingElem x</CODE></TD>
@@ -657,15 +699,19 @@ makes the pointer const while the pointed-to value remains alterable
 the desired behaviour we have to use another type: the type we have
 called <CODE>ConstRefRingElem</CODE>.
 </P>
+
 <A NAME="toc18"></A>
 <H3>ADVANCED USE OF RingElem</H3>
+
 <P>
 The rest of this section is for more advanced use of <A HREF="ring.html"><CODE>ring</CODE></A>s and
 <CODE>RingElem</CODE>s (<I>e.g.</I> by CoCoA library contributors).  If you are new to
 CoCoA, you need not read beyond here.
 </P>
+
 <A NAME="toc19"></A>
 <H4>Fast and Ugly Code</H4>
+
 <P>
 <B>WE DO NOT RECOMMEND</B> that you use what is described in this section.
 If you are curious to know a bit more how rings are implemented, you
@@ -690,16 +736,19 @@ calling member functions of the owning ring.  For instance, if x,y,z are
 all RingElem objects all BELONGING TO EXACTLY THE SAME RING then we can
 achieve
 </P>
+
 <PRE>
       x = y+z;
 </PRE>
+
 <P>
 slightly faster by calling
 </P>
+
 <PRE>
       owner(x)-&gt;my.Add(raw(x), raw(y), raw(z));
 </PRE>
-<P></P>
+
 <P>
 It should now be clear that the syntax involved is cumbersome and
 somewhat obscure.  For the future maintainability of the code the
@@ -721,8 +770,10 @@ Library.  See the file config.txt for more information.
 This fast, ugly, unsafe way of programming is made available for those who
 desperately need the speed.  If you're not desperate, don't use it!
 </P>
+
 <A NAME="toc20"></A>
 <H4>Fast, Ugly and Unsafe operations on raw values</H4>
+
 <P>
 Read the section <I>Fast and Ugly Code</I> before using any of these!
 </P>
@@ -732,6 +783,7 @@ Let <CODE>r</CODE> be a non-const raw value (<I>e.g.</I> <CODE>raw(x)</CODE>, wi
 Assume they are all owned by the ring <CODE>R</CODE>.
 Then the functions available are:
 </P>
+
 <UL>
 <LI><CODE>R-&gt;myNew()</CODE>        -- <I>construct</I> a new element of R, value=0
 <LI><CODE>R-&gt;myNew(n)</CODE>       -- <I>construct</I> a new element of R, value=n
@@ -768,6 +820,7 @@ Then the functions available are:
 
 <A NAME="toc21"></A>
 <H2>Maintainer documentation</H2>
+
 <P>
 (<B>NB</B> consider consulting also <A HREF="QuotientRing.html"><CODE>QuotientRing</CODE></A>, <A HREF="FractionField.html"><CODE>FractionField</CODE></A>
 and <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
@@ -803,6 +856,7 @@ obvious starting point for describing them -- you may find that you need
 to read the following more than once to comprehend it.  Here is a list
 of the classes:
 </P>
+
 <TABLE ALIGN="center" BORDER="1" CELLPADDING="4">
 <TR>
 <TD><CODE>ring</CODE></TD>
@@ -895,8 +949,10 @@ missing constness in the member function
 <CODE>RingElemConstRawPtr::myRawPtr</CODE> than it would be to cast it away in
 the <CODE>myRawPtr</CODE> function of <CODE>RingElemRawPtr</CODE>.
 </P>
+
 <A NAME="toc22"></A>
 <H4>Further comments about implementation aspects of the above classes.</H4>
+
 <P>
 The class <CODE>RingBase</CODE> declares a number of pure virtual functions for
 computing with ring elements.  Since these functions are pure they
@@ -904,6 +960,7 @@ must all be fully defined in any instantiable ring class
 (e.g. <CODE>RingZZImpl</CODE> or <CODE>RingFpImpl</CODE>).  These member functions follow
 certain conventions:
 </P>
+
 <DL>
 <DT><B>RETURN VALUES</B>:</DT><DD>
    most arithmetic functions return no value, instead the
@@ -933,6 +990,7 @@ definition or merely to avoid having to define inappropriate member
 functions (<I>e.g.</I> gcd functions when the ring cannot be a gcd domain).
 Here is a list of them:
 </P>
+
 <UL>
 <LI><CODE>myIsUnit(x)</CODE>               -- default checks that 1 is divisible by <CODE>x</CODE>
 <LI><CODE>myGcd(lhs, x, y)</CODE>          -- gives an error:
@@ -970,6 +1028,7 @@ into member function calls of the corresponding owning ring.  Here is
 the source code for addition of ring elements -- it typifies the
 implementation of operations on ring elements.
 </P>
+
 <PRE>
     RingElem operator+(ConstRefRingElem x, ConstRefRingElem y)
     {
@@ -983,7 +1042,7 @@ implementation of operations on ring elements.
       return ans;
     }
 </PRE>
-<P></P>
+
 <P>
 The arguments are of type <CODE>ConstRefRingElem</CODE> since they are
 read-only, and the return type is <CODE>RingElem</CODE> since it is new
@@ -1011,8 +1070,10 @@ possible the concrete implementations should be <B>exception safe</B>, <I>i.e.</
 should offer either the strong exception guarantee or the no-throw
 guarantee (according to the definitions in <I>Exceptional C++</I> by Sutter).
 </P>
+
 <A NAME="toc23"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 I have chosen not to use <CODE>operator^</CODE> for computing powers because of a
 significant risk of misunderstanding between programmer and compiler.
@@ -1065,11 +1126,14 @@ practice.
 <CODE>gcd</CODE> and <CODE>lcm</CODE>: there is no guarantee on sign/monic because it may
 be costly to compute and generally useless.
 </P>
+
 <A NAME="toc24"></A>
 <H2>Main changes</H2>
+
 <P>
 <B>2013</B>
 </P>
+
 <UL>
 <LI>May (v0.9953):
  <UL>
@@ -1078,7 +1142,6 @@ be costly to compute and generally useless.
  </UL>
 </UL>
 
-
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/RingElem.html -i txt/RingElem.txt -->
 </BODY></HTML>

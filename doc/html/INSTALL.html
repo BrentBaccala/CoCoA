@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      INSTALL</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      INSTALL</H1>
-<FONT SIZE="4">
-<I>      &copy;  2013,2014 John Abbott and Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      INSTALL</H1>
+<FONT SIZE="4"><I>      &copy;  2013,2014 John Abbott and Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">INSTALLATION guide for CoCoALib</A>
       <UL>
@@ -41,18 +42,23 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>INSTALLATION guide for CoCoALib</H2>
+
 <P>
 CoCoALib is supplied as <B>SOURCE</B> code in C++, and so must be <B>COMPILED</B>
 before you can use it -- these instructions tell you how to do this on a
 GNU/Linux computer (and probably Mac OS X).  See below for Microsoft Windows.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Prerequisites</H3>
+
 <P>
 Before compilation you must ensure that you have available:-
 </P>
+
 <UL>
 <LI>the GNU <CODE>make</CODE> program (other versions may work too);
 <LI>a C++ compiler together with the standard C++ libraries (<I>e.g.</I> <CODE>g++</CODE>)
@@ -63,27 +69,31 @@ Before compilation you must ensure that you have available:-
 
 <A NAME="toc3"></A>
 <H3>Compilation of CoCoALib</H3>
+
 <P>
 Use the <CODE>cd</CODE> comand to go to the root directory <CODE>CoCoALib-nnn</CODE>.
 In most cases the following two commands will suffice:
 </P>
+
 <PRE>
     ./configure
     make
 </PRE>
-<P></P>
+
 <P>
 The command <CODE>make</CODE> compiles CoCoALib (and puts it in <CODE>lib/libcocoa.a</CODE>);
 it also compiles &amp; runs the test suite, and will compile CoCoA-5 if possible.
 The compilation generally takes a few minutes.  If there were no problems
 you'll get the reassuring message:
 </P>
+
 <PRE>
   Good news: all tests passed
 </PRE>
-<P></P>
+
 <A NAME="toc4"></A>
 <H4>Notes</H4>
+
 <P>
 (1) The configure script looks for the GMP library, and makes a few checks.
     It assumes your compiler is <CODE>g++</CODE>.  If it encounters a problem, it will
@@ -97,9 +107,11 @@ you'll get the reassuring message:
 <P>
 (3) For the adventurous: the command
 </P>
+
 <PRE>
         ./configure --help
 </PRE>
+
 <P>
     explains the various options the script recognizes.
 </P>
@@ -113,32 +125,39 @@ you'll get the reassuring message:
     But <B>beware</B> that CoCoALib does not generally check for exponent overflow
     during polynomial arithmetic!
 </P>
+
 <A NAME="toc5"></A>
 <H3>Documentation &amp; Examples</H3>
+
 <P>
 Main documentation for CoCoALib: <A HREF="index.html"><CODE>index</CODE></A>
 </P>
 <P>
 Example programs using CoCoALib: <A HREF="../../examples/index.html"><CODE>../../examples/index</CODE></A>
 </P>
+
 <A NAME="toc6"></A>
 <H3>Troubleshooting</H3>
+
 <P>
 If you encounter problems while compiling or using CoCoALib,
 the best way to let us know is to report the issue via
 </P>
+
 <PRE>
      http://cocoa.dima.unige.it/redmine/
 </PRE>
-<P></P>
+
 <P>
 Please tell us also the platform and compiler you are using.
 </P>
 <P>
 Alternatively you can send us email at <CODE>cocoa@dima.unige.it</CODE>
 </P>
+
 <A NAME="toc7"></A>
 <H2>Installing CoCoA on Microsoft Windows</H2>
+
 <P>
 You can build <CODE>CoCoALib</CODE> and <CODE>CoCoA-5</CODE> on a <I>Microsoft Windows</I>
 computer by using <CODE>Cygwin</CODE>, a free package which provides a
@@ -148,8 +167,10 @@ Linux-like environment (see <CODE>http://www.cygwin.com/</CODE>).
 Once you have installed <CODE>Cygwin</CODE>, start its terminal emulator,
 and then follow the usual instructions above for compiling <CODE>CoCoALib</CODE>.
 </P>
+
 <A NAME="toc8"></A>
 <H3>Installing Cygwin</H3>
+
 <P>
 <B>IMPORTANT:</B> installing Cygwin can take quite some time.
 </P>
@@ -162,6 +183,7 @@ You will be asked which mirror site to download from;
 pick a nearby one (<I>e.g.</I> in your country).
 Using that script select the following extension packages:
 </P>
+
 <UL>
 <LI>gcc-g++
 <LI>make
@@ -172,7 +194,6 @@ Using that script select the following extension packages:
 <LI>emacs
 </UL>
 
-<P></P>
 <P>
 Once you have <CODE>Cygwin</CODE> working, you can build CoCoA.  Download the
 CoCoA sources, and put the downloaded CoCoA file in your cygwin
@@ -180,8 +201,10 @@ filespace (<I>e.g.</I> in your cygwin home which is the folder
 <CODE>c:\cygwin\home\</CODE><I>userid</I>) so it can be accessed from a cygwin
 "terminal".  Now follow the instructions above.
 </P>
+
 <A NAME="toc9"></A>
 <H4>CoCoA-5 GUI</H4>
+
 <P>
 This is a bit complicated (we don't really recommend it).
 </P>
@@ -189,6 +212,7 @@ This is a bit complicated (we don't really recommend it).
 If you want to build the <CODE>CoCoA-5</CODE> GUI, you must obtain also
 these extension packages for Cygwin
 </P>
+
 <UL>
 <LI>qt4-devel-tools
 <LI>libqtcore4 
@@ -201,13 +225,14 @@ these extension packages for Cygwin
 <LI>emacs-X11    (not necessary, but probably helpful)
 </UL>
 
-<P></P>
 <P>
 Inside Cygwin copy the file <CODE>/lib/qt4/bin/qmake.exe</CODE> into the
 directory <CODE>/usr/local/bin/</CODE>.
 </P>
+
 <A NAME="toc10"></A>
 <H3>In Case of Trouble</H3>
+
 <P>
 We cannot really help you, as we have almost no experience ourselves
 of Microsoft computers.  Switch to Linux, or try searching on the internet...
@@ -217,6 +242,7 @@ The following instructions may help if you cannot start the GUI.
 If the Xserver does not start properly, create (from MS Windows)
 a <CODE>.bat</CODE> file in the folder <CODE>c:\cygwin</CODE> containing the following
 </P>
+
 <PRE>
   @echo off
   
@@ -233,7 +259,7 @@ a <CODE>.bat</CODE> file in the folder <CODE>c:\cygwin</CODE> containing the fol
   
   pause
 </PRE>
-<P></P>
+
 <P>
 and run it (from MS Windows).
 </P>
@@ -242,6 +268,7 @@ Set up the configuration of the xserver to create a CoCoA-5 shortcut:
 in a cygwin terminal, create a file called <CODE>.XWinrc</CODE> containing the
 following:
 </P>
+
 <PRE>
   SilentExit
   Menu apps {
@@ -254,15 +281,16 @@ following:
   }
   RootMenu apps
 </PRE>
-<P></P>
+
 <P>
 To have the CoCoA-5 GUI start automatically when you start <CODE>Cygwin</CODE>, place
 the following line in a file called <CODE>.startxwinrc</CODE> in your cygwin home directory.
 </P>
+
 <PRE>
   /home/&lt;USERID&gt;/CoCoALib/src/CoCoA-5/C5.exe  --packageDir CoCoALib/src/CoCoA-5/packages
 </PRE>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/INSTALL.html -i txt/INSTALL.txt -->
 </BODY></HTML>

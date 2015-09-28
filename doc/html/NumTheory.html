@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      NumTheory</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      NumTheory</H1>
-<FONT SIZE="4">
-<I>      &copy;  2009,2012-2013 John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      NumTheory</H1>
+<FONT SIZE="4"><I>      &copy;  2009,2012-2013 John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation</A>
       <UL>
@@ -36,10 +37,13 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation</H2>
+
 <A NAME="toc2"></A>
 <H3>Generalities</H3>
+
 <P>
 The functions in the <CODE>NumTheory</CODE> file are predominantly basic
 operations from number theory.  Most of the functions may be
@@ -54,15 +58,17 @@ or some other specialized library/system.
 See also <A HREF="IntOperations.html"><CODE>IntOperations</CODE></A> for very basic arithmetic operations on integers,
 and <A HREF="BigRat.html"><CODE>BigRat</CODE></A> for very basic arithmetic operations on rational numbers.
 </P>
+
 <A NAME="examples"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-NumTheory1.C">ex-NumTheory1.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc4"></A>
 <H3>The Functions Available For Use</H3>
+
 <P>
 Several of these functions give errors if they are handed unsuitable values:
 unless otherwise indicated below the error is of type <CODE>ERR::BadArg</CODE>.
@@ -72,6 +78,7 @@ less than 2 (or an <CODE>unsigned long</CODE> value too large to fit into a <COD
 <P>
 The main functions available are:
 </P>
+
 <UL>
 <LI><CODE>gcd(m,n)</CODE> computes the non-negative gcd of <CODE>m</CODE> and <CODE>n</CODE>.  If both args are machine integers, the result is of type <CODE>long</CODE> (or error if it does not fit); otherwise result is of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.
 <LI><CODE>ExtGcd(a,b,m,n)</CODE> computes the non-negative gcd of <CODE>m</CODE> and <CODE>n</CODE>; also sets <CODE>a</CODE> and <CODE>b</CODE> so that <CODE>gcd = a*m+b*n</CODE>.  If <CODE>m</CODE> and <CODE>n</CODE> are machine integers then <CODE>a</CODE> and <CODE>b</CODE> must be of type (signed) <CODE>long</CODE>.  If <CODE>m</CODE> and <CODE>n</CODE> are of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A> then <CODE>a</CODE> and <CODE>b</CODE> must also be of type <A HREF="BigInt.html"><CODE>BigInt</CODE></A>.  The cofactors <CODE>a</CODE> and <CODE>b</CODE> satisfy <CODE>abs(a) &lt;= abs(n)/2g</CODE> and <CODE>abs(b) &lt;= abs(m)/2g</CODE> where <CODE>g</CODE> is the gcd (inequalities are strict if possible).  Error if <CODE>m=n=0</CODE>.
@@ -96,6 +103,7 @@ The main functions available are:
 
 <A NAME="toc5"></A>
 <H4>Continued Fractions</H4>
+
 <P>
 Several of these functions give errors if they are handed unsuitable values:
 unless otherwise indicated below the error is of type <CODE>ERR::BadArg</CODE>.
@@ -106,6 +114,7 @@ Recall that any real number has an expansion as a <B>continued fraction</B>
 is finite for any rational number.  We adopt the following conventions which
 guarantee that the expansion is unique:
 </P>
+
 <UL>
 <LI>the last partial quotient is greater than 1 (except for the expansion of integers &lt;= 1)
 <LI>only the very first partial quotient may be non-positive.
@@ -117,6 +126,7 @@ For example, with these conventions the expansion of -7/3 is (-3, 1, 2).
 <P>
 The main functions available are:
 </P>
+
 <UL>
 <LI><CODE>ContFracIter(q)</CODE> constructs a new continued fraction iterator object
 <LI><CODE>IsEnded(CFIter)</CODE> true iff the iterator has moved past the last <I>partial quotient</I>
@@ -139,6 +149,7 @@ The main functions available are:
 
 <A NAME="toc6"></A>
 <H4>Chinese Remaindering -- Integer Reconstruction</H4>
+
 <P>
 CoCoALib offers the class <CODE>CRTMill</CODE> for reconstructing an integer from
 several residue-modulus pairs via Chinese Remaindering.  At the moment the
@@ -147,6 +158,7 @@ moduli from distinct pairs must be coprime.
 <P>
 The operations available are:
 </P>
+
 <UL>
 <LI><CODE>CRTMill()</CODE> ctor; initially the residue is 0 and the modulus is 1
 <LI><CODE>CRT.myAddInfo(res,mod)</CODE> give a new residue-modulus pair to the <CODE>CRTMill</CODE> (error if <CODE>mod</CODE> is not coprime to all previous moduli)
@@ -157,6 +169,7 @@ The operations available are:
 
 <A NAME="toc7"></A>
 <H4>Rational Reconstruction</H4>
+
 <P>
 CoCoALib offers two heuristic methods for reconstructing rationals from
 residue-modulus pairs; they have the same user interface but internally one
@@ -167,6 +180,7 @@ result.
 <P>
 The constructors available are:
 </P>
+
 <UL>
 <LI><CODE>RatReconstructByContFrac(threshold)</CODE> ctor for continued fraction method mill with given threshold (0 --&gt; use default)
 <LI><CODE>RatReconstructByLattice(SafetyFactor)</CODE> ctor for lattice method mill with given <CODE>SafetyFactor</CODE> (0 --&gt; use default)
@@ -175,6 +189,7 @@ The constructors available are:
 <P>
 The operations available are:
 </P>
+
 <UL>
 <LI><CODE>reconstructor.myAddInfo(res,mod)</CODE> give a new residue-modulus pair to the reconstructor
 <LI><CODE>IsConvincing(reconstructor)</CODE> gives <CODE>true</CODE> iff the mill can produce a <I>convincing</I> result
@@ -186,12 +201,14 @@ There is also a function for deterministic rational reconstruction which
 requires certain bounds to be given in input.  It uses the continued fraction
 method.
 </P>
+
 <UL>
 <LI><CODE>RatReconstructWithBounds(e,P,Q,res,mod)</CODE> where <CODE>e</CODE> is upper bound for number of "bad" moduli, <CODE>P</CODE> and <CODE>Q</CODE> are upper bounds for numerator and denominator of the rational to be reconstructed, and <CODE>(res[i],mod[i])</CODE> is a residue-modulus pair with distinct moduli being coprime.
 </UL>
 
 <A NAME="toc8"></A>
 <H2>Maintainer Documentation</H2>
+
 <P>
 Correctness of <CODE>ExtendedEuclideanAlg</CODE> is not immediately clear,
 because the cofactor variables could conceivably overflow -- in fact
@@ -228,8 +245,10 @@ iterator for zero is already ended.
 <P>
 <CODE>CFApproximantsIter</CODE> delegates most of the work to <CODE>ContFracIter</CODE>.
 </P>
+
 <A NAME="toc9"></A>
 <H2>Bugs, Shortcomings, etc.</H2>
+
 <P>
 Several functions return <CODE>long</CODE> values when perhaps <CODE>unsigned long</CODE>
 would possibly be better choice (since it offers a greater range, and
@@ -264,6 +283,6 @@ it will turn out a bit messy).
 <CODE>CFApproximantsIter::operator++()</CODE> should be made more efficient.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/NumTheory.html -i txt/NumTheory.txt -->
 </BODY></HTML>

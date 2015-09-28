@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      SparsePolyRing</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      SparsePolyRing</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2007  John Abbott</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      SparsePolyRing</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2007  John Abbott</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#examples">Examples</A>
     <LI><A HREF="#toc2">User documentation for SparsePolyRing</A>
@@ -36,8 +37,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="examples"></A>
 <H2>Examples</H2>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-PolyRing1.C">ex-PolyRing1.C</A>
 <LI><A HREF="../../examples/index.html#ex-PolyRing2.C">ex-PolyRing2.C</A>
@@ -47,9 +50,9 @@
 <LI><A HREF="../../examples/index.html#ex-NF.C">ex-NF.C</A>
 </UL>
 
-<P></P>
 <A NAME="toc2"></A>
 <H2>User documentation for SparsePolyRing</H2>
+
 <P>
 <CODE>SparsePolyRing</CODE> is an abstract class (inheriting from <A HREF="PolyRing.html"><CODE>PolyRing</CODE></A>)
 representing rings of polynomials; in particular, rings of sparse
@@ -73,11 +76,14 @@ power product (<A HREF="PPMonoidElem.html"><CODE>PPMonoidElem</CODE></A>) in the
 <P>
 See <A HREF="RingElem.html#SparsePolyRing"><CODE>RingElem</CODE> SparsePolyRing</A> for operations on its elements.
 </P>
+
 <A NAME="constructors"></A>
 <H3>Pseudo-constructors</H3>
+
 <P>
 Currently there are four functions to create a polynomial ring:
 </P>
+
 <DL>
 <DT> <CODE>NewPolyRing(CoeffRing, NumIndets)</CODE></DT><DD>
     This creates a sparse polynomial ring with coefficients in <CODE>CoeffRing</CODE>
@@ -103,7 +109,6 @@ Currently there are four functions to create a polynomial ring:
 will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotSparsePolyRing</CODE> if needed.
 </DL>
 
-<P></P>
 <P>
 In place of <CODE>NewPolyRing</CODE> you may use <CODE>NewPolyRing_DMPI</CODE>; this creates a
 sparse poly ring which uses a more compact internal representation (which probably
@@ -112,20 +117,23 @@ the power products.  There is also <CODE>NewPolyRing_DMPII</CODE> which uses a s
 compact internal representation, but which may be used only when the coefficients
 are in a small finite field and the power products are in a <CODE>PPMonoidOv</CODE>.
 </P>
+
 <A NAME="query"></A>
 <H3>Query and cast</H3>
+
 <P>
 Let <CODE>R</CODE> be an object of type <A HREF="ring.html"><CODE>ring</CODE></A>.
 </P>
+
 <UL>
 <LI><CODE>IsSparsePolyRing(R)</CODE> -- <CODE>true</CODE> if <CODE>R</CODE> is actually <CODE>SparsePolyRing</CODE>
 <LI><CODE>SparsePolyRingPtr(R)</CODE> --  pointer to impl of <CODE>R</CODE> (for calling mem fns);
 will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotSparsePolyRing</CODE> if needed
 </UL>
 
-<P></P>
 <A NAME="toc5"></A>
 <H3>Operations on a SparsePolyRing</H3>
+
 <P>
 In addition to the standard <A HREF="PolyRing.html#operations"><CODE>PolyRing</CODE> operations</A>, a
 <CODE>SparsePolyRing</CODE> may be used in other functions.
@@ -133,6 +141,7 @@ In addition to the standard <A HREF="PolyRing.html#operations"><CODE>PolyRing</C
 <P>
 Let <CODE>P</CODE> be an object of type <CODE>SparsePolyRing</CODE>.
 </P>
+
 <UL>
 <LI><CODE>PPM(P)</CODE>         -- the PPMonoid of <CODE>P</CODE>.
 <LI><CODE>OrdMat(P)</CODE>      --   a matrix defining the term ordering on <CODE>P</CODE>.
@@ -140,9 +149,9 @@ Let <CODE>P</CODE> be an object of type <CODE>SparsePolyRing</CODE>.
 <LI><CODE>GradingMat(P)</CODE> --  the matrix defining the grading on <CODE>P</CODE>
 </UL>
 
-<P></P>
 <A NAME="toc6"></A>
 <H3>Operations with SparsePolyIters</H3>
+
 <P>
 A <CODE>SparsePolyIter</CODE> (class defined in SparsePolyRing.H) is a way to
 iterate through the summands in the polynomial without knowing the
@@ -156,6 +165,7 @@ See also the functions <CODE>coefficients</CODE>, <CODE>CoefficientsWRT</CODE>,
 Let <CODE>f</CODE> denote a non-const element of P.
 Let <CODE>it1</CODE> and <CODE>it2</CODE> be two <CODE>SparsePolyIter</CODE>s running over the same polynomial.
 </P>
+
 <UL>
 <LI><CODE>BeginIter(f)</CODE> -- a <CODE>SparsePolyIter</CODE> pointing to the first term in <CODE>f</CODE>.
 <LI><CODE>EndIter(f)</CODE>   -- a <CODE>SparsePolyIter</CODE> pointing to one-past-the-last term
@@ -165,6 +175,7 @@ Let <CODE>it1</CODE> and <CODE>it2</CODE> be two <CODE>SparsePolyIter</CODE>s ru
 <P>
 <B>Changing the value of <CODE>f</CODE> invalidates all iterators over <CODE>f</CODE>.</B>
 </P>
+
 <UL>
 <LI><CODE>coeff(it1)</CODE>    -- read-only access to the coeff of the current term
 <LI><CODE>PP(it1)</CODE>       -- read-only access to the pp of the current term
@@ -180,6 +191,7 @@ Let <CODE>it1</CODE> and <CODE>it2</CODE> be two <CODE>SparsePolyIter</CODE>s ru
 
 <A NAME="toc7"></A>
 <H4>Examples</H4>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-PolyIterator1.C">ex-PolyIterator1.C</A>
 <LI><A HREF="../../examples/index.html#ex-PolyIterator2.C">ex-PolyIterator2.C</A>
@@ -187,6 +199,7 @@ Let <CODE>it1</CODE> and <CODE>it2</CODE> be two <CODE>SparsePolyIter</CODE>s ru
 
 <A NAME="toc8"></A>
 <H2>Maintainer documentation for SparsePolyRing</H2>
+
 <P>
 The exact nature of a <I>term</I> in a polynomial is hidden from public view:
 it is not possible to get at any term in a polynomial by any publicly
@@ -204,8 +217,10 @@ The implementations in SparsePolyRing.C are all very simple: they just conduct
 some sanity checks on the function arguments before passing them to the
 PolyRing member function which will actually do the work.
 </P>
+
 <A NAME="toc9"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 Too many of the iterator functions are inline.  Make them out of line, then
 use profiler to decide which should be inline.
@@ -228,6 +243,6 @@ myAddClear, myAddMul, myReductionStep, myReductionStepGCD, myDeriv.
 Should there be a RingHom accepting IndetImage (in case of univariate polys)?
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/SparsePolyRing.html -i txt/SparsePolyRing.txt -->
 </BODY></HTML>

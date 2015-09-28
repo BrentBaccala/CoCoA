@@ -1,19 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META NAME="generator" CONTENT="http://txt2tags.org">
 <LINK REL="stylesheet" TYPE="text/css" HREF="cocoalib-doc.css">
 <TITLE>      QuotientRing</TITLE>
 </HEAD><BODY BGCOLOR="white" TEXT="black">
-<P ALIGN="center"><CENTER><H1>      QuotientRing</H1>
-<FONT SIZE="4">
-<I>      &copy;  2005,2012 John Abbott, Anna M. Bigatti</I><BR>
-      GNU Free Documentation License, Version 1.2
-</FONT></CENTER>
+<CENTER>
+<H1>      QuotientRing</H1>
+<FONT SIZE="4"><I>      &copy;  2005,2012 John Abbott, Anna M. Bigatti</I></FONT><BR>
+<FONT SIZE="4">      GNU Free Documentation License, Version 1.2</FONT>
+</CENTER>
 
 <P></P>
 <HR NOSHADE SIZE=1>
 <P></P>
+
     <UL>
     <LI><A HREF="#toc1">User documentation for QuotientRing</A>
       <UL>
@@ -36,8 +37,10 @@
 <P>
       <center><a href="index.html">CoCoALib Documentation Index</a></center>
 </P>
+
 <A NAME="toc1"></A>
 <H2>User documentation for QuotientRing</H2>
+
 <P>
 A <CODE>QuotientRing</CODE> is an abstract class (inheriting from <A HREF="ring.html"><CODE>ring</CODE></A>)
 representing quotients of a <A HREF="ring.html"><CODE>ring</CODE></A> by an <A HREF="ideal.html"><CODE>ideal</CODE></A>.
@@ -45,8 +48,10 @@ representing quotients of a <A HREF="ring.html"><CODE>ring</CODE></A> by an <A H
 <P>
 See <A HREF="RingElem.html#QuotientRing"><CODE>RingElem</CODE> QuotientRing</A> for operations on its elements.
 </P>
+
 <A NAME="toc2"></A>
 <H3>Examples</H3>
+
 <UL>
 <LI><A HREF="../../examples/index.html#ex-RingFp1.C">ex-RingFp1.C</A>
 <LI><A HREF="../../examples/index.html#ex-RingFp2.C">ex-RingFp2.C</A>
@@ -55,6 +60,7 @@ See <A HREF="RingElem.html#QuotientRing"><CODE>RingElem</CODE> QuotientRing</A> 
 <P>
 Extended example of use:
 </P>
+
 <PRE>
     RingZZ ZZ = RingZZ();           // a copy of the ring of integers
     ring ZZmod10 = NewZZmod(10);    // represents ZZ/(10) integers modulo 10
@@ -68,9 +74,10 @@ Extended example of use:
     RingHom theta = QuotientingHom(S); // any ring hom from ZZ to S will do instead
     RingHom theta_bar = NewInducedHom(ZZmod10, theta); // induced ring hom from ZZmod10 to S
 </PRE>
-<P></P>
+
 <A NAME="constructors"></A>
 <H3>Constructors and Pseudo-constructors</H3>
+
 <UL>
 <LI><CODE>NewQuotientRing(R, I)</CODE> -- creates a new <A HREF="ring.html"><CODE>ring</CODE></A> representing the
 quotient <CODE>R</CODE>/<CODE>I</CODE>.  <CODE>I</CODE> must be an ideal of <CODE>R</CODE>; odd things may
@@ -86,17 +93,19 @@ BUGS).
 will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotQuotRing</CODE> if needed.
 </UL>
 
-<P></P>
 <A NAME="toc4"></A>
 <H4>NewZZmod or NewRingFp?</H4>
+
 <P>
 If <CODE>n</CODE> is a small prime then <CODE>NewZZmod(n)</CODE> produces the same result as
 <CODE>NewRingFp(n)</CODE> (or perhaps <CODE>NewRingFpDouble(n)</CODE>).  If <CODE>n</CODE> is not a
 small prime then <CODE>NewRingFp(n)</CODE> throws an exception whereas <CODE>NewZZmod(n)</CODE>
 will produce a working quotient ring.
 </P>
+
 <A NAME="query"></A>
 <H3>Query and cast</H3>
+
 <UL>
 <LI><CODE>IsQuotientRing(R)</CODE> returns true iff R is implemented as a <CODE>QuotientRing</CODE>
 <LI><CODE>QuotientRingPtr(R)</CODE> returns a pointer to the quotient ring impl (for calling mem fns);
@@ -105,6 +114,7 @@ will throw an <CODE>ErrorInfo</CODE> object with code <CODE>ERR::NotQuotRing</CO
 
 <A NAME="operations"></A>
 <H3>Operations on QuotientRing</H3>
+
 <P>
 In addition to the standard <A HREF="ring.html#operations"><CODE>ring</CODE> operations</A>, a <CODE>QuotientRing</CODE>
 may be used in other functions.
@@ -114,6 +124,7 @@ Given <CODE>RmodI</CODE> a <CODE>QuotientRing</CODE> (representing R/I)
 built as <CODE>NewQuotientRing(R,I)</CODE> 
 with <CODE>I</CODE> is an <A HREF="ideal.html"><CODE>ideal</CODE></A> of the <A HREF="ring.html"><CODE>ring</CODE></A> <CODE>R</CODE>.
 </P>
+
 <UL>
 <LI><CODE>BaseRing(RmodI)</CODE> -- a reference to the base ring of <CODE>RmodI</CODE>, namely <CODE>R</CODE>
 <LI><CODE>DefiningIdeal(RmodI)</CODE> -- a reference to the ideal <CODE>I</CODE> used to create <CODE>RmodI</CODE>
@@ -121,9 +132,9 @@ with <CODE>I</CODE> is an <A HREF="ideal.html"><CODE>ideal</CODE></A> of the <A 
 of elements of <CODE>RmodI</CODE>
 </UL>
 
-<P></P>
 <A NAME="homomorphisms"></A>
 <H3>Homomorphisms</H3>
+
 <UL>
 <LI><CODE>QuotientingHom(RmodI)</CODE> -- a reference to the quotienting
 homomorphism from <CODE>R</CODE> to <CODE>RmodI</CODE>
@@ -137,13 +148,14 @@ Two types of error may occur:
   </UL>
 </UL>
 
-<P></P>
 <A NAME="toc8"></A>
 <H2>Maintainer documentation for QuotientRing, QuotientRingBase, GeneralQuotientRingImpl</H2>
+
 <P>
 While considering the design of this code it may help to keep in mind
 these two canonical implementations:
 </P>
+
 <DL>
 <DT> <CODE>GeneralQuotientRingImpl</CODE></DT><DD>
     internally elements are represented as elements of a
@@ -164,20 +176,23 @@ base class for all quotient rings.  It adds the following four new pure
 virtual member functions which must be defined in every concrete
 quotient ring:
 </P>
+
 <PRE>
       virtual RingElem myCanonRepr(ConstRawValue r) const;
       virtual void myReduction(RawValue&amp; image, ConstRawValue arg) const;
       virtual const RingHom&amp; myQuotientingHom() const;
       virtual RingHom myInducedHomCtor(const RingHom&amp; InducingHom) const;
 </PRE>
-<P></P>
+
 <P>
 The member function myCanonRepr has to return a copy of the value since
 we cannot be sure that the internal representation is compatible with
 the internal representation of elements of the base ring.
 </P>
+
 <A NAME="toc9"></A>
 <H2>Bugs, Shortcomings and other ideas</H2>
+
 <P>
 <CODE>IamTrueGCDDomain</CODE> always returns false.  We can be clever in some easy
 cases, but it is hard in general (think of rings of algebraic integers
@@ -192,6 +207,7 @@ to quotient by ideal(0).
 <P>
 FAIRLY SERIOUS CONFUSION:  the code seems to make REPEATED sanity checks see
 </P>
+
 <PRE>
     QuotientRingBase::QuotientRingBase
     NewQuotientRing
@@ -199,6 +215,7 @@ FAIRLY SERIOUS CONFUSION:  the code seems to make REPEATED sanity checks see
     QuotientRingHomBase::QuotientRingHomBase
     NewInducedHom
 </PRE>
+
 <P>
 I suspect that the C++ ctors should use CoCoA_ASSERT instead of checking
 always (and throwing an exception).
@@ -224,6 +241,6 @@ quotienting: previously this was disallowed for no good reason that I
 could discern.
 </P>
 
-<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
 <!-- cmdline: txt2tags -t html -o html/QuotientRing.html -i txt/QuotientRing.txt -->
 </BODY></HTML>
