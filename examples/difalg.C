@@ -1510,6 +1510,29 @@ void testPowerPolyDifferentialRing(void)
  * ideals, each described by a differential system.
  */
 
+class RegularSystem {
+  friend std::ostream & operator<<(std::ostream &out, const RegularSystem);
+public:
+  std::vector<RingElem> equations;
+  std::vector<RingElem> inequations;
+
+  // (equations) colon-quotient (inequations)
+  ideal I;
+
+  RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
+    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
+  {
+    // compute I
+  }
+};
+
+std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
+{
+  out << "RegularSystem(" << omega.equations << "\\" << omega.inequations << ")";
+    
+  return out;
+}
+
 class RegularDifferentialIdeal {
 
   friend std::ostream & operator<<(std::ostream &out, const RegularDifferentialIdeal);
@@ -1685,19 +1708,26 @@ public:
 
   // This is standard polynomial reduction, not differential reduction.
 
-  RingElem reduce(RingElem r)
+  RingElem reduce(RingElem r, const std::vector<RingElem> A)
   {
     if (IsZero(r)) return r;
-    for (unsigned int i=0; i < gens.size(); i++) {
-      if (IsDivisible(LPP(num(r)), LPP(num(gens[i])))  &&  IsDivisible(LC(num(r)), LC(num(gens[i])))) {
-	RingElem content = LC(num(r)) / LC(num(gens[i]));
-	RingElem factor = EmbeddingHom(owner(r))(monomial(owner(num(r)), content, LPP(num(r)) / LPP(num(gens[i]))));
-	r -= gens[i] * factor;
+
+    for (unsigned int i=0; i < A.size(); i++) {
+      if (IsDivisible(LPP(r), LPP(A[i]))  &&  IsDivisible(LC(r), LC(A[i]))) {
+	RingElem content = LC(r) / LC(A[i]);
+	RingElem factor = monomial(owner(r), content, LPP(r) / LPP(A[i]));
+	r -= A[i] * factor;
 	i = -1;
 	if (IsZero(r)) return r;
       }
     }
+
     return r;
+  }
+
+  RingElem reduce(RingElem r)
+  {
+    return reduce(r, gens);
   }
 
   // This is partial differential reduction.
@@ -1769,8 +1799,7 @@ public:
 
   RingElem rem(RingElem r, const std::vector<RingElem> A)
   {
-    // XXX add actual remainder
-    return partial_rem(r, A);
+    return reduce(partial_rem(r, A), A);
   }
 
   std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
@@ -1808,22 +1837,6 @@ public:
       }
     }
   }
-
-  class RegularSystem {
-    std::vector<RingElem> equations;
-    std::vector<RingElem> inequations;
-
-    // (equations) colon-quotient (inequations)
-    ideal I;
-
-  public:
-
-    RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
-      : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
-    {
-      // compute I
-    }
-  };
 
   std::vector<RingElem> Union(const std::vector<RingElem> a, const std::vector<RingElem> b)
   {
@@ -1897,8 +1910,18 @@ public:
     return true;
   }
 
-  void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
+  void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
+			  std::vector<RegularSystem> & results)
   {
+    // check for "obvious" inconsistencies
+
+    for (auto eq: equations) {
+      if (IsConstant(eq)) return;
+    }
+    for (auto ineq: inequations) {
+      if (IsZero(ineq)) return;
+    }
+
     // build a characteristic set from 'equations'
 
     std::vector<RingElem> A;
@@ -1914,8 +1937,11 @@ public:
     std::vector<RingElem> R = rem(Union(equations, Dpoly(A)), A); // (remaining equations union D-polynomials of A) rem A
 
     if (R.empty() || IsZero(R[0])) {
-      // return RegularSystem(A, Union(partial_rem(inequations, A), h));
+      results.push_back(RegularSystem(A, Union(partial_rem(inequations, A), h)));
     } else {
+      //std::cerr << "A: " << A << endl;
+      //std::cerr << "R: " << R << endl;
+      //std::cerr << "h: " << h << endl;
       Rosenfeld_Groebner(Union(A, R), Union(inequations, h));
     }
 
@@ -1924,6 +1950,20 @@ public:
       h.pop_back();
       Rosenfeld_Groebner(Union(equations, hi), h);
     }
+  }
+
+  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
+  {
+    std::vector<RegularSystem> results;
+
+    Rosenfeld_Groebner(equations, inequations, results);
+
+    return results;
+  }
+
+  std::vector<RegularSystem> Rosenfeld_Groebner(void)
+  {
+    return Rosenfeld_Groebner(gens, std::vector<RingElem>());
   }
 
 };
@@ -1958,12 +1998,12 @@ void testRegularDifferentialIdeal(void)
   ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
   ring K = NewFractionField(R);
 
-  RingElem f(K, "f");
-  RingElem t(K, "t");
-  RingElem q(K, "q");
-  RingElem x(K, "x");
-  RingElem y(K, "y");
-  RingElem z(K, "z");
+  RingElem f(R, "f");
+  RingElem t(R, "t");
+  RingElem q(R, "q");
+  RingElem x(R, "x");
+  RingElem y(R, "y");
+  RingElem z(R, "z");
 
   // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
   // different from 'p' in K, which we now create.
@@ -1990,11 +2030,13 @@ void testRegularDifferentialIdeal(void)
 
   // First example from Rosenfeld-Groebner paper
 
-  RegularDifferentialIdeal di(2*(xtt+1)*yt+y, xt*xt+x);
+  RegularDifferentialIdeal di((2*xtt+1)*yt+y, xt*xt+x);
 
   // std::cerr << di << endl;
 
-  di.Buchberger();
+  //di.Buchberger();
+
+  std::cerr << di.Rosenfeld_Groebner();
 
   // std::cerr << di << endl;
 
