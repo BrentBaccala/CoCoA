@@ -1507,7 +1507,7 @@ void testPowerPolyDifferentialRing(void)
  *
  * Rosenfeld-Groebner represents the least radical differential ideal
  * containing Σ as a finite intersection of radical differential
- * ideals, each described by a differential system.
+ * ideals, each described by a regular differential system.
  */
 
 class RegularSystem {
@@ -1562,8 +1562,10 @@ public:
 
   // HDT - highest derivative term
   // Hp - highest power of HDT
+  //
+  // When passed a element from the coefficient ring, will return (1, 0)
 
-  std::pair<PPMonoidElem, int> HDT_Hp(const RingElem &f1)
+  std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
   {
     // Assume we're using a monomial ordering so that a polynomial's
     // HDT will appear in its LPP.
@@ -1590,7 +1592,7 @@ public:
     return make_pair(hdt, hp);
   }
 
-  PPMonoidElem HDT(const RingElem &f1)
+  PPMonoidElem HDT(ConstRefRingElem f1)
   {
     return HDT_Hp(f1).first;
   }
@@ -1598,13 +1600,19 @@ public:
   // Hu - highest unknown, the unknown function appearing in the
   // highest derivative term.  Ex: if HDT is u_xx, then Hu is u.
 
-  PPMonoidElem Hu(const RingElem &f1)
+  // If the RingElem is a constant, then Hu() returns 1.
+
+  PPMonoidElem Hu(ConstRefRingElem f1)
   {
-    PPMonoidElem e = HDT(f1);
-    PPMonoidElem base(owner(e));
-    PPMonoidElem deriv(owner(e));
-    split_differential_indet(e, base, deriv);
-    return base;
+    if (! IsConstant(f1)) {
+      PPMonoidElem e = HDT(f1);
+      PPMonoidElem base(owner(e));
+      PPMonoidElem deriv(owner(e));
+      split_differential_indet(e, base, deriv);
+      return base;
+    } else {
+      return PPMonoidElem(PPM(owner(f1)));
+    }
   }
 
   // Differentiate a RingElem with respect to *all* of the indets in a
@@ -1621,18 +1629,24 @@ public:
     return r;
   }
 
-  /* Compute the normal S-polynomial of two RingElems in the RegularDifferentialIdeal's ring. */
+  /* Compute the Buchberger S-polynomial of two RingElems. */
 
   RingElem Spoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     ConstRefPPMonoidElem lpp1 = LPP(f1);
     ConstRefPPMonoidElem lpp2 = LPP(f2);
 
-    ConstRefRingElem c1 = content(f1);
-    ConstRefRingElem c2 = content(f2);
+    ConstRefRingElem c1 = LC(f1);
+    ConstRefRingElem c2 = LC(f2);
 
     const PPMonoidElem LCM_pp = lcm(lpp1, lpp2);
-    const RingElem LCM_c = lcm(c1, c2);
+
+    RingElem LCM_c;
+    if (IsField(owner(c1))) {
+      LCM_c = c1 * c2;
+    } else {
+      LCM_c = lcm(c1, c2);
+    }
 
     RingElem a1 = monomial(owner(f1), LCM_c/c1, LCM_pp / lpp1);
     RingElem a2 = monomial(owner(f2), LCM_c/c2, LCM_pp / lpp2);
@@ -1640,9 +1654,9 @@ public:
     return a1*f1 - a2*f2;
   }
 
-  /* Compute the differential S-polynomial of two RingElems */
+  /* Compute the D-polynomial of two RingElems */
 
-  RingElem Dpoly(const RingElem& f1, const RingElem& f2)
+  RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     // Assume we're using a monomial ordering so that a polynomial's
     // highest ranking unknown will appear in its LPP.
@@ -1651,7 +1665,10 @@ public:
     // If it's the same unknown, we can construct differential
     // operators that elevate each to a common derivative.
 
-    if (Hu(f1) == Hu(f2)) {
+    // We check to see if f1 is constant to avoid the case where both
+    // f1 and f2 are constant and Hu() therefore returns 1 for both.
+
+    if (! IsConstant(f1) && (Hu(f1) == Hu(f2))) {
       PPMonoidElem hdt1 = HDT(f1);
       PPMonoidElem hdt2 = HDT(f2);
       PPMonoidElem base1(owner(hdt1));
@@ -1686,7 +1703,7 @@ public:
 
     for (unsigned int i=0; i < set.size(); i++) {
       for (unsigned int j=i+1; j < set.size(); j++) {
-	result.push_back(Dpoly(gens[i], gens[j]));
+	result.push_back(Dpoly(set[i], set[j]));
       }
     }
 
@@ -1762,9 +1779,11 @@ public:
       PPMonoidElem a1 = lcm12 / deriv1;
       PPMonoidElem a2 = lcm12 / deriv2;
 
-      // ???
+      // If, to obtain matching HDTs, we don't have to differentiate
+      // the first polynomial, but we do have to differentiate the
+      // second, then we have partial differential reduction.
 
-      if (IsOne(a1)) {
+      if (IsOne(a1) && !IsOne(a2)) {
 	return Spoly(f1, multideriv(f2, a2));
       }
     }
@@ -1779,6 +1798,7 @@ public:
     for (unsigned int i=0; i < A.size(); i++) {
       RingElem rem = partial_rem(r, A[i]);
       if (rem != r) {
+	std::cerr << r << " % " << A[i] << " = " << rem << endl;
 	r = rem;
 	i = -1;
 	if (IsZero(r)) return r;
@@ -1904,10 +1924,13 @@ public:
 
   bool is_autoreduced(RingElem f, std::vector<RingElem> A)
   {
+    return rem(f, A) == f;
+#if 0
     for (RingElem g : A) {
       if (! IsZero(Dpoly(f, g))) return false;
     }
     return true;
+#endif
   }
 
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
@@ -1926,29 +1949,33 @@ public:
 
     std::vector<RingElem> A;
 
-    for (auto it = equations.begin(); it != equations.end(); ++it) {
+    for (auto it = equations.begin(); it != equations.end();) {
+      std::cerr << *it << endl;
       if (is_autoreduced(*it, A)) {
 	A = Union(A, *it);
 	it = equations.erase(it);
+      } else {
+	++ it;
       }
     }
 
     std::vector<RingElem> h = initials_and_separants(A);
     std::vector<RingElem> R = rem(Union(equations, Dpoly(A)), A); // (remaining equations union D-polynomials of A) rem A
 
+    std::cerr << "A: " << A << endl;
+    std::cerr << "R: " << R << endl;
+    std::cerr << "h: " << h << endl;
+
     if (R.empty() || IsZero(R[0])) {
       results.push_back(RegularSystem(A, Union(partial_rem(inequations, A), h)));
     } else {
-      //std::cerr << "A: " << A << endl;
-      //std::cerr << "R: " << R << endl;
-      //std::cerr << "h: " << h << endl;
-      Rosenfeld_Groebner(Union(A, R), Union(inequations, h));
+      Rosenfeld_Groebner(Union(A, R), Union(inequations, h), results);
     }
 
     while (! h.empty()) {
       RingElem hi = h.back();
       h.pop_back();
-      Rosenfeld_Groebner(Union(equations, hi), h);
+      Rosenfeld_Groebner(Union(equations, hi), h, results);
     }
   }
 
@@ -1988,15 +2015,36 @@ void testRegularDifferentialIdeal(void)
 
   // ExponentRing - these are the indeterminates that can appear in powers
 
-  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
-  RingElem p(ExponentRing, "p");
+  //ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
+  //RingElem p(ExponentRing, "p");
 
   // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
   // along with its fraction field.
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y", "z"}, lex, ExponentRing);
-  ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
-  ring K = NewFractionField(R);
+  // Current implementation of RegularDifferentialIdeal can't handle polynomials in exponents, so this doesn't work
+  //PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y", "z"}, lex, ExponentRing);
+  //ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
+
+  // This doesn't work.  Neither for_each nor transform can return a range; it has to be passed in.
+  //std::vector<symbol> symbols = std::for_each(names.begin(), names.end(), [](string &n){ new symbol(n); });
+
+  // This SEGVs.  Not sure why.
+  //std::vector<string> names {"f", "t", "q", "x", "y", "z"};
+  //std::vector<symbol> symbols;
+  //std::transform(names.begin(), names.end(), symbols.begin(), [](const string &n){ return symbol(n); });
+
+  //std::vector<symbol> symbols={symbol("f"), symbol("t"), symbol("q"), symbol("x"), symbol("y"), symbol("z")};
+
+  //PPMonoid PPM = NewPPMonoid(symbols, lex);
+
+  // NYI: Can't create ideals with coefficents not in a field
+  //ring R = NewPolyRing(ExponentRing, PPM);
+
+  //ring R = NewPolyRing(QQ, PPM);
+  //ring K = NewFractionField(R);
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y", "z"}, lex, QQ);
+  ring R = NewPowerPolyDifferentialRing(QQ, PPM);
 
   RingElem f(R, "f");
   RingElem t(R, "t");
@@ -2008,7 +2056,7 @@ void testRegularDifferentialIdeal(void)
   // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
   // different from 'p' in K, which we now create.
 
-  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
+  // RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
 
   // Funny syntax - the derivatives don't exist in the ring until we
   // call 'deriv', so we do that first and then check to see if
@@ -2036,7 +2084,7 @@ void testRegularDifferentialIdeal(void)
 
   //di.Buchberger();
 
-  std::cerr << di.Rosenfeld_Groebner();
+  std::cerr << di.Rosenfeld_Groebner() << endl;
 
   // std::cerr << di << endl;
 
