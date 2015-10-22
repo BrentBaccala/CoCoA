@@ -95,7 +95,6 @@ namespace CoCoA
     static value_t& import(RawPtr rawpp);
     static const value_t& import(ConstRawPtr rawpp);
 
-    const PPOrdering& myOrdering() const;
     virtual const std::vector<PPMonoidElem>& myIndets() const;            ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
 
     virtual const PPMonoidElem& myOne() const;

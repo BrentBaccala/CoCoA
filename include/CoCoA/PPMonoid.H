@@ -158,7 +158,7 @@ namespace CoCoA
     typedef PPMonoidElemRawPtr RawPtr;           ///< just to save typing
     typedef PPMonoidElemConstRawPtr ConstRawPtr; ///< just to save typing
 
-    const PPOrdering& myOrdering() const;
+    virtual const PPOrdering& myOrdering() const;
     virtual const std::vector<PPMonoidElem>& myIndets() const = 0;                ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
     const std::vector<symbol>& mySymbols() const { return myIndetSymbols; }
     virtual const symbol& myIndetSymbol(long i) const;                            ///< the symbol of the i-th indet
