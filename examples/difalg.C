@@ -1520,7 +1520,9 @@ public:
   ideal I;
 
   RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
-    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
+    : equations(eq), inequations(ineq),
+      I(colon(ideal(owner(eq[0]), eq), ideal(owner(ineq[0]), ineq)))
+      //    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
   {
     // compute I
   }
@@ -1967,7 +1969,10 @@ public:
     std::cerr << "h: " << h << endl;
 
     if (R.empty() || IsZero(R[0])) {
-      results.push_back(RegularSystem(A, Union(partial_rem(inequations, A), h)));
+      RegularSystem result(A, Union(partial_rem(inequations, A), h));
+      if (! IsElem(one(RegularDifferentialIdeal::R), result.I)) {
+	results.push_back(result);
+      }
     } else {
       Rosenfeld_Groebner(Union(A, R), Union(inequations, h), results);
     }
