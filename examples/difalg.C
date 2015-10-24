@@ -1354,6 +1354,28 @@ public:
 
   using PowerPolyRingBase::PowerPolyRingBase;
 
+  /* We're inheriting from SparsePolyRing, whose implementation of
+   * mySymbolValue and mySymbols obtains the symbols directly from the
+   * underlying PPM, so the PPM's myNewSymbolValue takes care of
+   * inserting new symbols.  We do have to insert a new indet into
+   * myIndetVector, however.  Also, I want myNewSymbolValue() to be
+   * const, so I can call it from myDeriv().  Thus we use const_cast.
+   */
+
+  RingElem myNewSymbolValue(const symbol& s) const
+  {
+    vector<symbol> syms = symbols(ring(this));
+    syms.push_back(s);
+    if ( AreDistinct(syms) ) {
+      RingElem r = monomial(ring(this), 1, myPPM()->myNewSymbolValue(s));
+      const_cast<PowerPolyDifferentialRingBase *>(this)->myIndetVector.push_back(r);
+      return r;
+    } else {
+      return mySymbolValue(s);
+    }
+  }
+
+
   void myDeriv(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawx) const override
   {
     if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
@@ -1395,7 +1417,7 @@ public:
 	    const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
 	    const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
 
-	    differentiation_map[key] = monomial(P, 1, myPPM()->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol)))));
+	    differentiation_map[key] = myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
 	  }
 	  m *= differentiation_map[key];
 	}
