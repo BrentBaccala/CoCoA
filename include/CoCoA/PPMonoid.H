@@ -158,7 +158,7 @@ namespace CoCoA
     typedef PPMonoidElemRawPtr RawPtr;           ///< just to save typing
     typedef PPMonoidElemConstRawPtr ConstRawPtr; ///< just to save typing
 
-    virtual const PPOrdering& myOrdering() const;
+    virtual PPOrdering myOrdering() const;
     virtual const std::vector<PPMonoidElem>& myIndets() const = 0;                ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
     const std::vector<symbol>& mySymbols() const { return myIndetSymbols; }
     virtual const symbol& myIndetSymbol(long i) const;                            ///< the symbol of the i-th indet
@@ -224,7 +224,7 @@ namespace CoCoA
     virtual void myOutput(OpenMathOutput& OMOut, ConstRawPtr rawpp) const;        ///< NOT PURE!!
 
   protected: // data members (common to all PPOrdering implementations)
-    const PPOrdering myOrd;
+    PPOrdering myOrd;
     std::vector<symbol> myIndetSymbols;
     long myNumIndets;
     friend long NumIndets(const PPMonoid& M);
@@ -327,7 +327,7 @@ namespace CoCoA
   { return PPM->myOne(); }
 
 
-  inline const PPOrdering& PPMonoidBase::myOrdering() const
+  inline PPOrdering PPMonoidBase::myOrdering() const
   { return myOrd; }
 
 
@@ -335,7 +335,7 @@ namespace CoCoA
   { return M->myNumIndets; }
 
 
-  inline const PPOrdering& ordering(const PPMonoid& M)
+  inline PPOrdering ordering(const PPMonoid& M)
   { return M->myOrdering(); }
 
 
