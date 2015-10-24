@@ -54,7 +54,7 @@ namespace CoCoA
     RingDistrMPolyCleanImpl(const ring& R, const PPMonoid& PPM);
     ~RingDistrMPolyCleanImpl();
 
-  private: // Data members of RingDistrMPolyCleanImpl
+  protected: // Data members of RingDistrMPolyCleanImpl
     const ring myCoeffRingValue;  ///< the coefficient ring
     const PPMonoid myPPMValue; ///< the monoid of the power-products
     mutable MemPool myDMPPool; ///< memory manager for polynomials
