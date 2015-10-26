@@ -18,8 +18,8 @@ using namespace std;
  * support differential rings with an infinite number of (algebraic)
  * generators.
  *
- * The only term ordering used is inverse lexicographic, based on a
- * total degree ranking of the derivative terms.  The derivatives are
+ * The only monomial ordering used is lexicographic, based on a total
+ * degree ranking of the derivative terms.  The derivatives are
  * attached as tails by PowerPolyRing, separated from the heads by
  * underscores.  Identical heads are grouped together, along with
  * tails of the same length.
@@ -30,8 +30,11 @@ using namespace std;
  *
  *       q < q_t < t < f < f_t < f_{tt} < f_{qt}
  *
- * Based on this ranking, inverse lex is then used to compare
- * monomials.
+ * Based on this ranking, lex is then used to compare monomials.
+ *
+ * Other orderings are not used because our implementation of the HDT
+ * (highest derivative term) function assumes that the HDT appears in
+ * the leading monomial, which can only be guaranteed by lex ordering.
  */
 
 class PPMonoidRingExpImpl;
@@ -347,7 +350,18 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
   // Everything compared less than the new symbol, so we fell through
   // here.  New symbol goes at the end.
   ranking.push_back(myNumIndets-1);
+
  done:
+
+  // Now update the PPOrdering to be a lex ordering on the new ranking
+
+  matrix OrderMatrix = NewDenseMat(RingZZ(), myNumIndets, myNumIndets);
+
+  for (long i=0; i < myNumIndets; ++i) {
+    SetEntry(OrderMatrix, i, ranking[myNumIndets - i - 1], 1);
+  }
+
+  const_cast<PPMonoidRingExpImpl *>(this)->myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
 
   return myIndetVector.back();
 }
@@ -649,6 +663,8 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 {
   const PPMonoidRingExpElem & expv1 = myExpv(rawpp1);
   const PPMonoidRingExpElem & expv2 = myExpv(rawpp2);
+
+  // lex comparison
 
   for (long i=0; i < myNumIndets; ++i) {
     long r = ranking[myNumIndets - i - 1];
