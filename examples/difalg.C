@@ -1,6 +1,6 @@
 
 #include "CoCoA/library.H"
-// #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 #include <functional>
 #include <string>
@@ -1548,17 +1548,32 @@ void testPowerPolyDifferentialRing(void)
  * ideals, each described by a regular differential system.
  */
 
+/* I want to handle sets of RingElem's, but C++'s std::set required
+ * ordered comparison, so instead I used std::unordered_set, which
+ * requires a hash function!  This defines a nil hash function
+ * for RingElem's, to allow std::unordered_set<RingElem>.
+ */
+
+namespace std {
+  template <>
+  struct hash<RingElem> {
+    std::size_t operator()(const RingElem&) const {
+      return 0;
+    }
+  };
+}
+
 class RegularSystem {
   friend std::ostream & operator<<(std::ostream &out, const RegularSystem);
 public:
-  std::vector<RingElem> equations;
-  std::vector<RingElem> inequations;
+  std::unordered_set<RingElem> equations;
+  std::unordered_set<RingElem> inequations;
 
   // (equations) colon-quotient (inequations)
   ideal I;
 
   RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
-    : equations(eq), inequations(ineq),
+    : equations(eq.begin(), eq.end()), inequations(ineq.begin(), ineq.end()),
       I(colon(ideal(owner(eq[0]), eq), ideal(owner(ineq[0]), ineq)))
       //    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
   {
@@ -1568,7 +1583,29 @@ public:
 
 std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
 {
-  out << "RegularSystem(" << omega.equations << "\\" << omega.inequations << ")";
+  bool first_eq_printed = false;
+  bool first_ineq_printed = false;
+
+  out << "RegularSystem(";
+  for (auto eq: omega.equations) {
+    if (first_eq_printed) {
+      out << ", ";
+    }
+    out << eq;
+    first_eq_printed = true;
+  }
+  out << " \\ ";
+  for (auto ineq: omega.inequations) {
+    if (first_ineq_printed) {
+    out << ", ";
+    }
+    out << ineq;
+    first_ineq_printed = true;
+  }
+  out << " ; ";
+  out << gens(omega.I);
+
+  out << ")";
     
   return out;
 }
