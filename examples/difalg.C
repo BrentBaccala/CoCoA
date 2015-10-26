@@ -2123,7 +2123,9 @@ void testRegularDifferentialIdeal(void)
   //ring R = NewPolyRing(QQ, PPM);
   //ring K = NewFractionField(R);
 
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "x", "y", "z"}, lex, QQ);
+  // Most significant first: f > t > q > z > y > x
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "z", "y", "x"}, lex, QQ);
   ring R = NewPowerPolyDifferentialRing(QQ, PPM);
 
   RingElem f(R, "f");
