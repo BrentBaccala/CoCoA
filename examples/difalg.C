@@ -1674,6 +1674,11 @@ public:
     return HDT_Hp(f1).first;
   }
 
+  RingElem Hcoeff(ConstRefRingElem f)
+  {
+    return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
+  }
+
   // Hu - highest unknown, the unknown function appearing in the
   // highest derivative term.  Ex: if HDT is u_xx, then Hu is u.
 
@@ -1688,6 +1693,22 @@ public:
       split_differential_indet(e, base, deriv);
       return base;
     } else {
+      return PPMonoidElem(PPM(owner(f1)));
+    }
+  }
+
+  // Elizabeth Mansfield's notation - alpha is the derivative
+
+  PPMonoidElem alpha(ConstRefRingElem f1)
+  {
+    if (! IsConstant(f1)) {
+      PPMonoidElem e = HDT(f1);
+      PPMonoidElem base(owner(e));
+      PPMonoidElem deriv(owner(e));
+      split_differential_indet(e, base, deriv);
+      return deriv;
+    } else {
+      // otherwise, return 1 (identity in the monoid)
       return PPMonoidElem(PPM(owner(f1)));
     }
   }
@@ -1802,6 +1823,25 @@ public:
 
   // This is standard polynomial reduction, not differential reduction.
 
+  // In general, reduction can occur at any polynomial term.  In the
+  // case of a Groebner basis, we can always reduce at the leading
+  // term and be assured that we'll eventually reduce the entire
+  // polynomial.
+
+  RingElem reduce(RingElem r, ConstRefRingElem g)
+  {
+    if (IsZero(r)) return r;
+
+    while (IsDivisible(LPP(r), LPP(g))  &&  IsDivisible(LC(r), LC(g))) {
+      RingElem content = LC(r) / LC(g);
+      RingElem factor = monomial(owner(r), content, LPP(r) / LPP(g));
+      r -= g * factor;
+      if (IsZero(r)) return r;
+    }
+
+    return r;
+  }
+
   RingElem reduce(RingElem r, const std::vector<RingElem> A)
   {
     if (IsZero(r)) return r;
@@ -1826,46 +1866,66 @@ public:
 
   // This is partial differential reduction.
 
-  RingElem partial_rem(ConstRefRingElem f1, ConstRefRingElem f2)
+  RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g)
   {
-    // Assume we're using a monomial ordering so that a polynomial's
-    // highest ranking unknown will appear in its LPP.
+    PPMonoidElem HDT_g = HDT(g);
 
-    // We want to find the highest ranking unknown in each polynomial.
-    // If it's the same unknown, we can construct differential
-    // operators that elevate each to a common derivative.
+    PPMonoidElem base(owner(HDT_g));
+    PPMonoidElem deriv(owner(HDT_g));
 
-    if (Hu(f1) == Hu(f2)) {
-      PPMonoidElem hdt1 = HDT(f1);
-      PPMonoidElem hdt2 = HDT(f2);
-      PPMonoidElem base1(owner(hdt1));
-      PPMonoidElem base2(owner(hdt2));
-      PPMonoidElem deriv1(owner(hdt1));
-      PPMonoidElem deriv2(owner(hdt2));
+    if (IsConstant(f)) {
+      return f;
+    }
 
-      // If Hu(f1) == Hu(f2), then the bases should be the same.
-      split_differential_indet(hdt1, base1, deriv1);
-      split_differential_indet(hdt2, base2, deriv2);
+    split_differential_indet(HDT_g, base, deriv);
 
-      CoCoA_ASSERT(base1 == base2);
+    // Construct a PPMonoidElem that is the product of all higher
+    // derivative terms of HDT(g).
 
-      // compute a1 and a2, the differentials that raise HDT(f1) and
-      // HDT(f2) to the same derivative
+    PPMonoidElem higher_terms(owner(HDT_g));
 
-      PPMonoidElem lcm12 = lcm(deriv1, deriv2);
-      PPMonoidElem a1 = lcm12 / deriv1;
-      PPMonoidElem a2 = lcm12 / deriv2;
+    for (long i = 0; i < NumIndets(owner(HDT_g)); ++i) {
+      PPMonoidElem c = indet(owner(HDT_g), i);
 
-      // If, to obtain matching HDTs, we don't have to differentiate
-      // the first polynomial, but we do have to differentiate the
-      // second, then we have partial differential reduction.
+      PPMonoidElem base_c(owner(c));
+      PPMonoidElem deriv_c(owner(c));
 
-      if (IsOne(a1) && !IsOne(a2)) {
-	return Spoly(f1, multideriv(f2, a2));
+      split_differential_indet(c, base_c, deriv_c);
+
+      if ((base == base_c) && IsDivisible(deriv_c, deriv)) {
+	higher_terms *= c;
       }
     }
 
-    return f1;
+    // Now run through all of f's terms, to see if any of them involve
+    // higher_terms.  If so, pseudo-reduce at the first term we find.
+
+    for (SparsePolyIter it=BeginIter(f); !IsEnded(it); ++it) {
+      PPMonoidElem common_terms = gcd(PP(it), higher_terms);
+      if (! IsOne(common_terms)) {
+	for (long i = 0; i < NumIndets(owner(HDT_g)); ++i) {
+	  if (exponent(common_terms, i) != 0) {
+	    const long p = exponent(PP(it), i);
+	    const PPMonoidElem DT_PP = indet(owner(HDT_g), i);
+	    const RingElem DT = monomial(owner(f), 1, DT_PP);
+
+	    RingElem Dag = multideriv(g, alpha(DT)/deriv);
+
+	    cout << "Partial Reduction Step" << endl;
+	    cout << "f = " << f << endl;
+	    cout << "g = " << g << endl;
+	    cout << "alpha/deriv = " << alpha(DT)/deriv << endl;
+	    cout << "Dag = " << Dag << endl;
+	    cout << "rank = DT^p = " << DT << "^" << p << endl;
+	    cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
+
+	    return Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag;
+	  }
+	}
+      }
+    }
+
+    return f;
   }
 
   RingElem partial_rem(RingElem r, const std::vector<RingElem> A)
@@ -1892,6 +1952,11 @@ public:
       e = partial_rem(e, A);
     }
     return result;
+  }
+
+  RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
+  {
+    return reduce(partial_rem(f, g), g);
   }
 
   RingElem rem(RingElem r, const std::vector<RingElem> A)
@@ -2001,13 +2066,13 @@ public:
 
   bool is_autoreduced(RingElem f, std::vector<RingElem> A)
   {
-    return rem(f, A) == f;
-#if 0
+    if (rem(f, A) != f) return false;
+
     for (RingElem g : A) {
-      if (! IsZero(Dpoly(f, g))) return false;
+      if (rem(g,f) != g) return false;
     }
+
     return true;
-#endif
   }
 
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
