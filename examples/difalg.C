@@ -676,10 +676,26 @@ int PPMonoidRingExpImpl::myCmp(ConstRawPtr rawpp1, ConstRawPtr rawpp2) const
 }
 
 
-long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr) const
+long PPMonoidRingExpImpl::myStdDeg(ConstRawPtr rawpp) const
 {
   // Returning zero here makes this act like a ungraded ring
-  return 0;
+  // return 0;
+
+  // ...but there's a problem.  SparsePolyRing's CoeffVecWRT assumes
+  // that StdDeg returns the power of an indeterminate.
+
+  // const PPMonoidRingExpElem & expv = myExpv(rawpp);
+  long degree = 0;
+
+  for (long i=0; i < myNumIndets; ++i) {
+    // this doesn't work because we're adding a RingElem to a long
+    // degree += expv[i];
+
+    // ...but this does (and might throw an exception)
+    degree += myExponent(rawpp, i);
+  }
+
+  return degree;
 }
 
 
@@ -1911,13 +1927,14 @@ public:
 
 	    RingElem Dag = multideriv(g, alpha(DT)/deriv);
 
-	    cout << "Partial Reduction Step" << endl;
-	    cout << "f = " << f << endl;
-	    cout << "g = " << g << endl;
-	    cout << "alpha/deriv = " << alpha(DT)/deriv << endl;
-	    cout << "Dag = " << Dag << endl;
-	    cout << "rank = DT^p = " << DT << "^" << p << endl;
-	    cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
+	    // cout << "Partial Reduction Step" << endl;
+	    // cout << "f = " << f << endl;
+	    // cout << "g = " << g << endl;
+	    // cout << "alpha/deriv = " << alpha(DT)/deriv << endl;
+	    // cout << "Dag = " << Dag << endl;
+	    // cout << "rank = DT^p = " << DT << "^" << p << endl;
+	    // cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
+	    // cout << "result = " << Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag << endl;
 
 	    return Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag;
 	  }
