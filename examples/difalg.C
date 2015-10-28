@@ -1584,13 +1584,16 @@ class RegularSystem {
 public:
   std::unordered_set<RingElem> equations;
   std::unordered_set<RingElem> inequations;
+  //std::vector<RingElem> equations;
+  //std::vector<RingElem> inequations;
 
   // (equations) colon-quotient (inequations)
   ideal I;
 
   RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
     : equations(eq.begin(), eq.end()), inequations(ineq.begin(), ineq.end()),
-      I(colon(ideal(owner(eq[0]), eq), ideal(owner(ineq[0]), ineq)))
+      //I(colon(ideal(owner(eq[0]), eq), ideal(owner(eq[0]), ineq)))
+      I(ineq.size() == 0 ? ideal(owner(eq[0]), eq) : colon(ideal(owner(eq[0]), eq), ideal(owner(eq[0]), ineq)))
       //    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
   {
     // compute I
@@ -1985,7 +1988,7 @@ public:
     for (unsigned int i=0; i < A.size(); i++) {
       RingElem rem = partial_rem(r, A[i], full_reduction);
       if (rem != r) {
-	std::cerr << r << " % " << A[i] << " = " << rem << endl;
+	// std::cerr << r << " % " << A[i] << " = " << rem << endl;
 	r = rem;
 	i = -1;
 	if (IsZero(r)) return r;
@@ -2101,8 +2104,10 @@ public:
     std::vector<RingElem> result;
 
     for (RingElem f : A) {
-      result.push_back(initial(f));
-      result.push_back(separant(f));
+      const RingElem i = initial(f);
+      if (! IsConstant(i)) result.push_back(i);
+      const RingElem s = separant(f);
+      if (! IsConstant(s)) result.push_back(s);
     }
 
     return result;
@@ -2156,7 +2161,7 @@ public:
       if (IsZero(ineq)) return;
     }
 
-    std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
+    // std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
 
     // build a characteristic set from 'equations'
 
@@ -2247,7 +2252,9 @@ public:
 
     if (R.empty() || IsZero(R[0])) {
       RegularSystem result(A, Union(partial_rem(inequations, A), h));
+      //std::cerr << "Got a result " << A << " \\ " << Union(partial_rem(inequations, A), h) << endl;
       if (! IsElem(one(RegularDifferentialIdeal::R), result.I)) {
+	//std::cerr << "Pushed a result" << endl;
 	results.push_back(result);
       }
     } else {
@@ -2257,7 +2264,7 @@ public:
     while (! h.empty()) {
       RingElem hi = h.back();
       h.pop_back();
-      Rosenfeld_Groebner(Union(equations, hi), h, results);
+      Rosenfeld_Groebner(Union(Union(equations, A), hi), h, results);
     }
   }
 
