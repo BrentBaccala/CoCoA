@@ -1690,6 +1690,17 @@ public:
     return HDT_Hp(f1).first;
   }
 
+  int Hp(ConstRefRingElem f1)
+  {
+    return HDT_Hp(f1).second;
+  }
+
+  PPMonoidElem rank(ConstRefRingElem f)
+  {
+    const auto p = HDT_Hp(f);
+    return power(p.first, p.second);
+  }
+
   RingElem Hcoeff(ConstRefRingElem f)
   {
     return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
@@ -1882,9 +1893,14 @@ public:
 
   // This is partial differential reduction.
 
-  RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g)
+  RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
   {
-    PPMonoidElem HDT_g = HDT(g);
+    const PPMonoidElem HDT_g = HDT(g);
+    const long Hp_g = Hp(g);
+    const PPMonoidElem rank_g = rank(g);
+    long indet_HDT_g;
+
+    CoCoA_ASSERT(IsIndet(indet_HDT_g, HDT_g));
 
     PPMonoidElem base(owner(HDT_g));
     PPMonoidElem deriv(owner(HDT_g));
@@ -1908,10 +1924,12 @@ public:
 
       split_differential_indet(c, base_c, deriv_c);
 
-      if ((base == base_c) && IsDivisible(deriv_c, deriv)) {
+      if ((base == base_c) && (deriv_c != deriv) && IsDivisible(deriv_c, deriv)) {
 	higher_terms *= c;
       }
     }
+
+    // cout << "higher_terms = " << higher_terms << endl;
 
     // Now run through all of f's terms, to see if any of them involve
     // higher_terms.  If so, pseudo-reduce at the first term we find.
@@ -1940,17 +1958,32 @@ public:
 	  }
 	}
       }
+      if (full_reduction) {
+	const long p = exponent(PP(it), indet_HDT_g);
+	if (p >= Hp_g) {
+	  const RingElem DT = monomial(owner(f), 1, HDT_g);
+
+	  // cout << "Full Reduction Step" << endl;
+	  // cout << "f = " << f << endl;
+	  // cout << "g = " << g << endl;
+	  // cout << "DT^p = " << DT << "^" << p << endl;
+	  // cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
+	  // cout << "result = " << Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g;
+
+	  return Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g;
+	}
+      }
     }
 
     return f;
   }
 
-  RingElem partial_rem(RingElem r, const std::vector<RingElem> A)
+  RingElem partial_rem(RingElem r, const std::vector<RingElem> A, bool full_reduction = false)
   {
     if (IsZero(r)) return r;
 
     for (unsigned int i=0; i < A.size(); i++) {
-      RingElem rem = partial_rem(r, A[i]);
+      RingElem rem = partial_rem(r, A[i], full_reduction);
       if (rem != r) {
 	std::cerr << r << " % " << A[i] << " = " << rem << endl;
 	r = rem;
@@ -1962,32 +1995,28 @@ public:
     return r;
   }
 
-  std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
+  std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A, bool full_reduction = false)
   {
     std::vector<RingElem> result = v;
     for (auto&& e : result) {
-      e = partial_rem(e, A);
+      e = partial_rem(e, A, full_reduction);
     }
     return result;
   }
 
   RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
   {
-    return reduce(partial_rem(f, g), g);
+    return partial_rem(f, g, true);
   }
 
   RingElem rem(RingElem r, const std::vector<RingElem> A)
   {
-    return reduce(partial_rem(r, A), A);
+    return partial_rem(r, A, true);
   }
 
   std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
   {
-    std::vector<RingElem> result = v;
-    for (auto&& e : result) {
-      e = rem(e, A);
-    }
-    return result;
+    return partial_rem(v, A, true);
   }
 
   // Buchberger's algorithm
@@ -2092,6 +2121,29 @@ public:
     return true;
   }
 
+  bool is_autoreduced(const std::vector<RingElem> set)
+  {
+    for (unsigned int i=0; i < set.size(); i++) {
+      for (unsigned int j=i+1; j < set.size(); j++) {
+	if (rem(set[i], set[j]) != set[i]) return false;
+      }
+    }
+    return true;
+  }
+
+  // An autoreduced subset C of a set E is called a characteristic set
+  // of E if E contains no non-zero elements reduced w.r.t. C.  If
+  // they're reduced, then taking their remainder doesn't change them.
+
+  bool is_characteristic_set(const std::vector<RingElem> set, const std::vector<RingElem> subset)
+  {
+    for (auto eq: set) {
+      // if (! IsZero(rem(eq, subset))) return false;
+      if (rem(eq, subset) == eq) return false;
+    }
+    return is_autoreduced(subset);
+  }
+
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
 			  std::vector<RegularSystem> & results)
   {
@@ -2104,10 +2156,13 @@ public:
       if (IsZero(ineq)) return;
     }
 
+    std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
+
     // build a characteristic set from 'equations'
 
     std::vector<RingElem> A;
 
+#if 0
     for (auto it = equations.begin(); it != equations.end();) {
       std::cerr << *it << endl;
       if (is_autoreduced(*it, A)) {
@@ -2117,11 +2172,76 @@ public:
 	++ it;
       }
     }
+#else
+#if 1
+    // Produce A, a characteristic set of 'equations'.
+    //
+    // Construct all possible subsets of equations (except the empty
+    // subset) until we find a characteristic set.
+
+    const long num_subsets = 1L << equations.size();
+    for (long subset=1; subset < num_subsets; subset++) {
+      A.clear();
+      for (unsigned long i=0; i<equations.size(); i++) {
+	if (subset & (1 << i)) A.push_back(equations[i]);
+      }
+      if (is_characteristic_set(equations, A)) {
+	for (auto element: A) {
+	  equations.erase(find(equations.begin(), equations.end(), element));
+	}
+	break;
+      }
+    }
+#else
+    // Produce A, a characteristic set of 'equations'.
+    //
+    // A characteristic set is an autoreduced set (by definition; see
+    // [Bo95] footnote 3), and members of autoreduced sets have
+    // distinct leaders ([Ai] Lemma 3.23), so we group elements of
+    // 'equations' by their leaders, also called their Highest
+    // Derivative Term (HDT).  Among each group with the same leader,
+    // we pick an element of lowest rank.
+
+    std::map<PPMonoidElem, RingElem> Amap;
+
+#if 0
+    for (auto eq: equations) {
+      if (Amap.count(HDT(eq)) == 0) {
+	Amap[HDT(eq)] = eq;
+      } else if (rank(eq) < rank(Amap[HDT(eq)])) {
+	Amap[HDT(eq)] = eq;
+      }
+    }
+#else
+    for (auto eq: equations) {
+      if (Amap.count(Hu(eq)) == 0) {
+	Amap[Hu(eq)] = eq;
+      } else if (rank(eq) < rank(Amap[Hu(eq)])) {
+	Amap[Hu(eq)] = eq;
+      }
+    }
+#endif
+
+
+    // Now build 'A' from the selected elements, and remove them from
+    // 'equations'.
+
+    for (auto leader_element_pair: Amap) {
+      A.push_back(leader_element_pair.second);
+      equations.erase(find(equations.begin(), equations.end(), leader_element_pair.second));
+    }
+    //std::vector<RingElem> A(Amap.begin(), Amap.end());
+    //std::copy(A.begin(), A.end(), A
+#endif
+#endif
+
+    std::cerr << "A: " << A << endl;
+
+    CoCoA_ASSERT(is_characteristic_set(Union(A, equations), A));
 
     std::vector<RingElem> h = initials_and_separants(A);
     std::vector<RingElem> R = rem(Union(equations, Dpoly(A)), A); // (remaining equations union D-polynomials of A) rem A
 
-    std::cerr << "A: " << A << endl;
     std::cerr << "R: " << R << endl;
     std::cerr << "h: " << h << endl;
 
