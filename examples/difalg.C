@@ -82,7 +82,7 @@ public:
   const std::vector<PPMonoidElem>& myIndets() const;               ///< std::vector whose n-th entry is n-th indet as PPMonoidElem
 
   // The functions below are operations on power products owned by PPMonoidRingExpImpl
-  ConstRefPPMonoidElem myNewSymbolValue(const symbol& s) const override;
+  ConstRefPPMonoidElem myNewSymbolValue(const symbol& s, ConstRefPPMonoidElem) const override;
   const PPMonoidElem& myOne() const;
   using PPMonoidBase::myNew;    // disable warnings of overloading
   PPMonoidElemRawPtr myNew() const;                                ///< ctor from nothing
@@ -218,68 +218,36 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
   return myIndetVector;
 }
 
-static std::string symbol_head(const std::string & symbol)
-{
-  const std::size_t underscore = symbol.find("_");
-
-  if (underscore == std::string::npos) {
-    return symbol;
-  } else {
-    return symbol.substr(0, underscore);
-  }
-}
-
-static std::string symbol_tail(const std::string & symbol)
-{
-  const std::size_t underscore = symbol.find("_");
-  const std::size_t openbracket = symbol.find("{");
-  const std::size_t closebracket = symbol.find("}");
-
-  if (underscore == std::string::npos) {
-    return "";
-  } else if (openbracket == std::string::npos) {
-    return symbol.substr(underscore+1, std::string::npos);
-  } else {
-    return symbol.substr(openbracket+1, closebracket-openbracket-1);
-  }
-}
-
-/* Splits a differential indeterminate into its base and derivative parts.
+/* myNewSymbolValue() - add a new symbol to the PPMonoid, inserting it
+ * into the ranking order before PPMonoidElem 'next'.  If the given
+ * PPMonoidElem is one, insert at the end of the ranking order, so the
+ * new element will become the least significant element.
  *
- * Ex:  f_xt splits into f and xt
- */
-
-static void split_differential_indet (const PPMonoidElem &e, PPMonoidElem &base, PPMonoidElem &deriv)
-{
-  long i;
-
-  if (! IsIndet(i, e)) {
-    CoCoA_ERROR(ERR::NotIndet, "split_differential_indet");
-  }
-
-  const std::string sym = head(IndetSymbol(owner(e), i));
-
-  base = owner(e)->mySymbolValue(symbol(symbol_head(sym)));
-
-  AssignOne(deriv);
-  for (char &c: symbol_tail(sym)) {
-    deriv *= owner(e)->mySymbolValue(symbol(std::string(1, c)));
-  }
-}
-
-/* Yuck!  I now want to modify a const object by adding a new symbol
+ * Yuck!  I now want to modify a const object by adding a new symbol
  * to the PPMonoid.  The rest of the library is so heavily invested in
  * PPMonoid's being const that changing it elsewhere is too painful to
- * consider.  Instead we play games with const_cast.  My greatest
- * concern is multithreading implications, since myNumIndets can
- * change underfoot.
+ * consider.  Instead we play games with const_cast, to create local
+ * variables that override the instance variables and makes them
+ * writable.  My greatest concern is that myNumIndets can change
+ * underfoot.
  */
 
-ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) const
+ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s, ConstRefPPMonoidElem next) const
 {
-  for (long i=0; i < myNumIndets; ++i)
-    if ( s == myIndetSymbols[i] )
-      return myIndetVector[i];
+  int after_i = -1;
+
+  if (! IsOne(next) && ! IsIndet(next)) {
+    CoCoA_ERROR(ERR::NotIndet, "PPMonoidRingExpImpl::myNewSymbolValue");
+  }
+
+  for (long i=0; i < myNumIndets; ++i) {
+    if ( s == myIndetSymbols[ranking[i]] ) {
+      return myIndetVector[ranking[i]];
+    }
+    if (next == myIndetVector[ranking[i]]) {
+      after_i = i;
+    }
+  }
 
   const_cast<PPMonoidRingExpImpl *>(this)->myIndetSymbols.push_back(s);
   const_cast<PPMonoidRingExpImpl *>(this)->myNumIndets ++;
@@ -294,64 +262,11 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
   // this local variable overrides the instance variable and makes it writable
   std::vector<long> & ranking = const_cast<PPMonoidRingExpImpl *>(this)->ranking;
 
-  // comparison logic: first lexicographic ordering on the base symbol
-  // (the part before an underscore), this gives us an elimination
-  // ordering on the base symbols, then total degree on the
-  // derivatives, then lexiographic on the derivatives
-
-  // C++ regex doesn't work prior to gcc 4.9
-
-  // const std::regex re("([^_]+)(_\\{?(.+)\\}?)?");
-  // std::smatch newsymbol;
-  // CoCoA_ASSERT(std::regex_match (head(s), newsymbol, re));
-
-  // symbol[0] is entire match
-  // symbol[1] is head
-  // symbol[2] is tail with _ and braces
-  // symbol[3] is tail stripped
-
-  const std::string newsymbol_head = symbol_head(head(s));
-  const std::string newsymbol_tail = symbol_tail(head(s));
-
-  bool found_matching_head = false;
-
-  for (long i=0; i < myNumIndets-1; ++i) {
-
-    //std::smatch oldsymbol;
-    //CoCoA_ASSERT(std::regex_match (head(myIndetSymbols[ranking[i]]), oldsymbol, re));
-
-    const std::string oldsymbol_head = symbol_head(head(myIndetSymbols[ranking[i]]));
-    const std::string oldsymbol_tail = symbol_tail(head(myIndetSymbols[ranking[i]]));
-
-    if (oldsymbol_head == newsymbol_head) {
-      found_matching_head = true;
-      if (oldsymbol_tail.length() > newsymbol_tail.length()) {
-	ranking.insert(ranking.begin() + i, myNumIndets-1);
-	goto done;
-      }
-      if (oldsymbol_tail.length() == newsymbol_tail.length()) {
-	if (oldsymbol_tail < newsymbol_tail) {
-	  // If they're the same length, then oldsymbol_tail compares
-	  // less when the first character that differs is less in
-	  // oldsymbol_tail.  Tail letters are sorted into ascending
-	  // order, so "xxyz" < "xyyz".
-	  ranking.insert(ranking.begin() + i, myNumIndets-1);
-	  goto done;
-	}
-      }
-    } else if (found_matching_head) {
-      // We've already found the matching head, but oldsymbol_head !=
-      // newsymbol_head, so that means we've just passed the matching
-      // head and moved onto the next head.  Insert new symbol here.
-      ranking.insert(ranking.begin() + i, myNumIndets-1);
-      goto done;
-    }
+  if (after_i == -1) {
+    ranking.push_back(myNumIndets-1);
+  } else {
+    ranking.insert(ranking.begin() + after_i, myNumIndets-1);
   }
-  // Everything compared less than the new symbol, so we fell through
-  // here.  New symbol goes at the end.
-  ranking.push_back(myNumIndets-1);
-
- done:
 
   // Now update the PPOrdering to be a lex ordering on the new ranking
 
@@ -362,6 +277,7 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s) cons
   }
 
   const_cast<PPMonoidRingExpImpl *>(this)->myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
+  //myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
 
   return myIndetVector.back();
 }
@@ -1322,11 +1238,68 @@ void testPowerPolyRing(void)
 
 /* PowerPolyDifferentialRing - a polynomial ring whose exponents are
  * polynomials, and whose differentiation operator generates an
- * infinite number of indeterminates
+ * infinite number of indeterminates.
+ *
+ * The symbols in the ring have the form head_{tail} (LaTeX jet
+ * notation).
  *
  * We assume that everything in the coefficient ring is a constant
  * (i.e, differentiates to zero).
  */
+
+static std::string symbol_head(const std::string & symbol)
+{
+  const std::size_t underscore = symbol.find("_");
+
+  if (underscore == std::string::npos) {
+    return symbol;
+  } else {
+    return symbol.substr(0, underscore);
+  }
+}
+
+static std::string symbol_tail(const std::string & symbol)
+{
+  const std::size_t underscore = symbol.find("_");
+  const std::size_t openbracket = symbol.find("{");
+  const std::size_t closebracket = symbol.find("}");
+
+  if (underscore == std::string::npos) {
+    return "";
+  } else if (openbracket == std::string::npos) {
+    return symbol.substr(underscore+1, std::string::npos);
+  } else {
+    return symbol.substr(openbracket+1, closebracket-openbracket-1);
+  }
+}
+
+/* Splits a differential indeterminate into its base and derivative parts.
+ *
+ * Ex:  f_xt splits into f and x*t
+ */
+
+static void split_differential_indet (const PPMonoidElem &e, PPMonoidElem &base, PPMonoidElem &deriv)
+{
+  long i;
+
+  if (! IsIndet(i, e)) {
+    CoCoA_ERROR(ERR::NotIndet, "split_differential_indet");
+  }
+
+  const std::string sym = head(IndetSymbol(owner(e), i));
+
+  base = owner(e)->mySymbolValue(symbol(symbol_head(sym)));
+
+  AssignOne(deriv);
+  for (char &c: symbol_tail(sym)) {
+    deriv *= owner(e)->mySymbolValue(symbol(std::string(1, c)));
+  }
+}
+
+const symbol& Symbol(ConstRefPPMonoidElem indet)
+{
+  return owner(indet)->mySymbols()[0];
+}
 
 class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
 
@@ -1394,17 +1367,93 @@ public:
    * const, so I can call it from myDeriv().  Thus we use const_cast.
    */
 
-  RingElem myNewSymbolValue(const symbol& s) const
+  RingElem myNewSymbolValue(const symbol& s)
   {
     vector<symbol> syms = symbols(ring(this));
     syms.push_back(s);
-    if ( AreDistinct(syms) ) {
-      RingElem r = monomial(ring(this), 1, myPPM()->myNewSymbolValue(s));
-      const_cast<PowerPolyDifferentialRingBase *>(this)->myIndetVector.push_back(r);
-      return r;
-    } else {
+
+    // take care not to insert a new symbol if it already exists
+    if ( ! AreDistinct(syms) ) {
       return mySymbolValue(s);
     }
+
+    // construct a list of indets, sorted into ranking order
+    std::vector<PPMonoidElem> indets = myPPM()->myIndets();
+    std::sort(indets.begin(), indets.end());
+
+    // comparison logic: first lexicographic ordering on the base symbol
+    // (the part before an underscore), this gives us an elimination
+    // ordering on the base symbols, then total degree on the
+    // derivatives, then lexiographic on the derivatives
+
+    // C++ regex doesn't work prior to gcc 4.9
+
+    // const std::regex re("([^_]+)(_\\{?(.+)\\}?)?");
+    // std::smatch newsymbol;
+    // CoCoA_ASSERT(std::regex_match (head(s), newsymbol, re));
+
+    // symbol[0] is entire match
+    // symbol[1] is head
+    // symbol[2] is tail with _ and braces
+    // symbol[3] is tail stripped
+
+    const std::string newsymbol_head = symbol_head(head(s));
+    const std::string newsymbol_tail = symbol_tail(head(s));
+
+    bool found_matching_head = false;
+
+    // If we fall through the loop below, 'after' will be the identity
+    // element in the monoid.
+
+    PPMonoidElem after(myPPM());
+
+    long i;
+    for (i=0; i < myNumIndets() - 1; ++i) {
+
+      //std::smatch oldsymbol;
+      //CoCoA_ASSERT(std::regex_match (head(myIndetSymbols[ranking[i]]), oldsymbol, re));
+
+      const symbol& oldsymbol = Symbol(indets[i]);
+
+      const std::string oldsymbol_head = symbol_head(head(oldsymbol));
+      const std::string oldsymbol_tail = symbol_tail(head(oldsymbol));
+
+      if (oldsymbol_head == newsymbol_head) {
+	found_matching_head = true;
+	if (oldsymbol_tail.length() > newsymbol_tail.length()) {
+	  after = indets[i];
+	  break;
+	}
+	if (oldsymbol_tail.length() == newsymbol_tail.length()) {
+	  if (oldsymbol_tail < newsymbol_tail) {
+	    // If they're the same length, then oldsymbol_tail compares
+	    // less when the first character that differs is less in
+	    // oldsymbol_tail.  Tail letters are sorted into ascending
+	    // order, so "xxyz" < "xyyz".
+	    after = indets[i];
+	    break;
+	  }
+	}
+      } else if (found_matching_head) {
+	// We've already found the matching head, but oldsymbol_head !=
+	// newsymbol_head, so that means we've just passed the matching
+	// head and moved onto the next head.  Insert new symbol here.
+	after = indets[i];
+	break;
+      }
+    }
+    // Everything compared less than the new symbol, so we fell through
+    // here.  New symbol goes at the end.
+
+    //RingElem r = monomial(ring(this), 1, myPPM().PPMonoidRingExpImpl::myNewSymbolValue(s, after));
+    //RingElem r = monomial(ring(this), 1, const_cast<ConstRefPPMonoidElem *(const symbol&, ConstRefPPMonoidElem)>(&myPPM()->myNewSymbolValue)->(s, after));
+    //RingElem r = monomial(ring(this), 1, const_cast<PPMonoid&>(myPPM())->myNewSymbolValue(s, after));
+    RingElem r = monomial(ring(this), 1, myPPM()->myNewSymbolValue(s, after));
+
+    const_cast<PowerPolyDifferentialRingBase *>(this)->myIndetVector.push_back(r);
+    myIndetVector.push_back(r);
+
+    return r;
   }
 
 
@@ -1449,7 +1498,9 @@ public:
 	    const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
 	    const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
 
-	    differentiation_map[key] = myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
+	    auto non_const_this = const_cast<PowerPolyDifferentialRingBase *>(this);
+	    differentiation_map[key] = non_const_this->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
+	    // differentiation_map[key] = const_cast<PowerPolyDifferentialRingBase *>(this)->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
 	  }
 	  m *= differentiation_map[key];
 	}
@@ -2368,6 +2419,14 @@ void testRegularDifferentialIdeal(void)
   RingElem xtt = deriv(xt,t);
 
   // First example from Rosenfeld-Groebner paper
+
+  RingElem s1 = (2*xtt+1)*yt+y;
+  RingElem s2 = xt*xt + x;
+
+  // CoCoA_ASSERT(initial(s1) == 2*yt);
+  // CoCoA_ASSERT(separant(s1) == 2*yt);
+  // CoCoA_ASSERT(initial(s2) == 1);
+  // CoCoA_ASSERT(separant(s2) == 2*xt);
 
   RegularDifferentialIdeal di((2*xtt+1)*yt+y, xt*xt+x);
 

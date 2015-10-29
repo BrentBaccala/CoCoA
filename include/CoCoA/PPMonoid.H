@@ -163,7 +163,7 @@ namespace CoCoA
     const std::vector<symbol>& mySymbols() const { return myIndetSymbols; }
     virtual const symbol& myIndetSymbol(long i) const;                            ///< the symbol of the i-th indet
     ConstRefPPMonoidElem mySymbolValue(const symbol& s) const;                    ///< returns the PPMonoidElem corresponding to sym
-    virtual ConstRefPPMonoidElem myNewSymbolValue(const symbol& s) const;         ///< allows new symbols to be inserted
+    virtual ConstRefPPMonoidElem myNewSymbolValue(const symbol&, ConstRefPPMonoidElem) const; ///< inserts new symbols
 
     virtual const PPMonoidElem& myOne() const = 0;
     virtual PPMonoidElemRawPtr myNew() const = 0;                                 ///< ctor from nothing
@@ -358,7 +358,7 @@ namespace CoCoA
   }
 
 
-  inline ConstRefPPMonoidElem PPMonoidBase::myNewSymbolValue(const symbol&) const
+  inline ConstRefPPMonoidElem PPMonoidBase::myNewSymbolValue(const symbol&, ConstRefPPMonoidElem) const
   {
     CoCoA_ERROR(ERR::BadPPMonoid, "this PPMonoid can't insert new symbols");
   }
