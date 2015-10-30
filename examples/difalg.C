@@ -218,6 +218,11 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
   return myIndetVector;
 }
 
+void BWBprint(ConstRefRingElem x)
+{
+  std::cerr << x << endl;
+}
+
 /* myNewSymbolValue() - add a new symbol to the PPMonoid, inserting it
  * into the ranking order before PPMonoidElem 'next'.  If the given
  * PPMonoidElem is one, insert at the end of the ranking order, so the
@@ -1298,7 +1303,9 @@ static void split_differential_indet (const PPMonoidElem &e, PPMonoidElem &base,
 
 const symbol& Symbol(ConstRefPPMonoidElem indet)
 {
-  return owner(indet)->mySymbols()[0];
+  long idx;
+  CoCoA_ASSERT(IsIndet(idx, indet));
+  return IndetSymbol(owner(indet), idx);
 }
 
 class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
@@ -1418,6 +1425,8 @@ public:
       const std::string oldsymbol_head = symbol_head(head(oldsymbol));
       const std::string oldsymbol_tail = symbol_tail(head(oldsymbol));
 
+      // [Ma91]'s total degree ordering
+
       if (oldsymbol_head == newsymbol_head) {
 	found_matching_head = true;
 	if (oldsymbol_tail.length() > newsymbol_tail.length()) {
@@ -1426,10 +1435,15 @@ public:
 	}
 	if (oldsymbol_tail.length() == newsymbol_tail.length()) {
 	  if (oldsymbol_tail < newsymbol_tail) {
-	    // If they're the same length, then oldsymbol_tail compares
-	    // less when the first character that differs is less in
-	    // oldsymbol_tail.  Tail letters are sorted into ascending
-	    // order, so "xxyz" < "xyyz".
+	    // If they're the same length, then oldsymbol_tail
+	    // compares less when the first character that differs is
+	    // less in oldsymbol_tail.  Tail letters are sorted into
+	    // ascending order, so "xxyz" < "xyyz".  The highest
+	    // ranking derivative that differs ("xx") in this case,
+	    // dominates.
+
+	    // XXX using built-in string comparision here assumes that
+	    // alphabetical order is the same as ranking order!
 	    after = indets[i];
 	    break;
 	  }
@@ -1442,6 +1456,7 @@ public:
 	break;
       }
     }
+
     // Everything compared less than the new symbol, so we fell through
     // here.  New symbol goes at the end.
 
@@ -1451,7 +1466,7 @@ public:
     RingElem r = monomial(ring(this), 1, myPPM()->myNewSymbolValue(s, after));
 
     const_cast<PowerPolyDifferentialRingBase *>(this)->myIndetVector.push_back(r);
-    myIndetVector.push_back(r);
+    //myIndetVector.push_back(r);
 
     return r;
   }
