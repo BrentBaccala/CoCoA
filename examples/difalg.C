@@ -1729,8 +1729,12 @@ public:
 
   std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
   {
-    // Assume we're using a monomial ordering so that a polynomial's
-    // HDT will appear in its LPP.
+    if (IsConstant(f1)) {
+      return make_pair(PPMonoidElem(PPM(owner(f1))), 0);
+    }
+
+    // XXX Assumes we're using a monomial ordering that places a
+    // polynomial's HDT in its LPP.
 
     const PPMonoidElem& lpp = LPP(f1);
     PPMonoidElem hdt(owner(lpp));
@@ -1897,7 +1901,10 @@ public:
 
     for (unsigned int i=0; i < set.size(); i++) {
       for (unsigned int j=i+1; j < set.size(); j++) {
-	result.push_back(Dpoly(set[i], set[j]));
+	ConstRefRingElem dp = Dpoly(set[i], set[j]);
+	if (! IsZero(dp)) {
+	  result.push_back(dp);
+	}
       }
     }
 
@@ -1968,6 +1975,8 @@ public:
     const long Hp_g = Hp(g);
     const PPMonoidElem rank_g = rank(g);
     long indet_HDT_g;
+
+    // attempted reduction by a constant will fail this ASSERT
 
     CoCoA_ASSERT(IsIndet(indet_HDT_g, HDT_g));
 
@@ -2221,13 +2230,13 @@ public:
     // check for "obvious" inconsistencies
 
     for (auto eq: equations) {
-      if (IsConstant(eq)) return;
+      if (IsConstant(eq) && !IsZero(eq)) return;
     }
     for (auto ineq: inequations) {
       if (IsZero(ineq)) return;
     }
 
-    // std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
+    std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
 
     // build a characteristic set from 'equations'
 
@@ -2312,6 +2321,17 @@ public:
 
     std::vector<RingElem> h = initials_and_separants(A);
     std::vector<RingElem> R = rem(Union(equations, Dpoly(A)), A); // (remaining equations union D-polynomials of A) rem A
+
+    // This strikes me as unnecessarily verbose, but it's too terse to even compile.
+    //   std::remove_if(R.begin(), R.end(), IsZero);
+    // We need to either specify the template arguments...
+    //   std::remove_if<std::vector<RingElem>::iterator, bool(ConstRefRingElem)> (R.begin(), R.end(), IsZero);
+    // or use a lambda function
+    //   std::remove_if(R.begin(), R.end(), [](const RingElem &o) { return IsZero(o);} );
+    // but even that doesn't actually remove the elements, we have to call erase() to do that.
+    //   http://stackoverflow.com/questions/7958216
+
+    R.erase(std::remove_if(R.begin(), R.end(), [](const RingElem &o) { return IsZero(o);} ), R.end());
 
     std::cerr << "R: " << R << endl;
     std::cerr << "h: " << h << endl;
@@ -2431,9 +2451,11 @@ void testRegularDifferentialIdeal(void)
 
   RingElem xt = deriv(x,t);
   RingElem yt = deriv(y,t);
-  RingElem xtt = deriv(xt,t);
 
-  // First example from Rosenfeld-Groebner paper
+  RingElem xtt = deriv(xt,t);
+  RingElem ytt = deriv(yt,t);
+
+  // First example from [Bo95]
 
   RingElem s1 = (2*xtt+1)*yt+y;
   RingElem s2 = xt*xt + x;
@@ -2445,19 +2467,17 @@ void testRegularDifferentialIdeal(void)
 
   RegularDifferentialIdeal di((2*xtt+1)*yt+y, xt*xt+x);
 
-  // std::cerr << di << endl;
+  //std::cerr << di.Rosenfeld_Groebner() << endl;
 
-  //di.Buchberger();
+  // Third example from [Bo95]
 
-  std::cerr << di.Rosenfeld_Groebner() << endl;
-
-  // std::cerr << di << endl;
+  std::cerr << RegularDifferentialIdeal(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y).Rosenfeld_Groebner() << endl;
 
   // Sixth example from Mansfield thesis
 
   RegularDifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
 
-  // std::cerr << di6 << endl;
+  //std::cerr << di6.Rosenfeld_Groebner() << endl;
 }
 
 /* Smith Normal Form
