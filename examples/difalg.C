@@ -2032,7 +2032,18 @@ public:
 	    // cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
 	    // cout << "result = " << Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag << endl;
 
-	    return Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag;
+	    // If I use ConstRefRingElem's here, I lose my signs!  -1 in CoeffVecWRT(f, DT) becomes 1!
+
+	    RingElem gcoeff = Hcoeff(Dag);
+	    RingElem fcoeff = CoeffVecWRT(f, DT)[p];
+	    RingElem gcd_coeff = gcd(fcoeff, gcoeff);
+
+	    // cout << "gcoeff = " << gcoeff << endl;
+	    // cout << "fcoeff = " << fcoeff << endl;
+	    // cout << "gcd = " << gcd_coeff << endl;
+
+	    // return Hcoeff(Dag) * f - CoeffVecWRT(f, DT)[p] * power(DT, p-1) * Dag;
+	    return (gcoeff * f - fcoeff * power(DT, p-1) * Dag) / gcd_coeff;
 	  }
 	}
       }
@@ -2046,9 +2057,16 @@ public:
 	  // cout << "g = " << g << endl;
 	  // cout << "DT^p = " << DT << "^" << p << endl;
 	  // cout << "CoeffVecWRT(f, DT) = " << CoeffVecWRT(f, DT) << endl;
-	  // cout << "result = " << Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g;
+	  // cout << "result = " << Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g << endl;
 
-	  return Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g;
+	  RingElem gcoeff = Hcoeff(g);
+	  RingElem fcoeff = CoeffVecWRT(f, DT)[p];
+	  RingElem gcd_coeff = gcd(fcoeff, gcoeff);
+
+	  // cout << "gcd = " << gcd_coeff << endl;
+
+	  // return Hcoeff(g) * f - CoeffVecWRT(f, DT)[p] * power(DT, p - Hp_g) * g;
+	  return (gcoeff * f - fcoeff * power(DT, p - Hp_g) * g) / gcd_coeff;
 	}
       }
     }
@@ -2070,6 +2088,7 @@ public:
       }
     }
 
+    // return r/CoeffEmbeddingHom(owner(r))(content(r));
     return r;
   }
 
@@ -2315,6 +2334,10 @@ public:
 #endif
 #endif
 
+    std::for_each(A.begin(), A.end(), [](RingElem &r) {
+	r /= CoeffEmbeddingHom(owner(r))(content(r));
+      });
+
     std::cerr << "A: " << A << endl;
 
     CoCoA_ASSERT(is_characteristic_set(Union(A, equations), A));
@@ -2332,6 +2355,10 @@ public:
     //   http://stackoverflow.com/questions/7958216
 
     R.erase(std::remove_if(R.begin(), R.end(), [](const RingElem &o) { return IsZero(o);} ), R.end());
+
+    std::for_each(R.begin(), R.end(), [](RingElem &r) {
+	r /= CoeffEmbeddingHom(owner(r))(content(r));
+      });
 
     std::cerr << "R: " << R << endl;
     std::cerr << "h: " << h << endl;
