@@ -2244,7 +2244,7 @@ public:
   }
 
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
-			  std::vector<RegularSystem> & results)
+			  std::vector<RegularSystem> & results, int nesting_level=0)
   {
     // check for "obvious" inconsistencies
 
@@ -2255,7 +2255,7 @@ public:
       if (IsZero(ineq)) return;
     }
 
-    std::cerr << "Rosenfeld_Groebner: equations: " << equations << " inequations: " << inequations << endl;
+    std::cerr << "Rosenfeld_Groebner(" << nesting_level << "): equations: " << equations << " inequations: " << inequations << endl;
 
     // build a characteristic set from 'equations'
 
@@ -2371,13 +2371,13 @@ public:
 	results.push_back(result);
       }
     } else {
-      Rosenfeld_Groebner(Union(A, R), Union(inequations, h), results);
+      Rosenfeld_Groebner(Union(A, R), Union(inequations, h), results, nesting_level+1);
     }
 
     while (! h.empty()) {
       RingElem hi = h.back();
       h.pop_back();
-      Rosenfeld_Groebner(Union(Union(equations, A), hi), h, results);
+      Rosenfeld_Groebner(Union(Union(equations, A), hi), h, results, nesting_level+1);
     }
   }
 
