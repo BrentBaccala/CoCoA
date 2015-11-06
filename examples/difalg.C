@@ -2238,6 +2238,8 @@ public:
   {
     for (auto eq: set) {
       // if (! IsZero(rem(eq, subset))) return false;
+      // cerr << "eq: " << eq << endl;
+      // cerr << "rem(eq,subset): " << rem(eq,subset) << endl;
       if (rem(eq, subset) == eq) return false;
     }
     return is_autoreduced(subset);
@@ -2340,6 +2342,8 @@ public:
       });
 
     std::cerr << "A: " << A << endl;
+    //std::cerr << "equations: " << equations << endl;
+    //std::cerr << "Union(A,equations): " << Union(A,equations) << endl;
 
     CoCoA_ASSERT(is_characteristic_set(Union(A, equations), A));
 
@@ -2500,6 +2504,11 @@ void testRegularDifferentialIdeal(void)
   // Third example from [Bo95]
 
   std::cerr << RegularDifferentialIdeal(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y).Rosenfeld_Groebner() << endl;
+
+  //std::cerr << RegularDifferentialIdeal(R, std::vector<RingElem> {19488*power(x,5) -81280*power(x,4) +92256*power(x,3) -528*power(x,2) -23858*x -1920,  48720*power(x,4) -162560*power(x,3) +138384*power(x,2) -528*x -11929,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  584640*power(x,2) -975360*x +276768,  -3299572*power(x,4) +11636124*power(x,3) -7331817*power(x,2) -4491566*x -243840,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -39594864*power(x,2) +69816744*x -14663634,  -105936364564*power(x,4) +287632590324*power(x,3) -102295429833*power(x,2) -83289434024*x -4781890560,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -2542472749536*x +1725795541944}).Rosenfeld_Groebner();
+
+  //std::cerr << RegularDifferentialIdeal(R, std::vector<RingElem> {power(x,5) -power(x,4) +power(x,3) -power(x,2) -x -1920,  power(x,4) -power(x,3) +power(x,2) -x -11,  power(x,3) -power(x,2) +x -5,  power(x,2) -x +27,  power(x,2) +4*x -14, -26*x +14}).Rosenfeld_Groebner();
+
 
   // Sixth example from Mansfield thesis
 
