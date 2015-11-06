@@ -2271,7 +2271,8 @@ public:
 	++ it;
       }
     }
-#else
+#endif
+
 #if 1
     // Produce A, a characteristic set of 'equations'.
     //
@@ -2291,7 +2292,9 @@ public:
 	break;
       }
     }
-#else
+#endif
+
+#if 0
     // Produce A, a characteristic set of 'equations'.
     //
     // A characteristic set is an autoreduced set (by definition; see
@@ -2321,7 +2324,6 @@ public:
     }
 #endif
 
-
     // Now build 'A' from the selected elements, and remove them from
     // 'equations'.
 
@@ -2331,7 +2333,6 @@ public:
     }
     //std::vector<RingElem> A(Amap.begin(), Amap.end());
     //std::copy(A.begin(), A.end(), A
-#endif
 #endif
 
     std::for_each(A.begin(), A.end(), [](RingElem &r) {
