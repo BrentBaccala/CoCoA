@@ -1918,61 +1918,6 @@ public:
     return result;
   }
 
-  RingElem diffSpoly(const RingElem& f1, const RingElem& f2)
-  {
-    RingElem dpoly = Dpoly(f1, f2);
-    if (! IsZero(dpoly)) {
-      return dpoly;
-    } else {
-      return Spoly(f1, f2);
-    }
-  }
-
-  // Reduce a RingElem against all of the RegularDifferentialIdeal's generators.
-
-  // This is standard polynomial reduction, not differential reduction.
-
-  // In general, reduction can occur at any polynomial term.  In the
-  // case of a Groebner basis, we can always reduce at the leading
-  // term and be assured that we'll eventually reduce the entire
-  // polynomial.
-
-  RingElem reduce(RingElem r, ConstRefRingElem g)
-  {
-    if (IsZero(r)) return r;
-
-    while (IsDivisible(LPP(r), LPP(g))  &&  IsDivisible(LC(r), LC(g))) {
-      RingElem content = LC(r) / LC(g);
-      RingElem factor = monomial(owner(r), content, LPP(r) / LPP(g));
-      r -= g * factor;
-      if (IsZero(r)) return r;
-    }
-
-    return r;
-  }
-
-  RingElem reduce(RingElem r, const std::vector<RingElem> A)
-  {
-    if (IsZero(r)) return r;
-
-    for (unsigned int i=0; i < A.size(); i++) {
-      if (IsDivisible(LPP(r), LPP(A[i]))  &&  IsDivisible(LC(r), LC(A[i]))) {
-	RingElem content = LC(r) / LC(A[i]);
-	RingElem factor = monomial(owner(r), content, LPP(r) / LPP(A[i]));
-	r -= A[i] * factor;
-	i = -1;
-	if (IsZero(r)) return r;
-      }
-    }
-
-    return r;
-  }
-
-  RingElem reduce(RingElem r)
-  {
-    return reduce(r, gens);
-  }
-
   // This is partial differential reduction.
 
   RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
@@ -2122,33 +2067,6 @@ public:
     return partial_rem(v, A, true);
   }
 
-  // Buchberger's algorithm
-
-  void Buchberger(void)
-  {
-    std::vector<std::pair<RingElem, RingElem>> pairset;
-
-    for (unsigned int i=0; i < gens.size(); i++) {
-      for (unsigned int j=i+1; j < gens.size(); j++) {
-	pairset.push_back(make_pair(gens[i], gens[j]));
-      }
-    }
-
-    while (! pairset.empty()) {
-      auto p = pairset.back();
-      RingElem dp = reduce(EmbeddingHom(owner(p.first))(diffSpoly(num(p.first), num(p.second))));
-      //cout << dp << endl;
-      pairset.pop_back();
-      if (! IsZero(dp)) {
-	cout << "{" << p.first << ", " << p.second << "} -> " << dp << endl;
-	for (unsigned int i=0; i < gens.size(); i++) {
-	  pairset.push_back(make_pair(dp, gens[i]));
-	}
-	gens.push_back(dp);
-      }
-    }
-  }
-
   std::vector<RingElem> Union(const std::vector<RingElem> a, const std::vector<RingElem> b)
   {
     std::vector<RingElem> c = a;
@@ -2211,19 +2129,6 @@ public:
     }
 
     return result;
-  }
-
-  // is_autoreduced returns true if union(f,A) is autoreduced
-
-  bool is_autoreduced(RingElem f, std::vector<RingElem> A)
-  {
-    if (rem(f, A) != f) return false;
-
-    for (RingElem g : A) {
-      if (rem(g,f) != g) return false;
-    }
-
-    return true;
   }
 
   bool is_autoreduced(const std::vector<RingElem> set)
