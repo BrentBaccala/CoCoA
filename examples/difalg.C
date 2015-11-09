@@ -1780,6 +1780,16 @@ public:
     return power(p.first, p.second);
   }
 
+  std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
+  {
+    std::vector<PPMonoidElem> result;
+    for (auto e: v) {
+      result.push_back(rank(e));
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+  }
+
   RingElem Hcoeff(ConstRefRingElem f)
   {
     return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
@@ -2253,6 +2263,7 @@ public:
       });
 
     std::cerr << "A: " << A << endl;
+    std::cerr << "rank: " << rank(A) << endl;
     //std::cerr << "equations: " << equations << endl;
     //std::cerr << "Union(A,equations): " << Union(A,equations) << endl;
 
