@@ -1733,7 +1733,7 @@ public:
   //
   // When passed a element from the coefficient ring, will return (1, 0)
 
-  std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
+  static std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
   {
     if (IsConstant(f1)) {
       return make_pair(PPMonoidElem(PPM(owner(f1))), 0);
@@ -1764,23 +1764,23 @@ public:
     return make_pair(hdt, hp);
   }
 
-  PPMonoidElem HDT(ConstRefRingElem f1)
+  static PPMonoidElem HDT(ConstRefRingElem f1)
   {
     return HDT_Hp(f1).first;
   }
 
-  int Hp(ConstRefRingElem f1)
+  static int Hp(ConstRefRingElem f1)
   {
     return HDT_Hp(f1).second;
   }
 
-  PPMonoidElem rank(ConstRefRingElem f)
+  static PPMonoidElem rank(ConstRefRingElem f)
   {
     const auto p = HDT_Hp(f);
     return power(p.first, p.second);
   }
 
-  std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
+  static std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
   {
     std::vector<PPMonoidElem> result;
     for (auto e: v) {
@@ -1790,7 +1790,7 @@ public:
     return result;
   }
 
-  RingElem Hcoeff(ConstRefRingElem f)
+  static RingElem Hcoeff(ConstRefRingElem f)
   {
     return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
   }
@@ -1800,7 +1800,7 @@ public:
 
   // If the RingElem is a constant, then Hu() returns 1.
 
-  PPMonoidElem Hu(ConstRefRingElem f1)
+  static PPMonoidElem Hu(ConstRefRingElem f1)
   {
     if (! IsConstant(f1)) {
       PPMonoidElem e = HDT(f1);
@@ -1815,7 +1815,7 @@ public:
 
   // Elizabeth Mansfield's notation - alpha is the derivative
 
-  PPMonoidElem alpha(ConstRefRingElem f1)
+  static PPMonoidElem alpha(ConstRefRingElem f1)
   {
     if (! IsConstant(f1)) {
       PPMonoidElem e = HDT(f1);
@@ -1833,7 +1833,7 @@ public:
   // PPMonoidElem.  For example, differentiating u w.r.t to x^2*y
   // produces u_xxy, but RingElem can be more complicated than that.
 
-  RingElem multideriv(RingElem r, ConstRefPPMonoidElem p)
+  static RingElem multideriv(RingElem r, ConstRefPPMonoidElem p)
   {
     for (long i = 0; i < NumIndets(owner(p)); ++ i) {
       for (long j = exponent(p, i); j > 0; -- j) {
@@ -1845,7 +1845,7 @@ public:
 
   /* Compute the Buchberger S-polynomial of two RingElems. */
 
-  RingElem Spoly(ConstRefRingElem f1, ConstRefRingElem f2)
+  static RingElem Spoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     ConstRefPPMonoidElem lpp1 = LPP(f1);
     ConstRefPPMonoidElem lpp2 = LPP(f2);
@@ -1870,7 +1870,7 @@ public:
 
   /* Compute the D-polynomial of two RingElems */
 
-  RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
+  static RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     // Assume we're using a monomial ordering so that a polynomial's
     // highest ranking unknown will appear in its LPP.
@@ -1907,11 +1907,12 @@ public:
 
       return Spoly(multideriv(f1, a1), multideriv(f2, a2));
     } else {
-      return zero(R);
+      //return zero(R);
+      return zero(owner(f1));
     }
   }
 
-  std::vector<RingElem> Dpoly(const std::vector<RingElem> set)
+  static std::vector<RingElem> Dpoly(const std::vector<RingElem> set)
   {
     std::vector<RingElem> result;
 
@@ -1930,7 +1931,7 @@ public:
 
   // This is partial differential reduction.
 
-  RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
+  static RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
   {
     const PPMonoidElem HDT_g = HDT(g);
     const long Hp_g = Hp(g);
@@ -2035,7 +2036,7 @@ public:
     return f;
   }
 
-  RingElem partial_rem(RingElem r, const std::vector<RingElem> A, bool full_reduction = false)
+  static RingElem partial_rem(RingElem r, const std::vector<RingElem> A, bool full_reduction = false)
   {
     if (IsZero(r)) return r;
 
@@ -2053,7 +2054,7 @@ public:
     return r;
   }
 
-  std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A, bool full_reduction = false)
+  static std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A, bool full_reduction = false)
   {
     std::vector<RingElem> result = v;
     for (auto&& e : result) {
@@ -2062,17 +2063,17 @@ public:
     return result;
   }
 
-  RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
+  static RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
   {
     return partial_rem(f, g, true);
   }
 
-  RingElem rem(RingElem r, const std::vector<RingElem> A)
+  static RingElem rem(RingElem r, const std::vector<RingElem> A)
   {
     return partial_rem(r, A, true);
   }
 
-  std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
+  static std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
   {
     return partial_rem(v, A, true);
   }
