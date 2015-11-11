@@ -2197,7 +2197,7 @@ public:
     }
 #endif
 
-#if 1
+#if 0
     // Produce A, a characteristic set of 'equations'.
     //
     // Construct all possible subsets of equations (except the empty
@@ -2216,6 +2216,35 @@ public:
 	break;
       }
     }
+#endif
+
+#if 1
+
+    // Produce A, a characteristic set of 'equations'.
+    //
+    // At each step, select the element of lowest rank and add it to
+    // A.  Remove from consideration all elements that can now be
+    // reduced by A.  Repeat until no elements remain.
+    //
+    // XXX Can be sped up by not using full partial reduction; only
+    // enough to see if reduction is possible.
+
+    std::vector<RingElem> remaining = equations;
+
+    // XXX could we use pointers or references to avoid copying here?
+
+    std::sort(remaining.begin(), remaining.end(), [] (ConstRefRingElem a, ConstRefRingElem b) -> bool {
+	return rank(a) > rank(b);
+      });
+
+    while (remaining.size() > 0) {
+      A.push_back(remaining.back());
+      remaining.erase(std::remove_if(remaining.begin(), remaining.end(), [&A](ConstRefRingElem o) -> bool {
+	    return (o != rem(o, A));
+	  }), remaining.end());
+    }
+
+
 #endif
 
 #if 0
