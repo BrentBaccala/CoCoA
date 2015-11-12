@@ -2186,45 +2186,6 @@ public:
 
     std::cerr << "Rosenfeld_Groebner(" << nesting_level << "): equations: " << equations << " inequations: " << inequations << endl;
 
-    // build a characteristic set from 'equations'
-
-    std::vector<RingElem> A;
-
-#if 0
-    for (auto it = equations.begin(); it != equations.end();) {
-      std::cerr << *it << endl;
-      if (is_autoreduced(*it, A)) {
-	A = Union(A, *it);
-	it = equations.erase(it);
-      } else {
-	++ it;
-      }
-    }
-#endif
-
-#if 0
-    // Produce A, a characteristic set of 'equations'.
-    //
-    // Construct all possible subsets of equations (except the empty
-    // subset) until we find a characteristic set.
-
-    const long num_subsets = 1L << equations.size();
-    for (long subset=1; subset < num_subsets; subset++) {
-      A.clear();
-      for (unsigned long i=0; i<equations.size(); i++) {
-	if (subset & (1 << i)) A.push_back(equations[i]);
-      }
-      if (is_characteristic_set(equations, A)) {
-	for (auto element: A) {
-	  equations.erase(find(equations.begin(), equations.end(), element));
-	}
-	break;
-      }
-    }
-#endif
-
-#if 1
-
     // Produce A, a characteristic set of 'equations'.
     //
     // At each step, select the element of lowest rank and add it to
@@ -2234,9 +2195,13 @@ public:
     // XXX Can be sped up by not using full partial reduction; only
     // enough to see if reduction is possible.
 
+    std::vector<RingElem> A;
+
     std::vector<RingElem> remaining = equations;
 
     // XXX could we use pointers or references to avoid copying here?
+
+    // XXX I think we can just use 'equations' directly, unless we want it to be const
 
     std::sort(remaining.begin(), remaining.end(), [] (ConstRefRingElem a, ConstRefRingElem b) -> bool {
 	return rank(a) > rank(b);
@@ -2249,49 +2214,7 @@ public:
 	  }), remaining.end());
     }
 
-
-#endif
-
-#if 0
-    // Produce A, a characteristic set of 'equations'.
-    //
-    // A characteristic set is an autoreduced set (by definition; see
-    // [Bo95] footnote 3), and members of autoreduced sets have
-    // distinct leaders ([Ai] Lemma 3.23), so we group elements of
-    // 'equations' by their leaders, also called their Highest
-    // Derivative Term (HDT).  Among each group with the same leader,
-    // we pick an element of lowest rank.
-
-    std::map<PPMonoidElem, RingElem> Amap;
-
-#if 0
-    for (auto eq: equations) {
-      if (Amap.count(HDT(eq)) == 0) {
-	Amap[HDT(eq)] = eq;
-      } else if (rank(eq) < rank(Amap[HDT(eq)])) {
-	Amap[HDT(eq)] = eq;
-      }
-    }
-#else
-    for (auto eq: equations) {
-      if (Amap.count(Hu(eq)) == 0) {
-	Amap[Hu(eq)] = eq;
-      } else if (rank(eq) < rank(Amap[Hu(eq)])) {
-	Amap[Hu(eq)] = eq;
-      }
-    }
-#endif
-
-    // Now build 'A' from the selected elements, and remove them from
-    // 'equations'.
-
-    for (auto leader_element_pair: Amap) {
-      A.push_back(leader_element_pair.second);
-      equations.erase(find(equations.begin(), equations.end(), leader_element_pair.second));
-    }
-    //std::vector<RingElem> A(Amap.begin(), Amap.end());
-    //std::copy(A.begin(), A.end(), A
-#endif
+    // simplify A by dividing out by each polynomial's content
 
     std::for_each(A.begin(), A.end(), [](RingElem &r) {
 	r /= CoeffEmbeddingHom(owner(r))(content(r));
@@ -2306,6 +2229,12 @@ public:
 
     std::vector<RingElem> h = initials_and_separants(A);
     std::vector<RingElem> R = rem(Union(equations, Dpoly(A)), A); // (remaining equations union D-polynomials of A) rem A
+
+    // Having zeros in R creates problems later, so remove them now.
+    // Specifically, elements in R get passed recursively as
+    // 'equations', which lets zeros creep into our characteristic
+    // sets, so then we're trying to reduce by zero, and that fails
+    // asserts in the reduction code.
 
     // This strikes me as unnecessarily verbose, but it's too terse to even compile.
     //   std::remove_if(R.begin(), R.end(), IsZero);
@@ -2327,9 +2256,9 @@ public:
 
     if (R.empty() || IsZero(R[0])) {
       RegularSystem result(A, Union(partial_rem(inequations, A), h));
-      //std::cerr << "Got a result " << A << " \\ " << Union(partial_rem(inequations, A), h) << endl;
+      // std::cerr << "Got a result " << A << " \\ " << Union(partial_rem(inequations, A), h) << endl;
       if (! IsElem(one(RegularDifferentialIdeal::R), result.I)) {
-	//std::cerr << "Pushed a result" << endl;
+	// std::cerr << "Pushed a result " << result << endl;
 	results.push_back(result);
       }
     } else {
