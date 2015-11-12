@@ -2350,6 +2350,15 @@ void testRegularDifferentialIdeal(void)
   RingElem y(R, "y");
   RingElem z(R, "z");
 
+  //cerr << colon(ideal(4*power(x,3) -4*power(x,2) -3*x), ideal(R, std::vector<RingElem>{12*power(x,2) -8*x -3, 3595744*power(x,3) -2711796*power(x,2) -1338412*x +3747, -1923560*power(x,4) +4510032*power(x,3) -923526*power(x,2) -1407034*x -109815, 19488*power(x,5) -81280*power(x,4) +92256*power(x,3) -528*power(x,2) -23858*x -1920, -4480*power(x,6) +17760*power(x,5) -23360*power(x,4) +8992*power(x,3) +3864*power(x,2) -2374*x -240, 2048*power(x,7) -3584*power(x,6) -4512*power(x,5) +7840*power(x,4) +2336*power(x,3) -2712*power(x,2) -894*x -36, -2*power(x,2) +4*x -2, -24*power(x,3) +40*power(x,2) -10*x -6, 4*power(x,2) -4*x -3, zero(R), 144*power(x,4) -192*power(x,3) -8*power(x,2) +48*x +9})) << endl;
+  //cerr << colon(ideal(4*power(x,3) -4*power(x,2) -3*x), ideal(R, std::vector<RingElem>{4*power(x,2) -4*x -3, 144*power(x,4) -192*power(x,3) -8*power(x,2) +48*x +9})) << endl;
+  //cerr << colon(ideal(4*power(x,3) -4*power(x,2) -3*x), ideal(R, std::vector<RingElem>{4*power(x,2) -4*x -3, 48*x +9})) << endl;
+
+  //exit(1);
+
+  //cerr << colon(ideal(4*x*x*x-4*x*x-3*x), ideal(zero(R), 4*x*x-4*x-3)) << endl;
+  //exit(1);
+
   // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
   // different from 'p' in K, which we now create.
 
