@@ -2326,7 +2326,7 @@ void testRegularDifferentialIdeal(void)
   //std::vector<symbol> symbols;
   //std::transform(names.begin(), names.end(), symbols.begin(), [](const string &n){ return symbol(n); });
 
-  //std::vector<symbol> symbols={symbol("f"), symbol("t"), symbol("q"), symbol("x"), symbol("y"), symbol("z")};
+  //std::vector<symbol> symbols={symbol("f"), symbol("t"), symbol("q"), symbol("u"), symbol("v"), symbol("x"), symbol("y"), symbol("z")};
 
   //PPMonoid PPM = NewPPMonoid(symbols, lex);
 
@@ -2336,7 +2336,7 @@ void testRegularDifferentialIdeal(void)
   //ring R = NewPolyRing(QQ, PPM);
   //ring K = NewFractionField(R);
 
-  // Most significant first: f > t > q > z > y > x
+  // Most significant first: f > t > q > u > v > z > y > x
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "u", "v", "z", "y", "x"}, lex, QQ);
   ring R = NewPowerPolyDifferentialRing(QQ, PPM);
