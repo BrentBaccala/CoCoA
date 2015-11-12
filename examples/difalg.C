@@ -223,6 +223,11 @@ void BWBprint(ConstRefRingElem x)
   std::cerr << x << endl;
 }
 
+void BWBprint(std::vector<RingElem> x)
+{
+  std::cerr << x << endl;
+}
+
 /* myNewSymbolValue() - add a new symbol to the PPMonoid, inserting it
  * into the ranking order before PPMonoidElem 'next'.  If the given
  * PPMonoidElem is one, insert at the end of the ranking order, so the
