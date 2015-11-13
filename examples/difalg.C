@@ -2237,6 +2237,12 @@ public:
 	  }), remaining.end());
     }
 
+    // remove A's elements from 'equations'
+
+    for (auto element: A) {
+      equations.erase(find(equations.begin(), equations.end(), element));
+    }
+
     // simplify A by dividing out by each polynomial's content
 
     std::for_each(A.begin(), A.end(), [](RingElem &r) {
