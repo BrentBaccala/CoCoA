@@ -1663,8 +1663,8 @@ namespace std {
 // the inequations).
 //
 // N.B. This ISN'T the ideal quotient, both since we can't use ideals
-// with inequations (a <> 0 and b <> 0 doesn't imply a+b <> 0), and
-// also since the ideal quotient I:T is ∀ t ∈ T, tq ∈ I, while this
+// with inequations (a ≠ 0 and b ≠ 0 doesn't imply a+b ≠ 0), and also
+// since the ideal quotient I:T is ∀ t ∈ T, tq ∈ I, while this
 // quotient is ∃ t ∈ T, tq ∈ I, i.e, the universal quantifier is
 // replaced with an existential quantifier.
 
