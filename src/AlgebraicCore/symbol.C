@@ -59,7 +59,7 @@ namespace CoCoA
     inline bool IsValidAfterFirstChar(char ch)
     {
 //      return (ch == '_') || isalpha(ch);
-      return (ch == '_') || isalnum(ch);
+      return (ch == '_') || (ch == '{') || (ch == '}') || isalnum(ch);
     }
 
   } // end of anonymous namespace 
