@@ -5,6 +5,13 @@
 #include <functional>
 #include <string>
 #include <regex>
+
+#define USE_BLAD 1
+
+#ifdef USE_BLAD
+#include <blad.h>
+#endif
+
 using namespace CoCoA;
 using namespace std;
 
@@ -1691,10 +1698,12 @@ public:
 
 std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
 {
+  out << "RegularSystem(";
+
+#if 0
   bool first_eq_printed = false;
   bool first_ineq_printed = false;
 
-  out << "RegularSystem(";
   for (auto eq: omega.equations) {
     if (first_eq_printed) {
       out << ", ";
@@ -1711,6 +1720,8 @@ std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
     first_ineq_printed = true;
   }
   out << " ; ";
+#endif
+
   out << gens(omega.I);
 
   out << ")";
@@ -1895,8 +1906,8 @@ public:
 
   static RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
-    // Assume we're using a monomial ordering so that a polynomial's
-    // highest ranking unknown will appear in its LPP.
+    // XXX Assume we're using a monomial ordering so that a
+    // polynomial's highest ranking unknown will appear in its LPP.
 
     // We want to find the highest ranking unknown in each polynomial.
     // If it's the same unknown, we can construct differential
@@ -2190,6 +2201,274 @@ public:
     return is_autoreduced(subset);
   }
 
+#ifdef USE_BLAD
+
+  // This version of Rosenfeld_Groebner uses Francois Boulier's blad
+  // library.
+
+  static void PPMonoid_to_blad_ordering(const PPMonoid ppm, bav_Iordering * r)
+  {
+    // We current don't distinguish between independent and dependent
+    // variables (perhaps we should), but blad does.  Thus, we run
+    // through our indets, split them apart into base and deriv, and
+    // save the derivations.  The independent variables will be the
+    // derivations, while the dependent variables (blad's blocks)
+    // will be the bases less the derivations.
+
+    PPMonoidElem bases(ppm);
+    PPMonoidElem derivations(ppm);
+
+    for (auto ind: indets(ppm)) {
+      PPMonoidElem base(owner(ind));
+      PPMonoidElem deriv(owner(ind));
+      split_differential_indet(ind, base, deriv);
+      bases = radical(bases * base);
+      derivations = radical(derivations * deriv);
+    }
+
+    bases /= derivations;
+
+    std::vector<PPMonoidElem> vbases;
+    std::vector<PPMonoidElem> vderivations;
+
+    for (auto ind: indets(ppm)) {
+      if (IsDivisible(bases, ind)) {
+	vbases.push_back(ind);
+      }
+      if (IsDivisible(derivations, ind)) {
+	vderivations.push_back(ind);
+      }
+    }
+
+    std::sort(vbases.begin(), vbases.end());
+    std::sort(vderivations.begin(), vderivations.end());
+
+    std::string blad_ordering = "ordering (derivations=[";
+
+    for (auto ind: vderivations) {
+      blad_ordering += head(Symbol(ind)) + ",";
+    }
+    blad_ordering.pop_back();
+
+    blad_ordering += "], blocks=[";
+
+    for (auto ind: vbases) {
+      blad_ordering += "[" + head(Symbol(ind)) + "],";
+    }
+    blad_ordering.pop_back();
+
+    blad_ordering += "])";
+
+    // std::cerr << blad_ordering << endl;
+
+    // blad doesn't use const qualifiers when declaring ba0_sscanf2()
+    ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
+  }
+
+  std::string RingElem_to_blad_string(ConstRefRingElem e)
+  {
+    std::stringstream ss;
+    std::string result;
+
+    ss << e;
+
+    enum State { NORMAL, SUBSCRIPT, MULTI_SUBSCRIPT, MULTI_SUBSCRIPT_START };
+    State state = NORMAL;
+
+    char c;
+    while (ss.get(c)) {
+      switch (state) {
+      case NORMAL:
+	if (c == '_') {
+	  result += "[";
+	  state = SUBSCRIPT;
+	} else {
+	  result += c;
+	}
+	break;
+
+      case SUBSCRIPT:
+	if (c == '{') {
+	  state = MULTI_SUBSCRIPT_START;
+	} else {
+	  result += c;
+	  result += "]";
+	  state = NORMAL;
+	}
+	break;
+
+      case MULTI_SUBSCRIPT_START:
+	if (c == '}') {
+	  result += ']';
+	  state = NORMAL;
+	} else {
+	  result += c;
+	  state = MULTI_SUBSCRIPT;
+	}
+	break;
+
+      case MULTI_SUBSCRIPT:
+	if (c == '}') {
+	  result += ']';
+	  state = NORMAL;
+	} else {
+	  result += ',';
+	  result += c;
+	}
+	break;
+      }
+    }
+
+    return result;
+  }
+
+  std::string RingElems_to_blad_string(const std::vector <RingElem> v)
+  {
+    std::string result = "[";
+
+    for (auto e: v) {
+      result += RingElem_to_blad_string(e);
+      result += ",";
+    }
+
+    if (v.size() != 0) result.pop_back();   // remove last comma
+    result += "]";
+
+    // cerr << result << endl;
+
+    return result;
+  }
+
+  RingElem blad_string_to_RingElem(const char * s, const ring & R)
+  {
+    std::stringstream ss(s);
+    std::string result;
+
+    enum State { NORMAL, SUBSCRIPT, MULTI_SUBSCRIPT };
+    State state = NORMAL;
+
+    char c;
+    while (ss.get(c)) {
+      switch (state) {
+      case NORMAL:
+	if (c == '[') {
+	  result += "_";
+	  streampos mark = ss.tellg();
+	  while (ss.get(c)) {
+	    if (c == ',') {
+	      result += "{";
+	      state = MULTI_SUBSCRIPT;
+	      break;
+	    } else if (c == ']') {
+	      state = SUBSCRIPT;
+	      break;
+	    }
+	  }
+	  CoCoA_ASSERT(state != NORMAL);
+	  ss.seekg(mark);
+	} else {
+	  result += c;
+	}
+	break;
+
+      case SUBSCRIPT:
+	if (c == ']') {
+	  state = NORMAL;
+	} else if (c != ',') {
+	  result += c;
+	}
+	break;
+
+      case MULTI_SUBSCRIPT:
+	if (c == ']') {
+	  result += "}";
+	  state = NORMAL;
+	} else if (c != ',') {
+	  result += c;
+	}
+	break;
+      }
+    }
+
+    // cerr << result << endl;
+
+    return ReadExpr(R, result);
+  }
+
+  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
+  {
+    struct bap_tableof_polynom_mpz * eqns;
+    struct bap_tableof_polynom_mpz * ineqs;
+
+    struct bad_intersectof_regchain * T;
+    std::vector<RegularSystem> results;
+
+    bav_Iordering r;
+
+    bad_restart(0,0);
+
+    eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
+    ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
+
+    PPMonoid_to_blad_ordering(PPM(owner(equations[0])), &r);
+    bav_R_push_ordering (r);
+
+    ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
+    ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
+
+#if 0
+    for (auto eq: equations) {
+      struct bap_creator_mpz crea;
+      struct bap_polynom_mpz * P;
+      struct bav_term T;
+
+      bav_init_term (&T);
+      //bav_set_term (&T, &B->rang_total);  // rang_total is total rank of polynomial
+
+      P = bap_new_polynom_mpz ();
+      bap_begin_creator_mpz (&crea, P, &T, bap_exact_total_rank, NumTerms(eq));
+
+    }
+#endif
+
+    T = bad_new_intersectof_regchain ();
+    bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
+
+    for (int i=0; i < T->inter.size; i ++) {
+      std::vector<RingElem> v;
+      struct bad_regchain * chain = (struct bad_regchain *)(T->inter.tab[i]);
+      for (int j=0; j < chain->decision_system.size; j ++) {
+	struct bap_polynom_mpz * P = chain->decision_system.tab[j];
+
+	// blad lacks a ba0_snprintf.  Hopefully this way is safe.
+	char buffer[1024];
+	FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
+	ba0_fprintf(fp, const_cast<char *>("%Az"), P);
+	fclose(fp);
+
+	// cout << buffer << endl;
+	RingElem e = blad_string_to_RingElem(buffer, R);
+	v.push_back(e);
+      }
+      results.push_back(RegularSystem(v, std::vector<RingElem>()));
+    }
+
+    bad_terminate(ba0_done_level);
+
+    return results;
+  }
+
+  std::vector<RegularSystem> Rosenfeld_Groebner(void)
+  {
+    return Rosenfeld_Groebner(gens, std::vector<RingElem>());
+  }
+
+#else
+
+  // This is a native version of Rosenfeld_Groebner that uses an older
+  // algorithm ([Bo95] instead of [Bo09]), doesn't work right and is
+  // very slow.
+
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
 			  std::vector<RegularSystem> & results, int nesting_level=0)
   {
@@ -2314,6 +2593,8 @@ public:
   {
     return Rosenfeld_Groebner(gens, std::vector<RingElem>());
   }
+
+#endif
 
 };
 

@@ -6,6 +6,9 @@ CWD=examples/
 
 CXXFLAGS += --std=c++11
 
+# Francois Boulier's blad libraries (used for difalg's Rosenfeld-Groebner algorithm)
+LDLIBS += -lbad -lbap -lbav -lba0
+
 SRCS=ex-empty.C \
       ex-c++.C \
       ex-AlexanderDual.C \
