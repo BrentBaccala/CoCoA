@@ -2494,7 +2494,7 @@ public:
     eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
 
-    //PPMonoid_to_blad_ordering(PPM(owner(equations[0])), &r);
+    bav_R_init();
     blad_ordering(total_rank(Union(equations, inequations)), &r);
     bav_R_push_ordering (r);
 
@@ -2809,14 +2809,14 @@ void testRegularDifferentialIdeal(void)
 
   // BLAD's test rg0
 
-  //std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux).Rosenfeld_Groebner() << endl;
+  std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux).Rosenfeld_Groebner() << endl;
   std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux).Rosenfeld_Groebner() << endl;
 
   // Sixth example from Mansfield thesis
 
   RegularDifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
 
-  //std::cerr << di6.Rosenfeld_Groebner() << endl;
+  std::cerr << di6.Rosenfeld_Groebner() << endl;
 }
 
 /* Smith Normal Form
