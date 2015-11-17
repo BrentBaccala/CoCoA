@@ -1824,6 +1824,26 @@ public:
     return result;
   }
 
+  static PPMonoidElem total_rank(ConstRefRingElem f)
+  {
+    PPMonoidElem result(PPM(owner(f)));
+
+    for (auto it=BeginIter(f); !IsEnded(it); ++it) {
+      result = lcm(result, PP(it));
+    }
+
+    return result;
+  }
+
+  static PPMonoidElem total_rank(std::vector<RingElem> v)
+  {
+    PPMonoidElem result(PPM(owner(v[0])));
+    for (auto e: v) {
+      result = lcm(result, total_rank(e));
+    }
+    return result;
+  }
+
   static RingElem Hcoeff(ConstRefRingElem f)
   {
     return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
@@ -2265,6 +2285,70 @@ public:
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
+  static void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r)
+  {
+    // We current don't distinguish between independent and dependent
+    // variables (perhaps we should), but blad does.  Thus, we run
+    // through our indets, split them apart into base and deriv, and
+    // save the derivations.  The independent variables will be the
+    // derivations, while the dependent variables (blad's blocks)
+    // will be the bases less the derivations.
+
+    const PPMonoid & ppm(owner(e));
+
+    PPMonoidElem bases(ppm);
+    PPMonoidElem derivations(ppm);
+
+    for (auto ind: indets(ppm)) {
+      if (IsDivisible(e, ind)) {
+	PPMonoidElem base(owner(ind));
+	PPMonoidElem deriv(owner(ind));
+	split_differential_indet(ind, base, deriv);
+	bases = radical(bases * base);
+	derivations = radical(derivations * deriv);
+      }
+    }
+
+    // bases /= derivations;
+    CoCoA_ASSERT(IsOne(gcd(bases, derivations)));
+
+    std::vector<PPMonoidElem> vbases;
+    std::vector<PPMonoidElem> vderivations;
+
+    for (auto ind: indets(ppm)) {
+      if (IsDivisible(bases, ind)) {
+	vbases.push_back(ind);
+      }
+      if (IsDivisible(derivations, ind)) {
+	vderivations.push_back(ind);
+      }
+    }
+
+    std::sort(vbases.begin(), vbases.end());
+    std::sort(vderivations.begin(), vderivations.end());
+
+    std::string blad_ordering = "ordering (derivations=[";
+
+    for (auto ind: vderivations) {
+      blad_ordering += head(Symbol(ind)) + ",";
+    }
+    blad_ordering.pop_back();
+
+    blad_ordering += "], blocks=[";
+
+    for (auto ind: vbases) {
+      blad_ordering += "[" + head(Symbol(ind)) + "],";
+    }
+    blad_ordering.pop_back();
+
+    blad_ordering += "])";
+
+    // std::cerr << blad_ordering << endl;
+
+    // blad doesn't use const qualifiers when declaring ba0_sscanf2()
+    ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
+  }
+
   std::string RingElem_to_blad_string(ConstRefRingElem e)
   {
     std::stringstream ss;
@@ -2410,7 +2494,8 @@ public:
     eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
 
-    PPMonoid_to_blad_ordering(PPM(owner(equations[0])), &r);
+    //PPMonoid_to_blad_ordering(PPM(owner(equations[0])), &r);
+    blad_ordering(total_rank(Union(equations, inequations)), &r);
     bav_R_push_ordering (r);
 
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
@@ -2716,7 +2801,7 @@ void testRegularDifferentialIdeal(void)
 
   // Third example from [Bo95]
 
-  //std::cerr << RegularDifferentialIdeal(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y).Rosenfeld_Groebner() << endl;
+  std::cerr << RegularDifferentialIdeal(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y).Rosenfeld_Groebner() << endl;
 
   //std::cerr << RegularDifferentialIdeal(R, std::vector<RingElem> {19488*power(x,5) -81280*power(x,4) +92256*power(x,3) -528*power(x,2) -23858*x -1920,  48720*power(x,4) -162560*power(x,3) +138384*power(x,2) -528*x -11929,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  584640*power(x,2) -975360*x +276768,  -3299572*power(x,4) +11636124*power(x,3) -7331817*power(x,2) -4491566*x -243840,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -39594864*power(x,2) +69816744*x -14663634,  -105936364564*power(x,4) +287632590324*power(x,3) -102295429833*power(x,2) -83289434024*x -4781890560,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -2542472749536*x +1725795541944}).Rosenfeld_Groebner();
 
