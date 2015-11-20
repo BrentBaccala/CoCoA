@@ -2327,6 +2327,10 @@ public:
     std::sort(vbases.begin(), vbases.end());
     std::sort(vderivations.begin(), vderivations.end());
 
+    // blad wants everything in DECENDING order
+    std::reverse(vbases.begin(), vbases.end());
+    std::reverse(vderivations.begin(), vderivations.end());
+
     std::string blad_ordering = "ordering (derivations=[";
 
     for (auto ind: vderivations) {
@@ -2479,6 +2483,117 @@ public:
     return ReadExpr(R, result);
   }
 
+  // Convert variables and terms to RingElem's by printing them to
+  // strings and then parsing the strings.
+
+  RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
+  {
+    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
+    char buffer[1024];
+    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
+    ba0_fprintf(fp, const_cast<char *>("%v"), v);
+    fclose(fp);
+
+    // cout << buffer << endl;
+    return blad_string_to_RingElem(buffer, R);
+  }
+
+  RingElem blad_term_to_RingElem(struct bav_term * t, const ring & R)
+  {
+    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
+    char buffer[1024];
+    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
+    ba0_fprintf(fp, const_cast<char *>("%term"), t);
+    fclose(fp);
+
+    // cout << buffer << endl;
+    return blad_string_to_RingElem(buffer, R);
+  }
+
+  // Converting polynomials to RingElem's using the technique of
+  // printing them to a string and then parsing them is problematic.
+  // For one thing, we can have higher derivatives in the polynomial
+  // than (currently) appear in the CoCoA ring, which would trigger a
+  // parse error.  Also, if the ordering of the derivatives gets mixed
+  // up, we might try to parse something like f_{tx} when we really
+  // wanted f_{tx}.  Therefore, we iterate through the polynomial's
+  // monomials, iterate through each variable in the monomial, and
+  // construct each derivative using multideriv().
+
+#if 0
+
+  RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P, const ring & R)
+  {
+    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
+    char buffer[1024];
+    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
+    ba0_fprintf(fp, const_cast<char *>("%Az"), P);
+    fclose(fp);
+
+    // cout << buffer << endl;
+    return blad_string_to_RingElem(buffer, R);
+  }
+
+#endif
+
+  RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P, const ring & R)
+  {
+    struct bap_itermon_mpz iter;
+    RingElem result(zero(R));
+
+    // loop over monomials
+    bap_begin_itermon_mpz (&iter, P);
+    while (! bap_outof_itermon_mpz (&iter)) {
+      struct bav_term T;
+      mpz_t *c;
+
+      bav_init_term(&T);
+      bap_term_itermon_mpz (&T, &iter);
+      c = bap_coeff_itermon_mpz (&iter);
+
+      RingElem monomial(R, *c);
+
+      // loop over variables
+      while (! bav_is_one_term(&T)) {
+	bav_variable * lt = bav_leader_term(&T);
+	bav_Idegree ltd = bav_leading_degree_term(&T);
+
+	bav_variable * lt_base = bav_order_zero_variable(lt);
+	bav_term diff_op;
+
+	bav_init_term(&diff_op);
+	bav_operator_between_derivatives(&diff_op, lt_base, lt);
+
+	RingElem base = blad_variable_to_RingElem(lt_base, R);
+	RingElem deriv = blad_term_to_RingElem(&diff_op, R);
+
+	monomial *= power(multideriv(base, LPP(deriv)), ltd);
+
+#if 0
+	// loop over derivatives
+	while (! bav_is_one_term(&diff_op)) {
+	  bav_variable * lop = bav_leader_term(&diff_op);
+	  bav_Idegree lopd = bav_leading_degree_term(&diff_op);
+
+	  bav_exquo_term_variable(&diff_op, &diff_op, lop, lopd);
+	}
+#endif
+
+	bav_term U;
+
+	bav_init_term(&U);
+	bav_exquo_term_variable(&U, &T, lt, ltd);
+	bav_set_term(&T, &U);
+      }
+
+      result += monomial;
+
+      bap_next_itermon_mpz (&iter);
+    }
+
+    return result;
+  }
+
   std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
   {
     struct bap_tableof_polynom_mpz * eqns;
@@ -2517,7 +2632,12 @@ public:
 #endif
 
     T = bad_new_intersectof_regchain ();
+    ba0_sscanf2
+      (const_cast<char *> ("intersectof_regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
+       const_cast<char *> ("%intersectof_regchain"), T);
+
     bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
+    // ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
 
     for (int i=0; i < T->inter.size; i ++) {
       std::vector<RingElem> v;
@@ -2525,15 +2645,7 @@ public:
       for (int j=0; j < chain->decision_system.size; j ++) {
 	struct bap_polynom_mpz * P = chain->decision_system.tab[j];
 
-	// blad lacks a ba0_snprintf.  Hopefully this way is safe.
-	char buffer[1024];
-	FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
-	ba0_fprintf(fp, const_cast<char *>("%Az"), P);
-	fclose(fp);
-
-	// cout << buffer << endl;
-	RingElem e = blad_string_to_RingElem(buffer, R);
-	v.push_back(e);
+	v.push_back(blad_polynomial_to_RingElem(P, R));
       }
       results.push_back(RegularSystem(v, std::vector<RingElem>()));
     }
@@ -2790,14 +2902,16 @@ void testRegularDifferentialIdeal(void)
   RingElem s1 = (2*xtt+1)*yt+y;
   RingElem s2 = xt*xt + x;
 
+  // I'd like to test these, but the functions aren't global.
+
   // CoCoA_ASSERT(initial(s1) == 2*yt);
   // CoCoA_ASSERT(separant(s1) == 2*yt);
   // CoCoA_ASSERT(initial(s2) == 1);
   // CoCoA_ASSERT(separant(s2) == 2*xt);
 
-  RegularDifferentialIdeal di((2*xtt+1)*yt+y, xt*xt+x);
+  RegularDifferentialIdeal Bo95_ex1(s1, s2);
 
-  //std::cerr << di.Rosenfeld_Groebner() << endl;
+  //std::cerr << Bo95_ex1.Rosenfeld_Groebner() << endl;
 
   // Third example from [Bo95]
 
@@ -2809,7 +2923,10 @@ void testRegularDifferentialIdeal(void)
 
   // BLAD's test rg0
 
-  std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux).Rosenfeld_Groebner() << endl;
+  RegularDifferentialIdeal rg0(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux);
+  CoCoA_ASSERT(rg0.Rosenfeld_Groebner().size() == 0);
+  // std::cerr << rg0.Rosenfeld_Groebner() << endl;
+
   std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux).Rosenfeld_Groebner() << endl;
 
   // Sixth example from Mansfield thesis
