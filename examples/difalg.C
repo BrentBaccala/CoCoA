@@ -2494,7 +2494,6 @@ public:
     ba0_fprintf(fp, const_cast<char *>("%v"), v);
     fclose(fp);
 
-    // cout << buffer << endl;
     return blad_string_to_RingElem(buffer, R);
   }
 
@@ -2506,7 +2505,6 @@ public:
     ba0_fprintf(fp, const_cast<char *>("%term"), t);
     fclose(fp);
 
-    // cout << buffer << endl;
     return blad_string_to_RingElem(buffer, R);
   }
 
@@ -2519,22 +2517,6 @@ public:
   // wanted f_{tx}.  Therefore, we iterate through the polynomial's
   // monomials, iterate through each variable in the monomial, and
   // construct each derivative using multideriv().
-
-#if 0
-
-  RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P, const ring & R)
-  {
-    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
-    char buffer[1024];
-    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
-    ba0_fprintf(fp, const_cast<char *>("%Az"), P);
-    fclose(fp);
-
-    // cout << buffer << endl;
-    return blad_string_to_RingElem(buffer, R);
-  }
-
-#endif
 
   RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P, const ring & R)
   {
@@ -2569,21 +2551,7 @@ public:
 
 	monomial *= power(multideriv(base, LPP(deriv)), ltd);
 
-#if 0
-	// loop over derivatives
-	while (! bav_is_one_term(&diff_op)) {
-	  bav_variable * lop = bav_leader_term(&diff_op);
-	  bav_Idegree lopd = bav_leading_degree_term(&diff_op);
-
-	  bav_exquo_term_variable(&diff_op, &diff_op, lop, lopd);
-	}
-#endif
-
-	bav_term U;
-
-	bav_init_term(&U);
-	bav_exquo_term_variable(&U, &T, lt, ltd);
-	bav_set_term(&T, &U);
+	bav_exquo_term_variable(&T, &T, lt, ltd);
       }
 
       result += monomial;
@@ -2606,6 +2574,10 @@ public:
 
     bad_restart(0,0);
 
+    // memory management (see blad docs §2.2.4.1)
+    struct ba0_mark M;
+    ba0_record(&M);
+
     eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
 
@@ -2616,20 +2588,7 @@ public:
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
 
-#if 0
-    for (auto eq: equations) {
-      struct bap_creator_mpz crea;
-      struct bap_polynom_mpz * P;
-      struct bav_term T;
-
-      bav_init_term (&T);
-      //bav_set_term (&T, &B->rang_total);  // rang_total is total rank of polynomial
-
-      P = bap_new_polynom_mpz ();
-      bap_begin_creator_mpz (&crea, P, &T, bap_exact_total_rank, NumTerms(eq));
-
-    }
-#endif
+    // We have to initialize this structure with a list of desired properties.
 
     T = bad_new_intersectof_regchain ();
     ba0_sscanf2
@@ -2650,6 +2609,7 @@ public:
       results.push_back(RegularSystem(v, std::vector<RingElem>()));
     }
 
+    ba0_restore(&M);
     bad_terminate(ba0_done_level);
 
     return results;
