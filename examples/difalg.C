@@ -1808,11 +1808,17 @@ public:
     return HDT_Hp(f1).second;
   }
 
+  // The rank of a polynomial is its highest derivative term, raised
+  // to its highest power.
+
   static PPMonoidElem rank(ConstRefRingElem f)
   {
     const auto p = HDT_Hp(f);
     return power(p.first, p.second);
   }
+
+  // The rank of a set of polynomial is the list of their ranks,
+  // sorted into ascending order.  Kolchin §I.10
 
   static std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
   {
@@ -1823,6 +1829,9 @@ public:
     std::sort(result.begin(), result.end());
     return result;
   }
+
+  // The total rank of a polynomial is the least common multiple of
+  // its constituent monomials.
 
   static PPMonoidElem total_rank(ConstRefRingElem f)
   {
