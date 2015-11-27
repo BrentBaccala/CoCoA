@@ -2886,7 +2886,13 @@ void testRegularDifferentialIdeal(void)
 
   RegularDifferentialIdeal Bo95_ex1(s1, s2);
 
-  //std::cerr << Bo95_ex1.Rosenfeld_Groebner() << endl;
+  std::vector<RegularSystem> Bo95_ex1_RG = Bo95_ex1.Rosenfeld_Groebner();
+  CoCoA_ASSERT(Bo95_ex1_RG.size() == 2);
+  CoCoA_ASSERT(Bo95_ex1_RG[0].equations.size() == 2);
+  CoCoA_ASSERT(Bo95_ex1_RG[1].equations.size() == 2);
+  //CoCoA_ASSERT(Bo95_ex1_RG[0].equations[0] == (x_t*x_t + x));
+  //CoCoA_ASSERT(Bo95_ex1_RG[0].equations[1] == y);
+  //std::cerr << Bo95_ex1_RG << endl;
 
   // Third example from [Bo95]
 
