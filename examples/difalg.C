@@ -2285,7 +2285,7 @@ public:
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
-  static void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r)
+  void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
     // We current don't distinguish between independent and dependent
     // variables (perhaps we should), but blad does.  Thus, we run
@@ -2293,6 +2293,8 @@ public:
     // save the derivations.  The independent variables will be the
     // derivations, while the dependent variables (blad's blocks)
     // will be the bases less the derivations.
+
+    // std::cerr << e << endl;
 
     const PPMonoid & ppm(owner(e));
 
@@ -2343,8 +2345,21 @@ public:
     for (auto ind: vbases) {
       blad_ordering += "[" + head(Symbol(ind)) + "],";
     }
-    blad_ordering.pop_back();
 
+    // If the underlying coefficient ring has any symbols, add
+    // them at the end as the lowest ranking block
+
+    const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
+    if (coeff_syms.size() != 0) {
+      blad_ordering += "[";
+      for (auto s: coeff_syms) {
+	blad_ordering += head(s) + ",";
+      }
+      blad_ordering.pop_back();
+      blad_ordering += "],";
+    }
+
+    blad_ordering.pop_back();
     blad_ordering += "])";
 
     // std::cerr << blad_ordering << endl;
