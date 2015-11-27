@@ -933,7 +933,7 @@ public:
     insert(source, target);
   }
 
-  RingElem operator() (const RingElem elem) const
+  virtual RingElem operator() (const RingElem elem) const
   {
     BigRat q;
 
@@ -962,6 +962,19 @@ public:
 ring owner(const Differential& D) {
   return D.R;
 }
+
+class BasicDifferential : public Differential {
+private:
+  ConstRefRingElem d;
+public:
+
+  BasicDifferential(ConstRefRingElem d) : Differential(owner(d)), d(d) { }
+
+  RingElem operator() (const RingElem elem) const override
+  {
+    return deriv(elem, d);
+  }
+};
 
 /* OrderedPolyRingElem - a polynomial ring constructed with an ordered coefficient ring
  *
