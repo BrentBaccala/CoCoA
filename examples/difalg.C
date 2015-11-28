@@ -251,6 +251,7 @@ void BWBprint(std::vector<RingElem> x)
 
 ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s, ConstRefPPMonoidElem next) const
 {
+  auto non_const_this = const_cast<PPMonoidRingExpImpl *>(this);
   int after_i = -1;
 
   if (! IsOne(next) && ! IsIndet(next)) {
@@ -266,18 +267,18 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s, Cons
     }
   }
 
-  const_cast<PPMonoidRingExpImpl *>(this)->myIndetSymbols.push_back(s);
-  const_cast<PPMonoidRingExpImpl *>(this)->myNumIndets ++;
+  non_const_this->myIndetSymbols.push_back(s);
+  non_const_this->myNumIndets ++;
 
   PPMonoidElem pp(PPMonoid(this));
   myMulIndetPower(raw(pp), myNumIndets-1, 1);
 
-  const_cast<PPMonoidRingExpImpl *>(this)->myIndetVector.push_back(pp);
+  non_const_this->myIndetVector.push_back(pp);
 
   // insert the new indet into the ranking, based on how its symbol compares
 
   // this local variable overrides the instance variable and makes it writable
-  std::vector<long> & ranking = const_cast<PPMonoidRingExpImpl *>(this)->ranking;
+  std::vector<long> & ranking = non_const_this->ranking;
 
   if (after_i == -1) {
     ranking.push_back(myNumIndets-1);
@@ -293,7 +294,7 @@ ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s, Cons
     SetEntry(OrderMatrix, i, ranking[myNumIndets - i - 1], 1);
   }
 
-  const_cast<PPMonoidRingExpImpl *>(this)->myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
+  non_const_this->myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
   //myOrd = NewMatrixOrdering(myNumIndets, 0, OrderMatrix);
 
   return myIndetVector.back();
@@ -1499,6 +1500,8 @@ public:
 
   void myDeriv(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawx) const override
   {
+    auto non_const_this = const_cast<PowerPolyDifferentialRingBase *>(this);
+
     if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
 
     const SparsePolyRing P(this);
@@ -1538,9 +1541,7 @@ public:
 	    const symbol & indet_symbol = myPPM()->myIndetSymbol(indetn);
 	    const symbol & lower_indet_symbol = myPPM()->myIndetSymbol(lower_indet);
 
-	    auto non_const_this = const_cast<PowerPolyDifferentialRingBase *>(this);
 	    differentiation_map[key] = non_const_this->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
-	    // differentiation_map[key] = const_cast<PowerPolyDifferentialRingBase *>(this)->myNewSymbolValue(symbol(append_symbol(head(indet_symbol), head(lower_indet_symbol))));
 	  }
 	  m *= differentiation_map[key];
 	}
