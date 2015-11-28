@@ -247,6 +247,15 @@ void BWBprint(std::vector<RingElem> x)
  * variables that override the instance variables and makes them
  * writable.  My greatest concern is that myNumIndets can change
  * underfoot.
+ *
+ * There's a problem here related to CoCoA's memory management, which
+ * is done with reference counting.  myIndetVector, in particular,
+ * contains PPMonoidElem's that themselves contain pointers to the
+ * parent PPMonoid, which creates a circular chain.  The standard
+ * PPMonoid constructor resets the reference count to zero after
+ * constructing myIndetVector (which never changes).  Yet here we add
+ * a new element, so we should probably decrement our reference count
+ * with myRefCountDec().  Yuck.  How brittle reference counting is.
  */
 
 ConstRefPPMonoidElem PPMonoidRingExpImpl::myNewSymbolValue(const symbol& s, ConstRefPPMonoidElem next) const
@@ -1384,6 +1393,9 @@ private:
    * stash them here for future reference.  It's 'mutable' because
    * 'myDeriv' is declared 'const' way up in PolyRing.H and I don't
    * want to change that just to speed things up.
+   *
+   * This map creates circular reference that cause the ring to never
+   * be destroyed.
    */
 
   mutable map<pair<long, long>, RingElem> differentiation_map;
