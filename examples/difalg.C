@@ -2390,11 +2390,11 @@ public:
       for (auto s: coeff_syms) {
 	blad_ordering += head(s) + ",";
       }
-      blad_ordering.pop_back();
+      blad_ordering.pop_back();   // remove trailing comma
       blad_ordering += "],";
     }
 
-    blad_ordering.pop_back();
+    blad_ordering.pop_back();   // remove trailing comma
     blad_ordering += "])";
 
     // std::cerr << blad_ordering << endl;
@@ -2614,6 +2614,8 @@ public:
 
   std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
   {
+    // std::cerr << "Rosenfeld_Groebner equations: " << equations << " inequations: " << inequations << endl;
+
     struct bap_tableof_polynom_mpz * eqns;
     struct bap_tableof_polynom_mpz * ineqs;
 
