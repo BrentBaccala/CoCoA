@@ -2320,6 +2320,34 @@ public:
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
+  // mutable map<PPMonoidElem, struct bav_variable *> vars;
+
+  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind) const
+  {
+    struct bav_variable * result;
+    PPMonoidElem base(owner(ind));
+    PPMonoidElem deriv(owner(ind));
+
+    split_differential_indet(ind, base, deriv);
+
+    if (IsOne(deriv)) {
+      ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
+    } else {
+      result = PPMonoidElem_to_blad_variable(base);
+      for (auto ind2: indets(owner(ind))) {
+	while (IsDivisible(deriv, ind2)) {
+	  bav_term t;
+	  bav_init_term(&t);
+	  bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2), 1);
+	  result = bav_diff2_variable(result, &t);
+
+	  deriv /= ind2;
+	}
+      }
+    }
+    return result;
+  }
+
   void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
     // We current don't distinguish between independent and dependent
@@ -2372,6 +2400,7 @@ public:
 
     for (auto ind: vderivations) {
       blad_ordering += head(Symbol(ind)) + ",";
+      //vars[ind] = PPMonoidElem_to_blad_variable(ind);
     }
     blad_ordering.pop_back();
 
@@ -2379,6 +2408,7 @@ public:
 
     for (auto ind: vbases) {
       blad_ordering += "[" + head(Symbol(ind)) + "],";
+      //vars[ind] = PPMonoidElem_to_blad_variable(ind);
     }
 
     // If the underlying coefficient ring has any symbols, add
@@ -2401,6 +2431,48 @@ public:
 
     // blad doesn't use const qualifiers when declaring ba0_sscanf2()
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
+  }
+
+  void RingElem_to_blad_polynomial(ConstRefRingElem x, struct bap_polynom_mpz * const result)
+  {
+    // struct bap_polynom_mpz result;
+
+    // bap_init_polynom_mpz(&result);
+
+    // Assumes that result has already been initialized.
+
+    if (IsZZ(owner(x))) {
+      BigInt N;
+      CoCoA_ASSERT(IsInteger(N, x));
+      bap_init_polynom_one_mpz(result);
+      bap_mul_polynom_numeric_mpz(result, result, mpzref(N));
+      return;
+    }
+
+    if (IsFractionField(owner(x))) {
+      CoCoA_ASSERT(IsOne(den(x)));
+      RingElem_to_blad_polynomial(num(x), result);
+      return;
+    }
+
+    CoCoA_ASSERT(IsSparsePolyRing(owner(x)));
+
+    for (auto it=BeginIter(x); !IsEnded(it); ++it) {
+      bav_term t;
+      bav_init_term(&t);
+      for (long idx=0; idx < NumIndets(owner(PP(it))); ++idx) {
+	long exp = exponent(PP(it), idx);
+	//bav_mul_term_variable(&t, &t, vars[indet(owner(PP(it)), idx)], exp);
+	if (exp != 0) {
+	  bav_mul_term_variable(&t, &t, PPMonoidElem_to_blad_variable(indet(owner(PP(it)), idx)), exp);
+	}
+      }
+      struct bap_polynom_mpz c;
+      bap_init_polynom_mpz(&c);
+      RingElem_to_blad_polynomial(coeff(it), &c);
+      bap_mul_polynom_term_mpz(&c, &c, &t);
+      bap_add_polynom_mpz(result, result, &c);
+    }
   }
 
   std::string RingElem_to_blad_string(ConstRefRingElem e)
@@ -2637,8 +2709,21 @@ public:
     blad_ordering(total_rank(Union(equations, inequations)), &r);
     bav_R_push_ordering (r);
 
+#if 0
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
+#else
+    {
+      struct ba0_list * L = nullptr;
+      for (auto e: equations) {
+	struct bap_polynom_mpz * result = bap_new_polynom_mpz();
+	RingElem_to_blad_polynomial(e, result);
+	L = ba0_endcons_list(result, L);
+      }
+      ba0_set_table_list((ba0_table *) eqns, L);
+      //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
+    }
+#endif
 
     // We have to initialize this structure with a list of desired properties.
 
