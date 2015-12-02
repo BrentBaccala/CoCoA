@@ -2309,7 +2309,58 @@ public:
   // This version of Rosenfeld_Groebner uses Francois Boulier's blad
   // library.
 
-  mutable bimap<PPMonoidElem, struct bav_variable *> vars;
+  /* The first issue is that the blad library requires dependent and
+   * independent variables to be completely distinct, while we don't.
+   * So we need to use a separate naming scheme for blad variables and
+   * map them back and forth to our variables.  A single CoCoA
+   * indeterminate can correspond to two blad variables, one to
+   * differentiate by and one that can be differentiated.
+   */
+
+  // To maintain maps of elements from different rings (i.e, a
+  // polynomial ring and its coefficient ring), we need to compare
+  // PPMonoidElem's from different PPMonoids, which normally isn't
+  // allowed, but we can fix that...
+
+  struct cmpByAddress {
+    bool operator()(ConstRefPPMonoidElem a, ConstRefPPMonoidElem b) const {
+      if (owner(a) == owner(b)) {
+	return (a < b);
+      } else {
+	return &indets(owner(a)) < &indets(owner(b));
+      }
+    }
+  };
+
+  mutable bimap<PPMonoidElem, struct bav_variable *, cmpByAddress> dependent_vars;
+  mutable map<PPMonoidElem, std::string, cmpByAddress> dependent_strings;
+
+  mutable bimap<PPMonoidElem, struct bav_variable *> independent_vars;
+  mutable map<PPMonoidElem, std::string, cmpByAddress> independent_strings;
+
+  mutable char next_name_str[2] = {'a', '\0'};
+
+  std::string next_name(void) const
+  {
+    next_name_str[0] ++;
+    return std::string(next_name_str);
+  }
+
+  std::vector<std::string> insert_symbols_into_dependent_strings(ring R) const
+  {
+    if (symbols(R).size() == 0) return std::vector<std::string> {};
+    if (IsFractionField(R)) {
+      return insert_symbols_into_dependent_strings(BaseRing(R));
+    } else {
+      std::vector<std::string> results = insert_symbols_into_dependent_strings(CoeffRing(R));
+      for (auto ind: indets(PPM(R))) {
+	//vars2[ind] = head(Symbol(ind));
+	dependent_strings[ind] = next_name();
+	results.push_back(dependent_strings[ind]);
+      }
+      return results;
+    }
+  }
 
   void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
@@ -2362,21 +2413,24 @@ public:
     std::string blad_ordering = "ordering (derivations=[";
 
     for (auto ind: vderivations) {
-      blad_ordering += head(Symbol(ind)) + ",";
-      //vars[ind] = PPMonoidElem_to_blad_variable(ind);
+      //vars2[ind] = head(Symbol(ind));
+      independent_strings[ind] = next_name();
+      blad_ordering += independent_strings[ind] + ",";
     }
     blad_ordering.pop_back();
 
     blad_ordering += "], blocks=[";
 
     for (auto ind: vbases) {
-      blad_ordering += "[" + head(Symbol(ind)) + "],";
-      //vars[ind] = PPMonoidElem_to_blad_variable(ind);
+      //vars2[ind] = head(Symbol(ind));
+      dependent_strings[ind] = next_name();
+      blad_ordering += "[" + dependent_strings[ind] + "],";
     }
 
     // If the underlying coefficient ring has any symbols, add
     // them at the end as the lowest ranking block
 
+#if 0
     const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
     if (coeff_syms.size() != 0) {
       blad_ordering += "[";
@@ -2385,47 +2439,73 @@ public:
       }
       blad_ordering.pop_back();   // remove trailing comma
       blad_ordering += "],";
+      insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
     }
+#else
+    const auto coeff_syms = insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
+    if (coeff_syms.size() != 0) {
+      blad_ordering += "[";
+      for (auto s: coeff_syms) {
+	blad_ordering += s + ",";
+      }
+      blad_ordering.pop_back();   // remove trailing comma
+      blad_ordering += "],";
+    }
+#endif
 
     blad_ordering.pop_back();   // remove trailing comma
     blad_ordering += "])";
 
-    // std::cerr << blad_ordering << endl;
+    std::cerr << blad_ordering << endl;
 
     // blad doesn't use const qualifiers when declaring ba0_sscanf2()
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
-  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind) const
+  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false) const
   {
     struct bav_variable * result;
-    PPMonoidElem base(owner(ind));
-    PPMonoidElem deriv(owner(ind));
 
-    if (vars.count(ind) == 1) {
-      return vars[ind];
-    }
+    if (independent) {
 
-    split_differential_indet(ind, base, deriv);
+      if (independent_vars.count(ind) == 1) {
+	return independent_vars[ind];
+      }
+      ba0_sscanf2 (const_cast<char *>(independent_strings.at(ind).c_str()), const_cast<char *>("%v"), &result);
 
-    if (IsOne(deriv)) {
-      ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
+      independent_vars[ind] = result;
+
     } else {
-      result = PPMonoidElem_to_blad_variable(base);
-      for (auto ind2: indets(owner(ind))) {
-	while (IsDivisible(deriv, ind2)) {
-	  bav_term t;
-	  bav_init_term(&t);
-	  bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2), 1);
-	  result = bav_diff2_variable(result, &t);
 
-	  deriv /= ind2;
+      if (dependent_vars.count(ind) == 1) {
+	return dependent_vars[ind];
+      }
+
+      PPMonoidElem base(owner(ind));
+      PPMonoidElem deriv(owner(ind));
+
+      split_differential_indet(ind, base, deriv);
+
+      if (IsOne(deriv)) {
+	//ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
+	ba0_sscanf2 (const_cast<char *>(dependent_strings.at(base).c_str()), const_cast<char *>("%v"), &result);
+      } else {
+	result = PPMonoidElem_to_blad_variable(base);
+	for (auto ind2: indets(owner(ind))) {
+	  while (IsDivisible(deriv, ind2)) {
+	    bav_term t;
+	    bav_init_term(&t);
+	    bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2, true), 1);
+	    result = bav_diff2_variable(result, &t);
+
+	    deriv /= ind2;
+	  }
 	}
       }
-    }
 
-    // Stash the result in a bimap so we convert back the reverse way later.
-    vars[ind] = result;
+      // Stash the result in a bimap so we convert back the reverse way later.
+      dependent_vars[ind] = result;
+    }
 
     return result;
   }
@@ -2556,7 +2636,11 @@ public:
 #else
     // We must have previously constructed this variable from a
     // PPMonoidElem, so retreive the stashed value.
-    return monomial(R, 1, vars.at(v));
+    if (dependent_vars.count(v) == 1) {
+      return monomial(R, 1, dependent_vars.at(v));
+    } else {
+      return monomial(R, 1, independent_vars.at(v));
+    }
 #endif
   }
 
