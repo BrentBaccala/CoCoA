@@ -2444,7 +2444,7 @@ public:
     blad_ordering.pop_back();   // remove trailing comma
     blad_ordering += "])";
 
-    std::cerr << blad_ordering << endl;
+    // std::cerr << blad_ordering << endl;
 
     // blad doesn't use const qualifiers when declaring ba0_sscanf2()
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
