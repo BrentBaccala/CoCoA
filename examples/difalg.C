@@ -2699,8 +2699,10 @@ public:
     bad_restart(0,0);
 
     // memory management (see blad docs §2.2.4.1)
-    struct ba0_mark M;
-    ba0_record(&M);
+    // This creates problems when new CoCoA objects are created during the session.
+
+    // struct ba0_mark M;
+    // ba0_record(&M);
 
     eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
@@ -2746,7 +2748,7 @@ public:
       results.push_back(RegularSystem(v, std::vector<RingElem>()));
     }
 
-    ba0_restore(&M);
+    //ba0_restore(&M);
     bad_terminate(ba0_done_level);
 
     return results;
