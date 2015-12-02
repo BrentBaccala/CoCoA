@@ -1760,9 +1760,8 @@ public:
 
   RegularSystem(std::vector<RingElem> eq, std::vector<RingElem> ineq)
     : equations(eq.begin(), eq.end()), inequations(ineq.begin(), ineq.end()),
-      //I(colon(ideal(owner(eq[0]), eq), ideal(owner(eq[0]), ineq)))
-      I(ineq.size() == 0 ? ideal(owner(eq[0]), eq) : colon(ideal(owner(eq[0]), eq), ideal(owner(eq[0]), ineq)))
-      //    : equations(eq), inequations(ineq), I(owner(eq[0]), vector<RingElem>())
+      // I(ineq.size() == 0 ? ideal(owner(eq[0]), eq) : colon(ideal(owner(eq[0]), eq), ideal(owner(eq[0]), ineq)))
+      I(RingZZ(), std::vector<RingElem> {})
   {
     // compute I
   }
@@ -1794,7 +1793,8 @@ std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
   out << " ; ";
 #endif
 
-  out << gens(omega.I);
+  //out << gens(omega.I);
+  out << omega.equations;
 
   out << ")";
     
