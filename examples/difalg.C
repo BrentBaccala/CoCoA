@@ -15,6 +15,30 @@
 using namespace CoCoA;
 using namespace std;
 
+/* C++ constructs */
+
+/* Class 'bimap' is like 'map', but lookup is bi-directional.  The two
+ * types have to be incompatible to allow overload resolution to
+ * determine which lookup direction to use.
+ *
+ * XXX could be more efficient
+ */
+
+template<typename A, typename B>
+class bimap : public std::map<A, B> {
+public:
+  using std::map<A, B>::map;    // inherit the constructors
+  const A& at (const B& value)
+  {
+    for (auto it = std::map<A,B>::begin(); it != std::map<A,B>::end(); it++) {
+      if (it->second == value) return it->first;
+    }
+    throw std::out_of_range("bimap");
+  }
+};
+
+
+
 /* PPMonoidRingExpImpl
  *
  * A PPMonoid whose exponents are elements in a ring that is also an
@@ -2261,7 +2285,7 @@ public:
   // This version of Rosenfeld_Groebner uses Francois Boulier's blad
   // library.
 
-  // mutable map<PPMonoidElem, struct bav_variable *> vars;
+  mutable bimap<PPMonoidElem, struct bav_variable *> vars;
 
   void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
@@ -2354,6 +2378,10 @@ public:
     PPMonoidElem base(owner(ind));
     PPMonoidElem deriv(owner(ind));
 
+    if (vars.count(ind) == 1) {
+      return vars[ind];
+    }
+
     split_differential_indet(ind, base, deriv);
 
     if (IsOne(deriv)) {
@@ -2371,6 +2399,10 @@ public:
 	}
       }
     }
+
+    // Stash the result in a bimap so we convert back the reverse way later.
+    vars[ind] = result;
+
     return result;
   }
 
@@ -2489,6 +2521,7 @@ public:
 
   RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
   {
+#if 0
     // blad lacks a ba0_snprintf.  Hopefully this way is safe.
     char buffer[1024];
     FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
@@ -2496,17 +2529,25 @@ public:
     fclose(fp);
 
     return blad_string_to_RingElem(buffer, R);
+#else
+    // We must have previously constructed this variable from a
+    // PPMonoidElem, so retreive the stashed value.
+    return monomial(R, 1, vars.at(v));
+#endif
   }
+
+  // This function is DESTRUCTIVE of the bav_term!
 
   RingElem blad_term_to_RingElem(struct bav_term * t, const ring & R)
   {
-    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
-    char buffer[1024];
-    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
-    ba0_fprintf(fp, const_cast<char *>("%term"), t);
-    fclose(fp);
+    RingElem result(one(R));
 
-    return blad_string_to_RingElem(buffer, R);
+    while (! bav_is_one_term(t)) {
+      result *= power(blad_variable_to_RingElem(bav_leader_term(t), R), bav_leading_degree_term(t));
+      bav_shift_term(t, t);
+    }
+
+    return result;
   }
 
   // Converting polynomials to RingElem's using the technique of
