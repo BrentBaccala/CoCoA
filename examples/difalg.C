@@ -1704,10 +1704,10 @@ namespace std {
 class RegularSystem {
   friend std::ostream & operator<<(std::ostream &out, const RegularSystem);
 public:
-  std::unordered_set<RingElem> equations;
-  std::unordered_set<RingElem> inequations;
-  //std::vector<RingElem> equations;
-  //std::vector<RingElem> inequations;
+  //std::unordered_set<RingElem> equations;
+  //std::unordered_set<RingElem> inequations;
+  std::vector<RingElem> equations;
+  std::vector<RingElem> inequations;
 
   // (equations) colon-quotient (inequations)
   ideal I;
@@ -3014,9 +3014,9 @@ void testRegularDifferentialIdeal(void)
   CoCoA_ASSERT(Bo95_ex1_RG.size() == 2);
   CoCoA_ASSERT(Bo95_ex1_RG[0].equations.size() == 2);
   CoCoA_ASSERT(Bo95_ex1_RG[1].equations.size() == 2);
-  //CoCoA_ASSERT(Bo95_ex1_RG[0].equations[0] == (x_t*x_t + x));
-  //CoCoA_ASSERT(Bo95_ex1_RG[0].equations[1] == y);
-  //std::cerr << Bo95_ex1_RG << endl;
+  CoCoA_ASSERT(Bo95_ex1_RG[0].equations[0] == (xt*xt + x));
+  CoCoA_ASSERT(Bo95_ex1_RG[0].equations[1] == y);
+  std::cerr << Bo95_ex1_RG << endl;
 
   // Third example from [Bo95]
 
