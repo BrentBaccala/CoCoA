@@ -261,6 +261,11 @@ const std::vector<PPMonoidElem>& PPMonoidRingExpImpl::myIndets() const
   return myIndetVector;
 }
 
+void BWBprint(ConstRefPPMonoidElem x)
+{
+  std::cerr << x << endl;
+}
+
 void BWBprint(ConstRefRingElem x)
 {
   std::cerr << x << endl;
