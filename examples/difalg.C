@@ -2389,7 +2389,7 @@ public:
     }
 
     // bases /= derivations;
-    CoCoA_ASSERT(IsOne(gcd(bases, derivations)));
+    // CoCoA_ASSERT(IsOne(gcd(bases, derivations)));
 
     std::vector<PPMonoidElem> vbases;
     std::vector<PPMonoidElem> vderivations;
