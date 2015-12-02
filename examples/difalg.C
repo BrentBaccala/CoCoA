@@ -2608,28 +2608,22 @@ public:
     return ReadExpr(R, result);
   }
 
-  // Convert variables and terms to RingElem's by printing them to
-  // strings and then parsing the strings.
-
   RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
   {
-#if 0
-    // blad lacks a ba0_snprintf.  Hopefully this way is safe.
-    char buffer[1024];
-    FILE * fp = fmemopen(buffer, sizeof(buffer), "w");
-    ba0_fprintf(fp, const_cast<char *>("%v"), v);
-    fclose(fp);
-
-    return blad_string_to_RingElem(buffer, R);
-#else
     // We must have previously constructed this variable from a
     // PPMonoidElem, so retreive the stashed value.
     if (dependent_vars.count(v) == 1) {
-      return monomial(R, 1, dependent_vars.at(v));
+      PPMonoidElem elem = dependent_vars.at(v);
+      if (owner(elem) == PPM(R)) {
+	return monomial(R, 1, elem);
+      } else if (owner(elem) == PPM(CoeffRing(R))) {
+	return CoeffEmbeddingHom(R)(monomial(CoeffRing(R), 1, elem));
+      } else {
+	throw "mistake";
+      }
     } else {
       return monomial(R, 1, independent_vars.at(v));
     }
-#endif
   }
 
   // This function is DESTRUCTIVE of the bav_term!
