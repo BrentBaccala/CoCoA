@@ -1818,27 +1818,10 @@ public:
   RegularDifferentialIdeal(const RingElem& r1) : R(owner(r1)) {
     gens.push_back(r1);
   }
-  RegularDifferentialIdeal(const RingElem& r1, const RingElem& r2) : R(owner(r1)) {
+
+  template<typename... Args>
+  RegularDifferentialIdeal(const RingElem& r1, Args... rest) : RegularDifferentialIdeal(rest...) {
     gens.push_back(r1);
-    gens.push_back(r2);
-  }
-  RegularDifferentialIdeal(const RingElem& r1, const RingElem& r2, const RingElem& r3) : R(owner(r1)) {
-    gens.push_back(r1);
-    gens.push_back(r2);
-    gens.push_back(r3);
-  }
-  RegularDifferentialIdeal(const RingElem& r1, const RingElem& r2, const RingElem& r3, const RingElem& r4) : R(owner(r1)) {
-    gens.push_back(r1);
-    gens.push_back(r2);
-    gens.push_back(r3);
-    gens.push_back(r4);
-  }
-  RegularDifferentialIdeal(const RingElem& r1, const RingElem& r2, const RingElem& r3, const RingElem& r4, const RingElem& r5) : R(owner(r1)) {
-    gens.push_back(r1);
-    gens.push_back(r2);
-    gens.push_back(r3);
-    gens.push_back(r4);
-    gens.push_back(r5);
   }
 
   // HDT - highest derivative term
