@@ -24,16 +24,28 @@ using namespace std;
  * XXX could be more efficient
  */
 
-template<typename A, typename B>
-class bimap : public std::map<A, B> {
+template<typename A, typename B, class Compare = less<A> >
+class bimap : public std::map<A, B, Compare> {
 public:
-  using std::map<A, B>::map;    // inherit the constructors
+  using std::map<A, B, Compare>::map;    // inherit the constructors
   const A& at (const B& value)
   {
-    for (auto it = std::map<A,B>::begin(); it != std::map<A,B>::end(); it++) {
+    for (auto it = std::map<A,B,Compare>::begin(); it != std::map<A,B,Compare>::end(); it++) {
       if (it->second == value) return it->first;
     }
     throw std::out_of_range("bimap");
+  }
+
+  using typename std::map<A, B, Compare>::size_type;
+  using std::map<A, B, Compare>::count;
+
+  size_type count (const B& value)
+  {
+    size_type result = 0;
+    for (auto it = std::map<A,B,Compare>::begin(); it != std::map<A,B,Compare>::end(); it++) {
+      if (it->second == value) result ++;
+    }
+    return result;
   }
 };
 
