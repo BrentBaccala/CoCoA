@@ -271,6 +271,11 @@ void BWBprint(ConstRefRingElem x)
   std::cerr << x << endl;
 }
 
+void BWBprint(ring x)
+{
+  std::cerr << x << endl;
+}
+
 void BWBprint(std::vector<RingElem> x)
 {
   std::cerr << x << endl;
