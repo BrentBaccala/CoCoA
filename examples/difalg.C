@@ -2552,62 +2552,6 @@ public:
     //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
   }
 
-  RingElem blad_string_to_RingElem(const char * s, const ring & R)
-  {
-    std::stringstream ss(s);
-    std::string result;
-
-    enum State { NORMAL, SUBSCRIPT, MULTI_SUBSCRIPT };
-    State state = NORMAL;
-
-    char c;
-    while (ss.get(c)) {
-      switch (state) {
-      case NORMAL:
-	if (c == '[') {
-	  result += "_";
-	  streampos mark = ss.tellg();
-	  while (ss.get(c)) {
-	    if (c == ',') {
-	      result += "{";
-	      state = MULTI_SUBSCRIPT;
-	      break;
-	    } else if (c == ']') {
-	      state = SUBSCRIPT;
-	      break;
-	    }
-	  }
-	  CoCoA_ASSERT(state != NORMAL);
-	  ss.seekg(mark);
-	} else {
-	  result += c;
-	}
-	break;
-
-      case SUBSCRIPT:
-	if (c == ']') {
-	  state = NORMAL;
-	} else if (c != ',') {
-	  result += c;
-	}
-	break;
-
-      case MULTI_SUBSCRIPT:
-	if (c == ']') {
-	  result += "}";
-	  state = NORMAL;
-	} else if (c != ',') {
-	  result += c;
-	}
-	break;
-      }
-    }
-
-    // cerr << result << endl;
-
-    return ReadExpr(R, result);
-  }
-
   RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
   {
     // We must have previously constructed this variable from a
