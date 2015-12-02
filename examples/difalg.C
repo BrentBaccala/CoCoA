@@ -2263,32 +2263,6 @@ public:
 
   // mutable map<PPMonoidElem, struct bav_variable *> vars;
 
-  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind) const
-  {
-    struct bav_variable * result;
-    PPMonoidElem base(owner(ind));
-    PPMonoidElem deriv(owner(ind));
-
-    split_differential_indet(ind, base, deriv);
-
-    if (IsOne(deriv)) {
-      ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
-    } else {
-      result = PPMonoidElem_to_blad_variable(base);
-      for (auto ind2: indets(owner(ind))) {
-	while (IsDivisible(deriv, ind2)) {
-	  bav_term t;
-	  bav_init_term(&t);
-	  bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2), 1);
-	  result = bav_diff2_variable(result, &t);
-
-	  deriv /= ind2;
-	}
-      }
-    }
-    return result;
-  }
-
   void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
     // We current don't distinguish between independent and dependent
@@ -2374,6 +2348,32 @@ public:
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
+  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind) const
+  {
+    struct bav_variable * result;
+    PPMonoidElem base(owner(ind));
+    PPMonoidElem deriv(owner(ind));
+
+    split_differential_indet(ind, base, deriv);
+
+    if (IsOne(deriv)) {
+      ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
+    } else {
+      result = PPMonoidElem_to_blad_variable(base);
+      for (auto ind2: indets(owner(ind))) {
+	while (IsDivisible(deriv, ind2)) {
+	  bav_term t;
+	  bav_init_term(&t);
+	  bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2), 1);
+	  result = bav_diff2_variable(result, &t);
+
+	  deriv /= ind2;
+	}
+      }
+    }
+    return result;
+  }
+
   void RingElem_to_blad_polynomial(ConstRefRingElem x, struct bap_polynom_mpz * const result)
   {
     // struct bap_polynom_mpz result;
@@ -2414,6 +2414,18 @@ public:
       bap_mul_polynom_term_mpz(&c, &c, &t);
       bap_add_polynom_mpz(result, result, &c);
     }
+  }
+
+  void RingElems_to_blad_polynomial_table(std::vector<RingElem> v, struct bap_tableof_polynom_mpz * const result)
+  {
+    struct ba0_list * L = nullptr;
+    for (auto e: v) {
+      struct bap_polynom_mpz * P = bap_new_polynom_mpz();
+      RingElem_to_blad_polynomial(e, P);
+      L = ba0_endcons_list(P, L);
+    }
+    ba0_set_table_list((ba0_table *) result, L);
+    //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
   }
 
   RingElem blad_string_to_RingElem(const char * s, const ring & R)
@@ -2582,16 +2594,8 @@ public:
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
 #else
-    {
-      struct ba0_list * L = nullptr;
-      for (auto e: equations) {
-	struct bap_polynom_mpz * result = bap_new_polynom_mpz();
-	RingElem_to_blad_polynomial(e, result);
-	L = ba0_endcons_list(result, L);
-      }
-      ba0_set_table_list((ba0_table *) eqns, L);
-      //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
-    }
+    RingElems_to_blad_polynomial_table(equations, eqns);
+    RingElems_to_blad_polynomial_table(inequations, ineqs);
 #endif
 
     // We have to initialize this structure with a list of desired properties.
