@@ -2310,7 +2310,7 @@ public:
   // PPMonoidElem's from different PPMonoids, which normally isn't
   // allowed, but we can fix that...
 
-  struct cmpByAddress {
+  struct globalCmp {
     bool operator()(ConstRefPPMonoidElem a, ConstRefPPMonoidElem b) const {
       if (owner(a) == owner(b)) {
 	return (a < b);
@@ -2320,11 +2320,15 @@ public:
     }
   };
 
-  mutable bimap<PPMonoidElem, struct bav_variable *, cmpByAddress> dependent_vars;
-  mutable map<PPMonoidElem, std::string, cmpByAddress> dependent_strings;
+  // We need to first map our indeterminates to the strings we use to
+  // name them in the blad ordering, then set the ordering, then
+  // create the blad variables and map them back and forth.
 
-  mutable bimap<PPMonoidElem, struct bav_variable *> independent_vars;
-  mutable map<PPMonoidElem, std::string, cmpByAddress> independent_strings;
+  mutable map<PPMonoidElem, std::string, globalCmp> dependent_strings;
+  mutable bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
+
+  mutable map<PPMonoidElem, std::string, globalCmp> independent_strings;
+  mutable bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
 
   mutable char next_name_str[2] = {'a', '\0'};
 
