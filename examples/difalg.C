@@ -1389,6 +1389,9 @@ const symbol& Symbol(ConstRefPPMonoidElem indet)
   return IndetSymbol(owner(indet), idx);
 }
 
+// scoped enum to avoid conflicting with existing 'lex'
+enum class DifferentialRanking { lex, grlexA };
+
 class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
 
 private:
@@ -1448,7 +1451,12 @@ private:
 
 public:
 
-  using PowerPolyRingBase::PowerPolyRingBase;
+  // XXX don't really use this right now; only passed to the blad library
+  DifferentialRanking ranking;
+
+  PowerPolyDifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
+    : PowerPolyRingBase(R, PPM), ranking(ranking)
+  { }
 
   /* We're inheriting from SparsePolyRing, whose implementation of
    * mySymbolValue and mySymbols obtains the symbols directly from the
@@ -1612,8 +1620,8 @@ public:
 
 };
 
-SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM) {
-  return SparsePolyRing(new PowerPolyDifferentialRingBase(CoeffRing, PPM));
+SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM, DifferentialRanking ranking = DifferentialRanking::lex) {
+  return SparsePolyRing(new PowerPolyDifferentialRingBase(CoeffRing, PPM, ranking));
 }
 
 void testPowerPolyDifferentialRing(void)
@@ -2354,6 +2362,9 @@ public:
     }
   }
 
+  // Construct a blad ordering using all of the indeterminates in a
+  // PPMonoidElem, plus any symbols in our underlying coefficent ring.
+
   void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
   {
     // We current don't distinguish between independent and dependent
@@ -2364,6 +2375,8 @@ public:
     // will be the bases less the derivations.
 
     // std::cerr << e << endl;
+
+    const PowerPolyDifferentialRingBase * DR = dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr());
 
     const PPMonoid & ppm(owner(e));
 
@@ -2413,10 +2426,22 @@ public:
 
     blad_ordering += "], blocks=[";
 
+    if (DR->ranking != DifferentialRanking::lex) {
+      blad_ordering += "[";
+    }
+
     for (auto ind: vbases) {
-      //vars2[ind] = head(Symbol(ind));
       dependent_strings[ind] = next_name();
-      blad_ordering += "[" + dependent_strings[ind] + "],";
+      if (DR->ranking == DifferentialRanking::lex) {
+	blad_ordering += "[" + dependent_strings[ind] + "],";
+      } else {
+	blad_ordering += dependent_strings[ind] + ",";
+      }
+    }
+
+    if (DR->ranking != DifferentialRanking::lex) {
+      blad_ordering.pop_back();
+      blad_ordering += "],";
     }
 
     // If the underlying coefficient ring has any symbols, add
@@ -2559,7 +2584,7 @@ public:
   RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
   {
     // We must have previously constructed this variable from a
-    // PPMonoidElem, so retreive the stashed value.
+    // PPMonoidElem, so retrieve the stashed value.
     if (dependent_vars.count(v) == 1) {
       PPMonoidElem elem = dependent_vars.at(v);
       if (owner(elem) == PPM(R)) {
