@@ -3338,8 +3338,12 @@ SmithRecord SmithFactor(matrix A)
   }
 }
 
-// convention: a function containing a "new" should be named "New.."
-template<size_t n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
+/* For testing purposes, we want to create some CoCoA matrices from
+ * arrays in C.  C++ template tricks let us do this with functions
+ * that take references to arbitrary sized arrays.
+ */
+
+template<int n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
 {
   matrix M(NewDenseMat(R,n,n));
   
@@ -3349,7 +3353,7 @@ template<size_t n> matrix NewMatrixFromC(ring R, int (&cmat)[n][n])
   return M;
 }
 
-template<size_t n> matrix NewDiagMatrixFromC(ring R, int (&cmat)[n])
+template<int n> matrix NewDiagMatrixFromC(ring R, int (&cmat)[n])
 {
   matrix M(NewDenseMat(R,n,n));
   
@@ -3360,7 +3364,7 @@ template<size_t n> matrix NewDiagMatrixFromC(ring R, int (&cmat)[n])
 
 // Give a test matrix and its invariant factors, check Smith Normal Form
 
-template<size_t n> void testOneSmithFactor(int (&M_int)[n][n], int (&F_int)[n])
+template<int n> void testOneSmithFactor(int (&M_int)[n][n], int (&F_int)[n])
 {
   matrix M_Z(NewMatrixFromC(RingZZ(), M_int));
   matrix F_Z(NewDiagMatrixFromC(RingZZ(), F_int));
