@@ -2619,7 +2619,7 @@ public:
   // than (currently) appear in the CoCoA ring, which would trigger a
   // parse error.  Also, if the ordering of the derivatives gets mixed
   // up, we might try to parse something like f_{tx} when we really
-  // wanted f_{tx}.  Therefore, we iterate through the polynomial's
+  // wanted f_{xt}.  Therefore, we iterate through the polynomial's
   // monomials, iterate through each variable in the monomial, and
   // construct each derivative using multideriv().
 
