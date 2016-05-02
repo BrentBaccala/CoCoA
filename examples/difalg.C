@@ -2729,6 +2729,11 @@ public:
     return results;
   }
 
+  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> ineq)
+  {
+    return Rosenfeld_Groebner(gens, ineq);
+  }
+
   std::vector<RegularSystem> Rosenfeld_Groebner(void)
   {
     return Rosenfeld_Groebner(gens, std::vector<RingElem>());
@@ -2858,6 +2863,11 @@ public:
     Rosenfeld_Groebner(equations, inequations, results);
 
     return results;
+  }
+
+  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> inequations)
+  {
+    return Rosenfeld_Groebner(gens, inequations);
   }
 
   std::vector<RegularSystem> Rosenfeld_Groebner(void)
