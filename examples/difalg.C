@@ -2338,11 +2338,16 @@ public:
   mutable map<PPMonoidElem, std::string, globalCmp> independent_strings;
   mutable bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
 
-  mutable char next_name_str[2] = {'a', '\0'};
+  mutable char next_name_str[3] = {'a', 'a', '\0'};
 
   std::string next_name(void) const
   {
-    next_name_str[0] ++;
+    if (next_name_str[1] != 'z') {
+      next_name_str[1] ++;
+    } else {
+      next_name_str[0] ++;
+      next_name_str[1] = 'a';
+    }
     return std::string(next_name_str);
   }
 
