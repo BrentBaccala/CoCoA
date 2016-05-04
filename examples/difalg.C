@@ -3000,19 +3000,30 @@ void testRegularDifferentialIdeal(void)
   RingElem xtt = deriv(xt,t);
   RingElem ytt = deriv(yt,t);
 
+  RingElem xttt = deriv(xtt,t);
+  RingElem xtttt = deriv(xttt,t);
+
   // First example from [Bo95]
 
   RingElem s1 = (2*xtt+1)*yt+y;
   RingElem s2 = xt*xt + x;
 
-  // I'd like to test these, but the functions aren't global.
+  // Test some of our basic differential algebra functions
 
-  // CoCoA_ASSERT(diffalg::initial(s1) == 2*yt);
-  // CoCoA_ASSERT(separant(s1) == 2*yt);
-  // CoCoA_ASSERT(initial(s2) == 1);
-  // CoCoA_ASSERT(separant(s2) == 2*xt);
+  CoCoA_ASSERT(monomial(R, 1, diffalg::rank(s1)) == yt);
+  CoCoA_ASSERT(diffalg::initial(s1) == (2*xtt+1));
+  CoCoA_ASSERT(diffalg::separant(s1) == (2*xtt+1));
 
-  RegularDifferentialIdeal Bo95_ex1(s1, s2);
+  CoCoA_ASSERT(monomial(R, 1, diffalg::rank(s2)) == xt*xt);
+  CoCoA_ASSERT(diffalg::initial(s2) == 1);
+  CoCoA_ASSERT(diffalg::separant(s2) == 2*xt);
+
+  //RegularDifferentialIdeal Bo95_ex1(s1, s2);
+
+  // To check this better, we should use unordered_set's rather than
+  // vectors (because the ordering really doesn't matter), then compare
+  // the unordered_sets.  The check below depends on the order that
+  // the algorithm produces the equations, which is irrelevant.
 
   std::vector<RegularSystem> Bo95_ex1_RG = Rosenfeld_Groebner(s1, s2);
   CoCoA_ASSERT(Bo95_ex1_RG.size() == 2);
@@ -3020,11 +3031,26 @@ void testRegularDifferentialIdeal(void)
   CoCoA_ASSERT(Bo95_ex1_RG[1].equations.size() == 2);
   CoCoA_ASSERT(Bo95_ex1_RG[0].equations[0] == (xt*xt + x));
   CoCoA_ASSERT(Bo95_ex1_RG[0].equations[1] == y);
-  std::cerr << Bo95_ex1_RG << endl;
+  CoCoA_ASSERT(Bo95_ex1_RG[1].equations[0] == x);
+  CoCoA_ASSERT(Bo95_ex1_RG[1].equations[1] == yt + y);
+  //std::cerr << Bo95_ex1_RG << endl;
 
   // Third example from [Bo95]
 
-  std::cerr << Rosenfeld_Groebner(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y) << endl;
+  // ((ẍ − ẋ² + 1)x⁽⁴⁾ − x⁽³⁾² + (3 ẋẍ + 2xẋ² − ẋ − 2x)x⁽³⁾ − 2ẍ³ +
+  // ((−6x − 2) ẋ − 1)ẍ² + ((2x + 2) ẋ³ + ẋ² + (−2x − 2) ẋ + 2)ẍ − ẋ² + 1)
+
+  // ((ẍ − ẋ² + 1)y − x⁽³⁾ + ( ẋ + 2x)ẍ − ẋ)
+
+  // ((ẍ − ẋ² + 1)z − x⁽³⁾ + ( ẋ + 2x)ẍ − ẋ)
+
+  auto Bo95_ex3_RG = Rosenfeld_Groebner(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y);
+  CoCoA_ASSERT(Bo95_ex3_RG.size() == 1);
+  CoCoA_ASSERT(Bo95_ex3_RG[0].equations.size() == 3);
+  CoCoA_ASSERT(Bo95_ex3_RG[0].equations[0] == (xtt-xt*xt+1)*xtttt - xttt*xttt + (3*xt*xtt + 2*x*xt*xt - xt - 2*x)*xttt - 2*xtt*xtt*xtt + ((-6*x-2)*xt-1)*xtt*xtt + ((2*x+2)*xt*xt*xt + xt*xt + (-2*x-2)*xt+2)*xtt - xt*xt + 1);
+  CoCoA_ASSERT(Bo95_ex3_RG[0].equations[1] == (xtt-xt*xt+1)*y - xttt + (xt+2*x)*xtt - xt);
+  CoCoA_ASSERT(Bo95_ex3_RG[0].equations[2] == (xtt-xt*xt+1)*z - xttt + (xt+2*x)*xtt - xt);
+  //std::cerr << Bo95_ex3_RG << endl;
 
   //std::cerr << RegularDifferentialIdeal(R, std::vector<RingElem> {19488*power(x,5) -81280*power(x,4) +92256*power(x,3) -528*power(x,2) -23858*x -1920,  48720*power(x,4) -162560*power(x,3) +138384*power(x,2) -528*x -11929,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  584640*power(x,2) -975360*x +276768,  -3299572*power(x,4) +11636124*power(x,3) -7331817*power(x,2) -4491566*x -243840,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -39594864*power(x,2) +69816744*x -14663634,  -105936364564*power(x,4) +287632590324*power(x,3) -102295429833*power(x,2) -83289434024*x -4781890560,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -2542472749536*x +1725795541944}).Rosenfeld_Groebner();
 
@@ -3032,17 +3058,15 @@ void testRegularDifferentialIdeal(void)
 
   // BLAD's test rg0
 
-  //RegularDifferentialIdeal rg0(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux);
+  // by putting a constant in the equations we should generate an inconsistent system
   CoCoA_ASSERT(Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux).size() == 0);
-  // std::cerr << rg0.Rosenfeld_Groebner() << endl;
 
-  std::cerr << Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux) << endl;
+  //CoCoA_ASSERT(Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux).size() == 3);
+  //std::cerr << Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux) << endl;
 
   // Sixth example from Mansfield thesis
 
-  RegularDifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
-
-  std::cerr << Rosenfeld_Groebner(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1) << endl;
+  // std::cerr << Rosenfeld_Groebner(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1) << endl;
 }
 
 /* Smith Normal Form
