@@ -1831,6 +1831,9 @@ public:
   RegularDifferentialIdeal(const RingElem& r1, Args... rest) : RegularDifferentialIdeal(rest...) {
     gens.push_back(r1);
   }
+};
+
+namespace diffalg {
 
   // HDT - highest derivative term
   // Hp - highest power of HDT
@@ -2229,13 +2232,13 @@ public:
   {
     std::pair<PPMonoidElem, int> hdt_hp = HDT_Hp(f);
     long idx;
-    RingElem result(R);
+    RingElem result(owner(f));
 
     CoCoA_ASSERT(IsIndet(idx, hdt_hp.first));
 
     for (auto it=BeginIter(f); !IsEnded(it); ++it) {
       if (exponent(PP(it), idx) == hdt_hp.second) {
-	result += monomial(R, coeff(it), PP(it));
+	result += monomial(owner(f), coeff(it), PP(it));
       }
     }
 
@@ -2247,14 +2250,14 @@ public:
   {
     PPMonoidElem hdt = HDT(f);
     long idx;
-    RingElem result(R);
+    RingElem result(owner(f));
 
     CoCoA_ASSERT(IsIndet(idx, hdt));
 
     for (auto it=BeginIter(f); !IsEnded(it); ++it) {
       long exp = exponent(PP(it), idx);
       if (exp > 0) {
-	result += exp * monomial(R, coeff(it), PP(it)) / monomial(R, 1, hdt);
+	result += exp * monomial(owner(f), coeff(it), PP(it)) / monomial(owner(f), 1, hdt);
       }
     }
 
@@ -2332,15 +2335,15 @@ public:
   // name them in the blad ordering, then set the ordering, then
   // create the blad variables and map them back and forth.
 
-  mutable map<PPMonoidElem, std::string, globalCmp> dependent_strings;
-  mutable bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
+  map<PPMonoidElem, std::string, globalCmp> dependent_strings;
+  bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
 
-  mutable map<PPMonoidElem, std::string, globalCmp> independent_strings;
-  mutable bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
+  map<PPMonoidElem, std::string, globalCmp> independent_strings;
+  bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
 
-  mutable char next_name_str[3] = {'a', 'a', '\0'};
+  char next_name_str[3] = {'a', 'a', '\0'};
 
-  std::string next_name(void) const
+  std::string next_name(void)
   {
     if (next_name_str[1] != 'z') {
       next_name_str[1] ++;
@@ -2351,7 +2354,7 @@ public:
     return std::string(next_name_str);
   }
 
-  std::vector<std::string> insert_symbols_into_dependent_strings(ring R) const
+  std::vector<std::string> insert_symbols_into_dependent_strings(ring R)
   {
     if (symbols(R).size() == 0) return std::vector<std::string> {};
     if (IsFractionField(R)) {
@@ -2370,7 +2373,7 @@ public:
   // Construct a blad ordering using all of the indeterminates in a
   // PPMonoidElem, plus any symbols in our underlying coefficent ring.
 
-  void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r) const
+  void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r, const ring& R)
   {
     // We current don't distinguish between independent and dependent
     // variables (perhaps we should), but blad does.  Thus, we run
@@ -2484,7 +2487,7 @@ public:
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
   }
 
-  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false) const
+  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false)
   {
     struct bav_variable * result;
 
@@ -2682,9 +2685,17 @@ public:
     struct bad_intersectof_regchain * T;
     std::vector<RegularSystem> results;
 
+    // XXX assumes that equations is not an empty vector
+    const ring& R = owner(equations[0]);
+
     bav_Iordering r;
 
     bad_restart(0,0);
+
+    dependent_strings.clear();
+    dependent_vars.clear();
+    independent_strings.clear();
+    independent_vars.clear();
 
     // memory management (see blad docs §2.2.4.1)
     // This creates problems when new CoCoA objects are created during the session.
@@ -2696,7 +2707,7 @@ public:
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
 
     bav_R_init();
-    blad_ordering(total_rank(Union(equations, inequations)), &r);
+    blad_ordering(total_rank(Union(equations, inequations)), &r, R);
     bav_R_push_ordering (r);
 
 #if 0
@@ -2732,16 +2743,6 @@ public:
     bad_terminate(ba0_done_level);
 
     return results;
-  }
-
-  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> ineq)
-  {
-    return Rosenfeld_Groebner(gens, ineq);
-  }
-
-  std::vector<RegularSystem> Rosenfeld_Groebner(void)
-  {
-    return Rosenfeld_Groebner(gens, std::vector<RingElem>());
   }
 
 #else
@@ -2870,6 +2871,9 @@ public:
     return results;
   }
 
+#endif
+
+#if 0
   std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> inequations)
   {
     return Rosenfeld_Groebner(gens, inequations);
@@ -2879,10 +2883,20 @@ public:
   {
     return Rosenfeld_Groebner(gens, std::vector<RingElem>());
   }
-
 #endif
 
-};
+  // Passing RingElem's directly to Rosenfeld_Groebner constructs them
+  // into a vector of equations, with no inequations.
+
+  template<typename... Args>
+  std::vector<RegularSystem> Rosenfeld_Groebner(Args... rest) {
+    std::vector<RingElem> gens{rest...};
+    return Rosenfeld_Groebner(gens, std::vector<RingElem>());
+  }
+
+}
+
+using diffalg::Rosenfeld_Groebner;
 
 #if 0
 std::ostream & operator<<(std::ostream &out, const RegularDifferentialIdeal ideal)
@@ -2993,14 +3007,14 @@ void testRegularDifferentialIdeal(void)
 
   // I'd like to test these, but the functions aren't global.
 
-  // CoCoA_ASSERT(initial(s1) == 2*yt);
+  // CoCoA_ASSERT(diffalg::initial(s1) == 2*yt);
   // CoCoA_ASSERT(separant(s1) == 2*yt);
   // CoCoA_ASSERT(initial(s2) == 1);
   // CoCoA_ASSERT(separant(s2) == 2*xt);
 
   RegularDifferentialIdeal Bo95_ex1(s1, s2);
 
-  std::vector<RegularSystem> Bo95_ex1_RG = Bo95_ex1.Rosenfeld_Groebner();
+  std::vector<RegularSystem> Bo95_ex1_RG = Rosenfeld_Groebner(s1, s2);
   CoCoA_ASSERT(Bo95_ex1_RG.size() == 2);
   CoCoA_ASSERT(Bo95_ex1_RG[0].equations.size() == 2);
   CoCoA_ASSERT(Bo95_ex1_RG[1].equations.size() == 2);
@@ -3010,7 +3024,7 @@ void testRegularDifferentialIdeal(void)
 
   // Third example from [Bo95]
 
-  std::cerr << RegularDifferentialIdeal(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y).Rosenfeld_Groebner() << endl;
+  std::cerr << Rosenfeld_Groebner(y*xt+yt+1-xtt, 2*yt*x+2*xt*y*x+y+2*x-ytt, z-y) << endl;
 
   //std::cerr << RegularDifferentialIdeal(R, std::vector<RingElem> {19488*power(x,5) -81280*power(x,4) +92256*power(x,3) -528*power(x,2) -23858*x -1920,  48720*power(x,4) -162560*power(x,3) +138384*power(x,2) -528*x -11929,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  194880*power(x,3) -487680*power(x,2) +276768*x -528,  584640*power(x,2) -975360*x +276768,  -3299572*power(x,4) +11636124*power(x,3) -7331817*power(x,2) -4491566*x -243840,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -13198288*power(x,3) +34908372*power(x,2) -14663634*x -4491566,  -39594864*power(x,2) +69816744*x -14663634,  -105936364564*power(x,4) +287632590324*power(x,3) -102295429833*power(x,2) -83289434024*x -4781890560,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -423745458256*power(x,3) +862897770972*power(x,2) -204590859666*x -83289434024,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -1271236374768*power(x,2) +1725795541944*x -204590859666,  -2542472749536*x +1725795541944}).Rosenfeld_Groebner();
 
@@ -3018,17 +3032,17 @@ void testRegularDifferentialIdeal(void)
 
   // BLAD's test rg0
 
-  RegularDifferentialIdeal rg0(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux);
-  CoCoA_ASSERT(rg0.Rosenfeld_Groebner().size() == 0);
+  //RegularDifferentialIdeal rg0(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux);
+  CoCoA_ASSERT(Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, RingElem(R, 421), vxx - ux).size() == 0);
   // std::cerr << rg0.Rosenfeld_Groebner() << endl;
 
-  std::cerr << RegularDifferentialIdeal(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux).Rosenfeld_Groebner() << endl;
+  std::cerr << Rosenfeld_Groebner(ux*ux - 4*u, uxy*vy - u + 1, vxx - ux) << endl;
 
   // Sixth example from Mansfield thesis
 
   RegularDifferentialIdeal di6(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1);
 
-  std::cerr << di6.Rosenfeld_Groebner() << endl;
+  std::cerr << Rosenfeld_Groebner(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1) << endl;
 }
 
 /* Smith Normal Form
