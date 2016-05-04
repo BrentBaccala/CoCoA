@@ -1840,7 +1840,7 @@ namespace diffalg {
   //
   // When passed a element from the coefficient ring, will return (1, 0)
 
-  static std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
+  std::pair<PPMonoidElem, int> HDT_Hp(ConstRefRingElem f1)
   {
     if (IsConstant(f1)) {
       return make_pair(PPMonoidElem(PPM(owner(f1))), 0);
@@ -1871,12 +1871,12 @@ namespace diffalg {
     return make_pair(hdt, hp);
   }
 
-  static PPMonoidElem HDT(ConstRefRingElem f1)
+  PPMonoidElem HDT(ConstRefRingElem f1)
   {
     return HDT_Hp(f1).first;
   }
 
-  static int Hp(ConstRefRingElem f1)
+  int Hp(ConstRefRingElem f1)
   {
     return HDT_Hp(f1).second;
   }
@@ -1884,7 +1884,7 @@ namespace diffalg {
   // The rank of a polynomial is its highest derivative term, raised
   // to its highest power.
 
-  static PPMonoidElem rank(ConstRefRingElem f)
+  PPMonoidElem rank(ConstRefRingElem f)
   {
     const auto p = HDT_Hp(f);
     return power(p.first, p.second);
@@ -1893,7 +1893,7 @@ namespace diffalg {
   // The rank of a set of polynomial is the list of their ranks,
   // sorted into ascending order.  Kolchin §I.10
 
-  static std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
+  std::vector<PPMonoidElem> rank(std::vector<RingElem> v)
   {
     std::vector<PPMonoidElem> result;
     for (auto e: v) {
@@ -1906,7 +1906,7 @@ namespace diffalg {
   // The total rank of a polynomial is the least common multiple of
   // its constituent monomials.
 
-  static PPMonoidElem total_rank(ConstRefRingElem f)
+  PPMonoidElem total_rank(ConstRefRingElem f)
   {
     PPMonoidElem result(PPM(owner(f)));
 
@@ -1917,7 +1917,7 @@ namespace diffalg {
     return result;
   }
 
-  static PPMonoidElem total_rank(std::vector<RingElem> v)
+  PPMonoidElem total_rank(std::vector<RingElem> v)
   {
     PPMonoidElem result(PPM(owner(v[0])));
     for (auto e: v) {
@@ -1926,7 +1926,7 @@ namespace diffalg {
     return result;
   }
 
-  static RingElem Hcoeff(ConstRefRingElem f)
+  RingElem Hcoeff(ConstRefRingElem f)
   {
     return CoeffVecWRT(f, monomial(owner(f), 1, HDT(f))).back();
   }
@@ -1936,7 +1936,7 @@ namespace diffalg {
 
   // If the RingElem is a constant, then Hu() returns 1.
 
-  static PPMonoidElem Hu(ConstRefRingElem f1)
+  PPMonoidElem Hu(ConstRefRingElem f1)
   {
     if (! IsConstant(f1)) {
       PPMonoidElem e = HDT(f1);
@@ -1951,7 +1951,7 @@ namespace diffalg {
 
   // Elizabeth Mansfield's notation - alpha is the derivative
 
-  static PPMonoidElem alpha(ConstRefRingElem f1)
+  PPMonoidElem alpha(ConstRefRingElem f1)
   {
     if (! IsConstant(f1)) {
       PPMonoidElem e = HDT(f1);
@@ -1969,7 +1969,7 @@ namespace diffalg {
   // PPMonoidElem.  For example, differentiating u w.r.t to x^2*y
   // produces u_xxy, but RingElem can be more complicated than that.
 
-  static RingElem multideriv(RingElem r, ConstRefPPMonoidElem p)
+  RingElem multideriv(RingElem r, ConstRefPPMonoidElem p)
   {
     for (long i = 0; i < NumIndets(owner(p)); ++ i) {
       for (long j = exponent(p, i); j > 0; -- j) {
@@ -1981,7 +1981,7 @@ namespace diffalg {
 
   /* Compute the Buchberger S-polynomial of two RingElems. */
 
-  static RingElem Spoly(ConstRefRingElem f1, ConstRefRingElem f2)
+  RingElem Spoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     ConstRefPPMonoidElem lpp1 = LPP(f1);
     ConstRefPPMonoidElem lpp2 = LPP(f2);
@@ -2006,7 +2006,7 @@ namespace diffalg {
 
   /* Compute the D-polynomial of two RingElems */
 
-  static RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
+  RingElem Dpoly(ConstRefRingElem f1, ConstRefRingElem f2)
   {
     // XXX Assume we're using a monomial ordering so that a
     // polynomial's highest ranking unknown will appear in its LPP.
@@ -2048,7 +2048,7 @@ namespace diffalg {
     }
   }
 
-  static std::vector<RingElem> Dpoly(const std::vector<RingElem> set)
+  std::vector<RingElem> Dpoly(const std::vector<RingElem> set)
   {
     std::vector<RingElem> result;
 
@@ -2067,7 +2067,7 @@ namespace diffalg {
 
   // This is partial differential reduction.
 
-  static RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
+  RingElem partial_rem(ConstRefRingElem f, ConstRefRingElem g, bool full_reduction = false)
   {
     const PPMonoidElem HDT_g = HDT(g);
     const long Hp_g = Hp(g);
@@ -2172,7 +2172,7 @@ namespace diffalg {
     return f;
   }
 
-  static RingElem partial_rem(RingElem r, const std::vector<RingElem> A, bool full_reduction = false)
+  RingElem partial_rem(RingElem r, const std::vector<RingElem> A, bool full_reduction = false)
   {
     if (IsZero(r)) return r;
 
@@ -2190,7 +2190,7 @@ namespace diffalg {
     return r;
   }
 
-  static std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A, bool full_reduction = false)
+  std::vector<RingElem> partial_rem(const std::vector<RingElem> v, const std::vector<RingElem> A, bool full_reduction = false)
   {
     std::vector<RingElem> result = v;
     for (auto&& e : result) {
@@ -2199,17 +2199,17 @@ namespace diffalg {
     return result;
   }
 
-  static RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
+  RingElem rem(ConstRefRingElem f, ConstRefRingElem g)
   {
     return partial_rem(f, g, true);
   }
 
-  static RingElem rem(RingElem r, const std::vector<RingElem> A)
+  RingElem rem(RingElem r, const std::vector<RingElem> A)
   {
     return partial_rem(r, A, true);
   }
 
-  static std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
+  std::vector<RingElem> rem(const std::vector<RingElem> v, const std::vector<RingElem> A)
   {
     return partial_rem(v, A, true);
   }
