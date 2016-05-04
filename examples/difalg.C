@@ -2354,7 +2354,7 @@ namespace diffalg {
     return std::string(next_name_str);
   }
 
-  std::vector<std::string> insert_symbols_into_dependent_strings(ring R)
+  std::vector<std::string> insert_symbols_into_dependent_strings(const ring& R)
   {
     if (symbols(R).size() == 0) return std::vector<std::string> {};
     if (IsFractionField(R)) {
