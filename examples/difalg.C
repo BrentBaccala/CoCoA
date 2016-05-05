@@ -2385,7 +2385,7 @@ namespace diffalg {
     // Construct a blad ordering using all of the indeterminates in a
     // PPMonoidElem, plus any symbols in our underlying coefficent ring.
 
-    void blad_ordering(ConstRefPPMonoidElem e, bav_Iordering * r)
+    void blad_ordering(bav_Iordering * r)
     {
       // We current don't distinguish between independent and dependent
       // variables (perhaps we should), but blad does.  Thus, we run
@@ -2394,19 +2394,17 @@ namespace diffalg {
       // derivations, while the dependent variables (blad's blocks)
       // will be the bases less the derivations.
 
-      const PPMonoid & ppm(owner(e));
+      const PPMonoid & ppm(PPM(R));
 
       PPMonoidElem bases(ppm);
       PPMonoidElem derivations(ppm);
 
       for (auto ind: indets(ppm)) {
-	if (IsDivisible(e, ind)) {
-	  PPMonoidElem base(owner(ind));
-	  PPMonoidElem deriv(owner(ind));
-	  split_differential_indet(ind, base, deriv);
-	  bases = radical(bases * base);
-	  derivations = radical(derivations * deriv);
-	}
+	PPMonoidElem base(owner(ind));
+	PPMonoidElem deriv(owner(ind));
+	split_differential_indet(ind, base, deriv);
+	bases = radical(bases * base);
+	derivations = radical(derivations * deriv);
       }
 
       // bases /= derivations;
@@ -2710,6 +2708,12 @@ namespace diffalg {
       bDRbase = new bladDifferentialRingBase(R);
       bad_restart(0,0);
       bav_R_init();
+
+      bav_Iordering r;
+
+      bDRbase->blad_ordering(&r);
+      bav_R_push_ordering (r);
+
     }
 
     ~bladDifferentialRing()
@@ -2741,8 +2745,6 @@ namespace diffalg {
     const ring& R = owner(equations[0]);
     bladDifferentialRing bdr(R);
 
-    bav_Iordering r;
-
     // memory management (see blad docs §2.2.4.1)
     // This creates problems when new CoCoA objects are created during the session.
 
@@ -2751,9 +2753,6 @@ namespace diffalg {
 
     eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
     ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
-
-    bdr->blad_ordering(total_rank(Union(equations, inequations)), &r);
-    bav_R_push_ordering (r);
 
 #if 0
     ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
