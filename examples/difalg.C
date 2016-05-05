@@ -2303,499 +2303,11 @@ namespace diffalg {
     return is_autoreduced(subset);
   }
 
-#ifdef USE_BLAD
-
-  // This version of Rosenfeld_Groebner uses Francois Boulier's blad
-  // library.
-
-  /* The first issue is that the blad library requires dependent and
-   * independent variables to be completely distinct, while we don't.
-   * So we need to use a separate naming scheme for blad variables and
-   * map them back and forth to our variables.  A single CoCoA
-   * indeterminate can correspond to two blad variables, one to
-   * differentiate by and one that can be differentiated.
-   */
-
-  // To maintain maps of elements from different rings (i.e, a
-  // polynomial ring and its coefficient ring), we need to compare
-  // PPMonoidElem's from different PPMonoids, which normally isn't
-  // allowed, but we can fix that by ordering first on the address of
-  // the PPMonoid's indets vector.
-
-  struct globalCmp {
-    bool operator()(ConstRefPPMonoidElem a, ConstRefPPMonoidElem b) const {
-      if (owner(a) == owner(b)) {
-	return (a < b);
-      } else {
-	return &indets(owner(a)) < &indets(owner(b));
-      }
-    }
-  };
-
-  class bladDifferentialRing;
-
-  class bladDifferentialRingBase {
-    friend bladDifferentialRing;
-
-    const ring R;
-    const PowerPolyDifferentialRingBase * DR;
-
-    bladDifferentialRingBase(const ring& R) : R(R),
-					      DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
-    { }
-
-    char next_name_str[3] = {'a', 'a', '\0'};
-
-    std::string next_name(void)
-    {
-      if (next_name_str[1] != 'z') {
-	next_name_str[1] ++;
-      } else {
-	next_name_str[0] ++;
-	next_name_str[1] = 'a';
-      }
-      return std::string(next_name_str);
-    }
-
-    map<PPMonoidElem, std::string, globalCmp> dependent_strings;
-    bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
-
-    map<PPMonoidElem, std::string, globalCmp> independent_strings;
-    bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
-
-    std::vector<std::string> insert_symbols_into_dependent_strings(const ring& R)
-    {
-      if (symbols(R).size() == 0) return std::vector<std::string> {};
-      if (IsFractionField(R)) {
-	return insert_symbols_into_dependent_strings(BaseRing(R));
-      } else {
-	std::vector<std::string> results = insert_symbols_into_dependent_strings(CoeffRing(R));
-	for (auto ind: indets(PPM(R))) {
-	  if (dependent_strings.count(ind) == 0) {
-	    dependent_strings[ind] = next_name();
-	  }
-	  results.push_back(dependent_strings[ind]);
-	}
-	return results;
-      }
-    }
-
-  public:
-
-    // Construct a blad ordering using all of the indeterminates in a
-    // PPMonoidElem, plus any symbols in our underlying coefficent ring.
-
-    void blad_ordering(bav_Iordering * r)
-    {
-      // We current don't distinguish between independent and dependent
-      // variables (perhaps we should), but blad does.  Thus, we run
-      // through our indets, split them apart into base and deriv, and
-      // save the derivations.  The independent variables will be the
-      // derivations, while the dependent variables (blad's blocks)
-      // will be the bases less the derivations.
-
-      const PPMonoid & ppm(PPM(R));
-
-      PPMonoidElem bases(ppm);
-      PPMonoidElem derivations(ppm);
-
-      for (auto ind: indets(ppm)) {
-	PPMonoidElem base(owner(ind));
-	PPMonoidElem deriv(owner(ind));
-	split_differential_indet(ind, base, deriv);
-	bases = radical(bases * base);
-	derivations = radical(derivations * deriv);
-      }
-
-      // bases /= derivations;
-      // CoCoA_ASSERT(IsOne(gcd(bases, derivations)));
-
-      std::vector<PPMonoidElem> vbases;
-      std::vector<PPMonoidElem> vderivations;
-
-      for (auto ind: indets(ppm)) {
-	if (IsDivisible(bases, ind)) {
-	  vbases.push_back(ind);
-	}
-	if (IsDivisible(derivations, ind)) {
-	  vderivations.push_back(ind);
-	}
-      }
-
-      std::sort(vbases.begin(), vbases.end());
-      std::sort(vderivations.begin(), vderivations.end());
-
-      // blad wants everything in DECENDING order
-      std::reverse(vbases.begin(), vbases.end());
-      std::reverse(vderivations.begin(), vderivations.end());
-
-      std::string blad_ordering = "ordering (derivations=[";
-
-      for (auto ind: vderivations) {
-	//vars2[ind] = head(Symbol(ind));
-	if (independent_strings.count(ind) == 0) {
-	  independent_strings[ind] = next_name();
-	}
-	blad_ordering += independent_strings[ind] + ",";
-      }
-      blad_ordering.pop_back();
-
-      blad_ordering += "], blocks=[";
-
-      if (DR->ranking != DifferentialRanking::lex) {
-	blad_ordering += "[";
-      }
-
-      for (auto ind: vbases) {
-	if (dependent_strings.count(ind) == 0) {
-	  dependent_strings[ind] = next_name();
-	}
-	if (DR->ranking == DifferentialRanking::lex) {
-	  blad_ordering += "[" + dependent_strings[ind] + "],";
-	} else {
-	  blad_ordering += dependent_strings[ind] + ",";
-	}
-      }
-
-      if (DR->ranking != DifferentialRanking::lex) {
-	blad_ordering.pop_back();
-	blad_ordering += "],";
-      }
-
-      // If the underlying coefficient ring has any symbols, add
-      // them at the end as the lowest ranking block
-
-#if 0
-      const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
-      if (coeff_syms.size() != 0) {
-	blad_ordering += "[";
-	for (auto s: coeff_syms) {
-	  blad_ordering += head(s) + ",";
-	}
-	blad_ordering.pop_back();   // remove trailing comma
-	blad_ordering += "],";
-	insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
-      }
-#else
-      const auto coeff_syms = insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
-      if (coeff_syms.size() != 0) {
-	blad_ordering += "[";
-	for (auto s: coeff_syms) {
-	  blad_ordering += s + ",";
-	}
-	blad_ordering.pop_back();   // remove trailing comma
-	blad_ordering += "],";
-      }
-#endif
-
-      blad_ordering.pop_back();   // remove trailing comma
-      blad_ordering += "])";
-
-      // std::cerr << blad_ordering << endl;
-
-      // blad doesn't use const qualifiers when declaring ba0_sscanf2()
-      ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
-    }
-
-    struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false)
-    {
-      struct bav_variable * result;
-
-      if (independent) {
-
-	if (independent_vars.count(ind) == 1) {
-	  return independent_vars[ind];
-	}
-	ba0_sscanf2 (const_cast<char *>(independent_strings.at(ind).c_str()), const_cast<char *>("%v"), &result);
-
-	independent_vars[ind] = result;
-
-      } else {
-
-	if (dependent_vars.count(ind) == 1) {
-	  return dependent_vars[ind];
-	}
-
-	PPMonoidElem base(owner(ind));
-	PPMonoidElem deriv(owner(ind));
-
-	split_differential_indet(ind, base, deriv);
-
-	if (IsOne(deriv)) {
-	  //ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
-	  ba0_sscanf2 (const_cast<char *>(dependent_strings.at(base).c_str()), const_cast<char *>("%v"), &result);
-	} else {
-	  result = PPMonoidElem_to_blad_variable(base);
-	  for (auto ind2: indets(owner(ind))) {
-	    while (IsDivisible(deriv, ind2)) {
-	      bav_term t;
-	      bav_init_term(&t);
-	      bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2, true), 1);
-	      result = bav_diff2_variable(result, &t);
-
-	      deriv /= ind2;
-	    }
-	  }
-	}
-
-	// Stash the result in a bimap so we convert back the reverse way later.
-	dependent_vars[ind] = result;
-      }
-
-      return result;
-    }
-
-    void RingElem_to_blad_polynomial(ConstRefRingElem x, struct bap_polynom_mpz * const result)
-    {
-      // struct bap_polynom_mpz result;
-
-      // bap_init_polynom_mpz(&result);
-
-      // Assumes that result has already been initialized.
-
-      if (IsZZ(owner(x))) {
-	BigInt N;
-	CoCoA_ASSERT(IsInteger(N, x));
-	bap_init_polynom_one_mpz(result);
-	bap_mul_polynom_numeric_mpz(result, result, mpzref(N));
-	return;
-      }
-
-      if (IsFractionField(owner(x))) {
-	CoCoA_ASSERT(IsOne(den(x)));
-	RingElem_to_blad_polynomial(num(x), result);
-	return;
-      }
-
-      CoCoA_ASSERT(IsSparsePolyRing(owner(x)));
-
-      for (auto it=BeginIter(x); !IsEnded(it); ++it) {
-	bav_term t;
-	bav_init_term(&t);
-	for (long idx=0; idx < NumIndets(owner(PP(it))); ++idx) {
-	  long exp = exponent(PP(it), idx);
-	  //bav_mul_term_variable(&t, &t, vars[indet(owner(PP(it)), idx)], exp);
-	  if (exp != 0) {
-	    bav_mul_term_variable(&t, &t, PPMonoidElem_to_blad_variable(indet(owner(PP(it)), idx)), exp);
-	  }
-	}
-	struct bap_polynom_mpz c;
-	bap_init_polynom_mpz(&c);
-	RingElem_to_blad_polynomial(coeff(it), &c);
-	bap_mul_polynom_term_mpz(&c, &c, &t);
-	bap_add_polynom_mpz(result, result, &c);
-      }
-    }
-
-    void RingElems_to_blad_polynomial_table(std::vector<RingElem> v, struct bap_tableof_polynom_mpz * const result)
-    {
-      struct ba0_list * L = nullptr;
-      for (auto e: v) {
-	struct bap_polynom_mpz * P = bap_new_polynom_mpz();
-	RingElem_to_blad_polynomial(e, P);
-	L = ba0_endcons_list(P, L);
-      }
-      ba0_set_table_list((ba0_table *) result, L);
-      //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
-    }
-
-    RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
-    {
-      // We must have previously constructed this variable from a
-      // PPMonoidElem, so retrieve the stashed value.
-      if (dependent_vars.count(v) == 1) {
-	PPMonoidElem elem = dependent_vars.at(v);
-	if (owner(elem) == PPM(R)) {
-	  return monomial(R, 1, elem);
-	} else if (owner(elem) == PPM(CoeffRing(R))) {
-	  return CoeffEmbeddingHom(R)(monomial(CoeffRing(R), 1, elem));
-	} else {
-	  throw "mistake";
-	}
-      } else {
-	return monomial(R, 1, independent_vars.at(v));
-      }
-    }
-
-    // This function is DESTRUCTIVE of the bav_term!
-
-    RingElem blad_term_to_RingElem(struct bav_term * t, const ring & R)
-    {
-      RingElem result(one(R));
-
-      while (! bav_is_one_term(t)) {
-	result *= power(blad_variable_to_RingElem(bav_leader_term(t), R), bav_leading_degree_term(t));
-	bav_shift_term(t, t);
-      }
-
-      return result;
-    }
-
-    // Converting polynomials to RingElem's using the technique of
-    // printing them to a string and then parsing them is problematic.
-    // For one thing, we can have higher derivatives in the polynomial
-    // than (currently) appear in the CoCoA ring, which would trigger a
-    // parse error.  Also, if the ordering of the derivatives gets mixed
-    // up, we might try to parse something like f_{tx} when we really
-    // wanted f_{xt}.  Therefore, we iterate through the polynomial's
-    // monomials, iterate through each variable in the monomial, and
-    // construct each derivative using multideriv().
-
-    RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P, const ring & R)
-    {
-      struct bap_itermon_mpz iter;
-      RingElem result(zero(R));
-
-      // loop over monomials
-      bap_begin_itermon_mpz (&iter, P);
-      while (! bap_outof_itermon_mpz (&iter)) {
-	struct bav_term T;
-	mpz_t *c;
-
-	bav_init_term(&T);
-	bap_term_itermon_mpz (&T, &iter);
-	c = bap_coeff_itermon_mpz (&iter);
-
-	RingElem monomial(R, *c);
-
-	// loop over variables
-	while (! bav_is_one_term(&T)) {
-	  bav_variable * lt = bav_leader_term(&T);
-	  bav_Idegree ltd = bav_leading_degree_term(&T);
-
-	  bav_variable * lt_base = bav_order_zero_variable(lt);
-	  bav_term diff_op;
-
-	  bav_init_term(&diff_op);
-	  bav_operator_between_derivatives(&diff_op, lt_base, lt);
-
-	  RingElem base = blad_variable_to_RingElem(lt_base, R);
-	  RingElem deriv = blad_term_to_RingElem(&diff_op, R);
-
-	  monomial *= power(multideriv(base, LPP(deriv)), ltd);
-
-	  bav_exquo_term_variable(&T, &T, lt, ltd);
-	}
-
-	result += monomial;
-
-	bap_next_itermon_mpz (&iter);
-      }
-
-      return result;
-    }
-
-  };
-
-  // static map<const PowerPolyDifferentialRingBase *, bladDifferentialRingBase *> bDRcache;
-
-  /* I'd like to keep libblad context around, but that turns out to be
-   * problematic.  My library's ability to create new differential
-   * variables on the fly wrecks havoc with libblad, because we can't
-   * change orderings without creating brand new variables that aren't
-   * compatible with the ones we had before.
-   *
-   * So we create a new libblad context every time we create a
-   * bladDifferentialRing.
-   */
-
-  class bladDifferentialRing {
-    bladDifferentialRingBase * bDRbase;
-
-  public:
-    bladDifferentialRing(const ring& R)
-    {
-      bDRbase = new bladDifferentialRingBase(R);
-      bad_restart(0,0);
-      bav_R_init();
-
-      bav_Iordering r;
-
-      bDRbase->blad_ordering(&r);
-      bav_R_push_ordering (r);
-
-    }
-
-    ~bladDifferentialRing()
-    {
-      bad_terminate(ba0_done_level);
-    }
-
-    //const bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow const member fns to be called.
-    bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow all member fns to be called.
-  };
-
-  // associate a bad_regchain * with each RegularSystem
-
-  // We need to first map our indeterminates to the strings we use to
-  // name them in the blad ordering, then set the ordering, then
-  // create the blad variables and map them back and forth.
-
-  std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
-  {
-    // std::cerr << "Rosenfeld_Groebner equations: " << equations << " inequations: " << inequations << endl;
-
-    struct bap_tableof_polynom_mpz * eqns;
-    struct bap_tableof_polynom_mpz * ineqs;
-
-    struct bad_intersectof_regchain * T;
-    std::vector<RegularSystem> results;
-
-    // XXX assumes that equations is not an empty vector
-    const ring& R = owner(equations[0]);
-    bladDifferentialRing bdr(R);
-
-    // memory management (see blad docs §2.2.4.1)
-    // This creates problems when new CoCoA objects are created during the session.
-
-    // struct ba0_mark M;
-    // ba0_record(&M);
-
-    eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
-    ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
-
-#if 0
-    ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
-    ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
-#else
-    bdr->RingElems_to_blad_polynomial_table(equations, eqns);
-    bdr->RingElems_to_blad_polynomial_table(inequations, ineqs);
-#endif
-
-    // We have to initialize this structure with a list of desired properties.
-
-    T = bad_new_intersectof_regchain ();
-    ba0_sscanf2
-      (const_cast<char *> ("intersectof_regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
-       const_cast<char *> ("%intersectof_regchain"), T);
-
-    bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
-    // ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
-
-    for (int i=0; i < T->inter.size; i ++) {
-      std::vector<RingElem> v;
-      struct bad_regchain * chain = (struct bad_regchain *)(T->inter.tab[i]);
-      for (int j=0; j < chain->decision_system.size; j ++) {
-	struct bap_polynom_mpz * P = chain->decision_system.tab[j];
-
-	v.push_back(bdr->blad_polynomial_to_RingElem(P, R));
-      }
-      results.push_back(RegularSystem(v, std::vector<RingElem>()));
-    }
-
-    //ba0_restore(&M);
-
-    //bav_R_pull_ordering();
-
-    return results;
-  }
-
-#else
-
   // This is a native version of Rosenfeld_Groebner that uses an older
   // algorithm ([Bo95] instead of [Bo09]), doesn't work right and is
   // very slow.
 
+#if 0
   void Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations,
 			  std::vector<RegularSystem> & results, int nesting_level=0)
   {
@@ -2915,7 +2427,6 @@ namespace diffalg {
 
     return results;
   }
-
 #endif
 
 #if 0
@@ -2930,18 +2441,535 @@ namespace diffalg {
   }
 #endif
 
-  // Passing RingElem's directly to Rosenfeld_Groebner constructs them
-  // into a vector of equations, with no inequations.
-
-  template<typename... Args>
-  std::vector<RegularSystem> Rosenfeld_Groebner(Args... rest) {
-    std::vector<RingElem> gens{rest...};
-    return Rosenfeld_Groebner(gens, std::vector<RingElem>());
-  }
-
 }
 
-using diffalg::Rosenfeld_Groebner;
+//using diffalg::Rosenfeld_Groebner;
+
+#ifdef USE_BLAD
+
+// This version of Rosenfeld_Groebner uses Francois Boulier's blad
+// library.
+
+/* The first issue is that the blad library requires dependent and
+ * independent variables to be completely distinct, while we don't.
+ * So we need to use a separate naming scheme for blad variables and
+ * map them back and forth to our variables.  A single CoCoA
+ * indeterminate can correspond to two blad variables, one to
+ * differentiate by and one that can be differentiated.
+ */
+
+// To maintain maps of elements from different rings (i.e, a
+// polynomial ring and its coefficient ring), we need to compare
+// PPMonoidElem's from different PPMonoids, which normally isn't
+// allowed, but we can fix that by ordering first on the address of
+// the PPMonoid's indets vector.
+
+struct globalCmp {
+  bool operator()(ConstRefPPMonoidElem a, ConstRefPPMonoidElem b) const {
+    if (owner(a) == owner(b)) {
+      return (a < b);
+    } else {
+      return &indets(owner(a)) < &indets(owner(b));
+    }
+  }
+};
+
+class bladDifferentialRing;
+
+class bladDifferentialRingBase {
+  friend bladDifferentialRing;
+
+  const ring R;
+  const PowerPolyDifferentialRingBase * DR;
+
+  bladDifferentialRingBase(const ring& R) : R(R),
+					    DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
+  { }
+
+  char next_name_str[3] = {'a', 'a', '\0'};
+
+  std::string next_name(void)
+  {
+    if (next_name_str[1] != 'z') {
+      next_name_str[1] ++;
+    } else {
+      next_name_str[0] ++;
+      next_name_str[1] = 'a';
+    }
+    return std::string(next_name_str);
+  }
+
+  map<PPMonoidElem, std::string, globalCmp> dependent_strings;
+  bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
+
+  map<PPMonoidElem, std::string, globalCmp> independent_strings;
+  bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
+
+  std::vector<std::string> insert_symbols_into_dependent_strings(const ring& R)
+  {
+    if (symbols(R).size() == 0) return std::vector<std::string> {};
+    if (IsFractionField(R)) {
+      return insert_symbols_into_dependent_strings(BaseRing(R));
+    } else {
+      std::vector<std::string> results = insert_symbols_into_dependent_strings(CoeffRing(R));
+      for (auto ind: indets(PPM(R))) {
+	if (dependent_strings.count(ind) == 0) {
+	  dependent_strings[ind] = next_name();
+	}
+	results.push_back(dependent_strings[ind]);
+      }
+      return results;
+    }
+  }
+
+public:
+
+  // Construct a blad ordering using all of the indeterminates in a
+  // PPMonoidElem, plus any symbols in our underlying coefficent ring.
+
+  void blad_ordering(bav_Iordering * r)
+  {
+    // We current don't distinguish between independent and dependent
+    // variables (perhaps we should), but blad does.  Thus, we run
+    // through our indets, split them apart into base and deriv, and
+    // save the derivations.  The independent variables will be the
+    // derivations, while the dependent variables (blad's blocks)
+    // will be the bases less the derivations.
+
+    const PPMonoid & ppm(PPM(R));
+
+    PPMonoidElem bases(ppm);
+    PPMonoidElem derivations(ppm);
+
+    for (auto ind: indets(ppm)) {
+      PPMonoidElem base(owner(ind));
+      PPMonoidElem deriv(owner(ind));
+      split_differential_indet(ind, base, deriv);
+      bases = radical(bases * base);
+      derivations = radical(derivations * deriv);
+    }
+
+    // bases /= derivations;
+    // CoCoA_ASSERT(IsOne(gcd(bases, derivations)));
+
+    std::vector<PPMonoidElem> vbases;
+    std::vector<PPMonoidElem> vderivations;
+
+    for (auto ind: indets(ppm)) {
+      if (IsDivisible(bases, ind)) {
+	vbases.push_back(ind);
+      }
+      if (IsDivisible(derivations, ind)) {
+	vderivations.push_back(ind);
+      }
+    }
+
+    std::sort(vbases.begin(), vbases.end());
+    std::sort(vderivations.begin(), vderivations.end());
+
+    // blad wants everything in DECENDING order
+    std::reverse(vbases.begin(), vbases.end());
+    std::reverse(vderivations.begin(), vderivations.end());
+
+    std::string blad_ordering = "ordering (derivations=[";
+
+    for (auto ind: vderivations) {
+      //vars2[ind] = head(Symbol(ind));
+      if (independent_strings.count(ind) == 0) {
+	independent_strings[ind] = next_name();
+      }
+      blad_ordering += independent_strings[ind] + ",";
+    }
+    blad_ordering.pop_back();
+
+    blad_ordering += "], blocks=[";
+
+    if (DR->ranking != DifferentialRanking::lex) {
+      blad_ordering += "[";
+    }
+
+    for (auto ind: vbases) {
+      if (dependent_strings.count(ind) == 0) {
+	dependent_strings[ind] = next_name();
+      }
+      if (DR->ranking == DifferentialRanking::lex) {
+	blad_ordering += "[" + dependent_strings[ind] + "],";
+      } else {
+	blad_ordering += dependent_strings[ind] + ",";
+      }
+    }
+
+    if (DR->ranking != DifferentialRanking::lex) {
+      blad_ordering.pop_back();
+      blad_ordering += "],";
+    }
+
+    // If the underlying coefficient ring has any symbols, add
+    // them at the end as the lowest ranking block
+
+#if 0
+    const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
+    if (coeff_syms.size() != 0) {
+      blad_ordering += "[";
+      for (auto s: coeff_syms) {
+	blad_ordering += head(s) + ",";
+      }
+      blad_ordering.pop_back();   // remove trailing comma
+      blad_ordering += "],";
+      insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
+    }
+#else
+    const auto coeff_syms = insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
+    if (coeff_syms.size() != 0) {
+      blad_ordering += "[";
+      for (auto s: coeff_syms) {
+	blad_ordering += s + ",";
+      }
+      blad_ordering.pop_back();   // remove trailing comma
+      blad_ordering += "],";
+    }
+#endif
+
+    blad_ordering.pop_back();   // remove trailing comma
+    blad_ordering += "])";
+
+    // std::cerr << blad_ordering << endl;
+
+    // blad doesn't use const qualifiers when declaring ba0_sscanf2()
+    ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
+  }
+
+  struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false)
+  {
+    struct bav_variable * result;
+
+    if (independent) {
+
+      if (independent_vars.count(ind) == 1) {
+	return independent_vars[ind];
+      }
+      ba0_sscanf2 (const_cast<char *>(independent_strings.at(ind).c_str()), const_cast<char *>("%v"), &result);
+
+      independent_vars[ind] = result;
+
+    } else {
+
+      if (dependent_vars.count(ind) == 1) {
+	return dependent_vars[ind];
+      }
+
+      PPMonoidElem base(owner(ind));
+      PPMonoidElem deriv(owner(ind));
+
+      split_differential_indet(ind, base, deriv);
+
+      if (IsOne(deriv)) {
+	//ba0_sscanf2 (const_cast<char *>(head(Symbol(base)).c_str()), const_cast<char *>("%v"), &result);
+	ba0_sscanf2 (const_cast<char *>(dependent_strings.at(base).c_str()), const_cast<char *>("%v"), &result);
+      } else {
+	result = PPMonoidElem_to_blad_variable(base);
+	for (auto ind2: indets(owner(ind))) {
+	  while (IsDivisible(deriv, ind2)) {
+	    bav_term t;
+	    bav_init_term(&t);
+	    bav_set_term_variable(&t, PPMonoidElem_to_blad_variable(ind2, true), 1);
+	    result = bav_diff2_variable(result, &t);
+
+	    deriv /= ind2;
+	  }
+	}
+      }
+
+      // Stash the result in a bimap so we convert back the reverse way later.
+      dependent_vars[ind] = result;
+    }
+
+    return result;
+  }
+
+  void RingElem_to_blad_polynomial(ConstRefRingElem x, struct bap_polynom_mpz * const result)
+  {
+    // struct bap_polynom_mpz result;
+
+    // bap_init_polynom_mpz(&result);
+
+    // Assumes that result has already been initialized.
+
+    if (IsZZ(owner(x))) {
+      BigInt N;
+      CoCoA_ASSERT(IsInteger(N, x));
+      bap_init_polynom_one_mpz(result);
+      bap_mul_polynom_numeric_mpz(result, result, mpzref(N));
+      return;
+    }
+
+    if (IsFractionField(owner(x))) {
+      CoCoA_ASSERT(IsOne(den(x)));
+      RingElem_to_blad_polynomial(num(x), result);
+      return;
+    }
+
+    CoCoA_ASSERT(IsSparsePolyRing(owner(x)));
+
+    for (auto it=BeginIter(x); !IsEnded(it); ++it) {
+      bav_term t;
+      bav_init_term(&t);
+      for (long idx=0; idx < NumIndets(owner(PP(it))); ++idx) {
+	long exp = exponent(PP(it), idx);
+	//bav_mul_term_variable(&t, &t, vars[indet(owner(PP(it)), idx)], exp);
+	if (exp != 0) {
+	  bav_mul_term_variable(&t, &t, PPMonoidElem_to_blad_variable(indet(owner(PP(it)), idx)), exp);
+	}
+      }
+      struct bap_polynom_mpz c;
+      bap_init_polynom_mpz(&c);
+      RingElem_to_blad_polynomial(coeff(it), &c);
+      bap_mul_polynom_term_mpz(&c, &c, &t);
+      bap_add_polynom_mpz(result, result, &c);
+    }
+  }
+
+  void RingElems_to_blad_polynomial_table(std::vector<RingElem> v, struct bap_tableof_polynom_mpz * const result)
+  {
+    struct ba0_list * L = nullptr;
+    for (auto e: v) {
+      struct bap_polynom_mpz * P = bap_new_polynom_mpz();
+      RingElem_to_blad_polynomial(e, P);
+      L = ba0_endcons_list(P, L);
+    }
+    ba0_set_table_list((ba0_table *) result, L);
+    //ba0_printf(const_cast<char *>("%t[%Az]\n"), eqns);
+  }
+
+  RingElem blad_variable_to_RingElem(struct bav_variable * v, const ring & R)
+  {
+    // We must have previously constructed this variable from a
+    // PPMonoidElem, so retrieve the stashed value.
+    if (dependent_vars.count(v) == 1) {
+      PPMonoidElem elem = dependent_vars.at(v);
+      if (owner(elem) == PPM(R)) {
+	return monomial(R, 1, elem);
+      } else if (owner(elem) == PPM(CoeffRing(R))) {
+	return CoeffEmbeddingHom(R)(monomial(CoeffRing(R), 1, elem));
+      } else {
+	throw "mistake";
+      }
+    } else {
+      return monomial(R, 1, independent_vars.at(v));
+    }
+  }
+
+  // This function is DESTRUCTIVE of the bav_term!
+
+  RingElem blad_term_to_RingElem(struct bav_term * t, const ring & R)
+  {
+    RingElem result(one(R));
+
+    while (! bav_is_one_term(t)) {
+      result *= power(blad_variable_to_RingElem(bav_leader_term(t), R), bav_leading_degree_term(t));
+      bav_shift_term(t, t);
+    }
+
+    return result;
+  }
+
+  // Converting polynomials to RingElem's using the technique of
+  // printing them to a string and then parsing them is problematic.
+  // For one thing, we can have higher derivatives in the polynomial
+  // than (currently) appear in the CoCoA ring, which would trigger a
+  // parse error.  Also, if the ordering of the derivatives gets mixed
+  // up, we might try to parse something like f_{tx} when we really
+  // wanted f_{xt}.  Therefore, we iterate through the polynomial's
+  // monomials, iterate through each variable in the monomial, and
+  // construct each derivative using multideriv().
+
+  RingElem blad_polynomial_to_RingElem(struct bap_polynom_mpz * P)
+  {
+    struct bap_itermon_mpz iter;
+    RingElem result(zero(R));
+
+    // loop over monomials
+    bap_begin_itermon_mpz (&iter, P);
+    while (! bap_outof_itermon_mpz (&iter)) {
+      struct bav_term T;
+      mpz_t *c;
+
+      bav_init_term(&T);
+      bap_term_itermon_mpz (&T, &iter);
+      c = bap_coeff_itermon_mpz (&iter);
+
+      RingElem monomial(R, *c);
+
+      // loop over variables
+      while (! bav_is_one_term(&T)) {
+	bav_variable * lt = bav_leader_term(&T);
+	bav_Idegree ltd = bav_leading_degree_term(&T);
+
+	bav_variable * lt_base = bav_order_zero_variable(lt);
+	bav_term diff_op;
+
+	bav_init_term(&diff_op);
+	bav_operator_between_derivatives(&diff_op, lt_base, lt);
+
+	RingElem base = blad_variable_to_RingElem(lt_base, R);
+	RingElem deriv = blad_term_to_RingElem(&diff_op, R);
+
+	monomial *= power(diffalg::multideriv(base, LPP(deriv)), ltd);
+
+	bav_exquo_term_variable(&T, &T, lt, ltd);
+      }
+
+      result += monomial;
+
+      bap_next_itermon_mpz (&iter);
+    }
+
+    return result;
+  }
+
+};
+
+// static map<const PowerPolyDifferentialRingBase *, bladDifferentialRingBase *> bDRcache;
+
+/* I'd like to keep libblad context around, but that turns out to be
+ * problematic.  My library's ability to create new differential
+ * variables on the fly wrecks havoc with libblad, because we can't
+ * change orderings without creating brand new variables that aren't
+ * compatible with the ones we had before.
+ *
+ * So we create a new libblad context every time we create a
+ * bladDifferentialRing.
+ */
+
+class bladDifferentialRing {
+  bladDifferentialRingBase * bDRbase;
+
+public:
+  bladDifferentialRing(const ring& R)
+  {
+    bDRbase = new bladDifferentialRingBase(R);
+    bad_restart(0,0);
+    bav_R_init();
+
+    bav_Iordering r;
+
+    bDRbase->blad_ordering(&r);
+    bav_R_push_ordering (r);
+
+  }
+
+  ~bladDifferentialRing()
+  {
+    bad_terminate(ba0_done_level);
+  }
+
+  //const bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow const member fns to be called.
+  bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow all member fns to be called.
+};
+
+// We need to first map our indeterminates to the strings we use to
+// name them in the blad ordering, then set the ordering, then
+// create the blad variables and map them back and forth.
+
+std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
+{
+  // std::cerr << "Rosenfeld_Groebner equations: " << equations << " inequations: " << inequations << endl;
+
+  struct bap_tableof_polynom_mpz * eqns;
+  struct bap_tableof_polynom_mpz * ineqs;
+
+  struct bad_intersectof_regchain * T;
+  std::vector<RegularSystem> results;
+
+  // XXX assumes that equations is not an empty vector
+  const ring& R = owner(equations[0]);
+  bladDifferentialRing bdr(R);
+
+  // memory management (see blad docs §2.2.4.1)
+  // This creates problems when new CoCoA objects are created during the session.
+
+  // struct ba0_mark M;
+  // ba0_record(&M);
+
+  eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
+  ineqs = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
+
+#if 0
+  ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
+  ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
+#else
+  bdr->RingElems_to_blad_polynomial_table(equations, eqns);
+  bdr->RingElems_to_blad_polynomial_table(inequations, ineqs);
+#endif
+
+  // We have to initialize this structure with a list of desired properties.
+
+  T = bad_new_intersectof_regchain ();
+  ba0_sscanf2
+    (const_cast<char *> ("intersectof_regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
+     const_cast<char *> ("%intersectof_regchain"), T);
+
+  bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
+  // ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
+
+  for (int i=0; i < T->inter.size; i ++) {
+    std::vector<RingElem> v;
+    struct bad_regchain * chain = (struct bad_regchain *)(T->inter.tab[i]);
+    for (int j=0; j < chain->decision_system.size; j ++) {
+      struct bap_polynom_mpz * P = chain->decision_system.tab[j];
+
+      v.push_back(bdr->blad_polynomial_to_RingElem(P));
+    }
+    results.push_back(RegularSystem(v, std::vector<RingElem>()));
+  }
+
+  //ba0_restore(&M);
+
+  //bav_R_pull_ordering();
+
+  return results;
+}
+
+// Passing RingElem's directly to Rosenfeld_Groebner constructs them
+// into a vector of equations, with no inequations.
+
+template<typename... Args>
+std::vector<RegularSystem> Rosenfeld_Groebner(Args... rest) {
+  std::vector<RingElem> gens{rest...};
+  return Rosenfeld_Groebner(gens, std::vector<RingElem>());
+}
+
+// associate a bad_regchain * with each RegularSystem
+
+RingElem operator% (RingElem e, const RegularSystem& rs)
+{
+  // XXX assumes that equations is not an empty vector
+  bladDifferentialRing bdr(owner(rs.equations[0]));
+
+  struct bap_tableof_polynom_mpz * eqns;
+  bad_regchain * A = bad_new_regchain();
+
+  eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
+  bdr->RingElems_to_blad_polynomial_table(rs.equations, eqns);
+
+#if 0
+  ba0_sscanf2(const_cast<char *> ("regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
+	      const_cast<char *> ("%regchain"), A);
+#endif
+
+  bad_set_and_extend_regchain_tableof_polynom_mpz(A, eqns, 0, 0, false, false);
+
+  struct bap_polynom_mpz * F = bap_new_polynom_mpz();
+
+  bdr->RingElem_to_blad_polynomial(e, F);
+
+  struct bap_ratfrac_mpz * R = bap_new_ratfrac_mpz();
+
+  bad_reduced_form_polynom_mod_regchain(R, F, 0, A);
+
+  return bdr->blad_polynomial_to_RingElem(& (R->numer));
+}
+#endif
 
 #if 0
 std::ostream & operator<<(std::ostream &out, const RegularDifferentialIdeal ideal)
