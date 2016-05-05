@@ -2939,7 +2939,10 @@ std::vector<RegularSystem> Rosenfeld_Groebner(Args... rest) {
   return Rosenfeld_Groebner(gens, std::vector<RingElem>());
 }
 
-// associate a bad_regchain * with each RegularSystem
+// Compute reduced form of a RingElem against a RegularSystem
+//
+// Reduced form of p is a differential polynomial q, equivalent to p
+// module the ideal defined by rs.
 
 RingElem operator% (RingElem e, const RegularSystem& rs)
 {
@@ -3107,6 +3110,11 @@ void testRegularDifferentialIdeal(void)
   CoCoA_ASSERT(Bo95_ex1_RG[1].equations[0] == x);
   CoCoA_ASSERT(Bo95_ex1_RG[1].equations[1] == yt + y);
   //std::cerr << Bo95_ex1_RG << endl;
+
+  // Check reduced forms
+  CoCoA_ASSERT((y % Bo95_ex1_RG[0]) == 0);
+  CoCoA_ASSERT((yt % Bo95_ex1_RG[1]) == -(y % Bo95_ex1_RG[1]));
+  //std::cerr << (yt % Bo95_ex1_RG[1]) << endl;
 
   // Third example from [Bo95]
 
