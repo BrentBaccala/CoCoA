@@ -2910,15 +2910,26 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
      const_cast<char *> ("%intersectof_regchain"), T);
 
   bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
-  // ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
+  //ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
 
   for (int i=0; i < T->inter.size; i ++) {
     std::vector<RingElem> v;
+
     struct bad_regchain * chain = (struct bad_regchain *)(T->inter.tab[i]);
+    //ba0_printf (const_cast<char *>("%regchain\n"), chain);
+
     for (int j=0; j < chain->decision_system.size; j ++) {
       struct bap_polynom_mpz * P = chain->decision_system.tab[j];
 
-      v.push_back(bdr->blad_polynomial_to_RingElem(P));
+      // If e is a derivative of something in our coefficent ring,
+      // it will translate to zero, since our coefficients are
+      // assumed to be constants, but libblad doesn't know that.
+
+      RingElem e = bdr->blad_polynomial_to_RingElem(P);
+      //std::cout << e << endl;
+      if (!IsZero(e)) {
+	v.push_back(e);
+      }
     }
     results.push_back(RegularSystem(v, std::vector<RingElem>()));
   }
@@ -4729,6 +4740,158 @@ void program()
 
 }
 
+void program2()
+{
+  cout << boolalpha; // so that bools print out as true/false
+  cout << TeX;
+
+  const ring ZZ = RingZZ();
+  const ring QQ = RingQQ();
+
+  // ExponentRing - these are the indeterminates that can appear in powers
+
+  const ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p"), symbol("a"), symbol("i"), symbol("b"), symbol("c")});
+  const RingElem p(ExponentRing, "p");
+  const RingElem a(ExponentRing, "a");
+  const RingElem b(ExponentRing, "b");
+  const RingElem c(ExponentRing, "c");
+  const RingElem i(ExponentRing, "i");
+
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
+  const PPMonoid PPM = NewPPMonoidRing(vector<string> {"x", "t", "z", "r", "T", "(t+1)",
+	"f", "q", "n", "ni", "nr",
+	"ne", "de", "N", "D"}, lex, ExponentRing);
+
+  const ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM, DifferentialRanking::grlexA);
+  const ring K = NewFractionField(R);
+
+  // x,t are in our field of definition
+  // z = exp(-x^2/(4(t+1)))
+  // r = sqrt(t)
+
+  const RingElem x(K, "x");
+  const RingElem t(K, "t");
+
+  const RingElem z(K, "z");
+  const RingElem z_x = deriv(z,x);
+  const RingElem z_t = deriv(z,t);
+
+  const RingElem r(K, "r");
+
+  const RingElem tpo(K, "(t+1)");
+
+  // T is a polynomial in C[t] (doesn't involve x or z)
+  const RingElem T(K, "T");
+  const RingElem Tt = deriv(T,t);
+  const RingElem Tx = deriv(T,x);
+
+  // N is the numerator
+  const RingElem N(K, "N");
+  const RingElem Nx = deriv(N,x);
+  const RingElem Nxx = deriv(Nx,x);
+  const RingElem Nt = deriv(N,t);
+
+  // D is the denominator
+  const RingElem D(K, "D");
+  const RingElem Dx = deriv(D,x);
+  const RingElem Dxx = deriv(Dx,x);
+  const RingElem Dt = deriv(D,t);
+
+  // f and q are factors of something.  Typically D=f^p q,
+  // where f is irreducible and q is coprime to f.
+  const RingElem f(K, "f");
+  const RingElem fx = deriv(f,x);
+  const RingElem fxx = deriv(fx,x);
+  const RingElem ft = deriv(f,t);
+
+  const RingElem q(K, "q");
+  const RingElem qx = deriv(q,x);
+  const RingElem qxx = deriv(qx,x);
+  const RingElem qt = deriv(q,t);
+
+  const RingElem n(K, "n");
+  const RingElem n_x = deriv(n,x);
+  const RingElem n_xx = deriv(n_x,x);
+  const RingElem n_t = deriv(n,t);
+
+  const RingElem n_r(K, "nr");
+  const RingElem n_rx = deriv(n_r,x);
+  const RingElem n_rxx = deriv(n_rx,x);
+  const RingElem n_rt = deriv(n_r,t);
+
+  // numerator and denominator of exponent in z = e^(n/d)
+
+  const RingElem n_e(K, "ne");
+  const RingElem n_ex = deriv(n_e,x);
+  const RingElem n_exx = deriv(n_ex,x);
+  const RingElem n_et = deriv(n_e,t);
+
+  const RingElem d_e(K, "de");
+  const RingElem d_ex = deriv(d_e,x);
+  const RingElem d_exx = deriv(d_ex,x);
+  const RingElem d_et = deriv(d_e,t);
+
+  // n_i is one coefficient in a numerator sum
+  const RingElem n_i(K, "ni");
+  const RingElem n_ix = deriv(n_i,x);
+  const RingElem n_ixx = deriv(n_ix,x);
+  const RingElem n_it = deriv(n_i,t);
+
+  // setup our differentials (acting on K)
+
+  BasicDifferential dx(x);
+  BasicDifferential dt(t);
+
+  // Create a Weyl algebra, with ExponentRing as the coefficient ring.
+  // I don't actually use operators with coefficients not in QQ, but WA.factor() currently won't work
+  // unless the operator algebra and the target ring share the same coefficient ring.
+
+  const ring WA = NewWeylOperatorAlgebra(ExponentRing,
+					 vector<symbol> {symbol("x"), symbol("t")},
+					 vector<Differential *> {&dx, &dt});
+
+  const RingElem WA_x(WA, "x");
+  const RingElem WA_t(WA, "t");
+  const RingElem WA_dx(WA, "dx");
+  const RingElem WA_dt(WA, "dt");
+
+  // our operator
+
+  const RingElem O = WA_dx*WA_dx - WA_dt;
+
+  // free exponential
+
+  // q = f^a
+  //RingElem z_exp = n_e/(power(f,a) * d_e);
+  // q_x = a f^(a-1) f_x = a q f_x / f
+  // q_t = a f^(a-1) f_t = a q f_t / f
+
+  RingElem z_exp = n_e/(q * d_e);
+  //RingElem e = N/power(z,p);
+  RingElem e = N/(D*q);
+
+  cout << O*e << endl;
+
+  //auto RG = Rosenfeld_Groebner(num(z_x - z*deriv(z_exp,x)), num(z_t - z*deriv(z_exp,t)));
+
+  //auto RG = Rosenfeld_Groebner(num(z_x - z*deriv(z_exp,x)), num(z_t - z*deriv(z_exp,t)),
+  //			       num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
+
+  auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
+
+  for (auto s: RG) {
+    cout << s << endl;
+    //cout << num(O*e) % s << endl;
+  }
+
+  //cout << dx(z) << endl;
+
+}
+
 //----------------------------------------------------------------------
 // Use main() to handle any uncaught exceptions and warn the user about them.
 int main()
@@ -4742,7 +4905,7 @@ int main()
     testRegularDifferentialIdeal();
     testSmithFactor();
     testDiophantineSolvable();
-    program();
+    program2();
     return 0;
   }
   catch (const CoCoA::ErrorInfo& err)
