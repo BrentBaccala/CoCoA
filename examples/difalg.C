@@ -2912,6 +2912,8 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
   bad_Rosenfeld_Groebner(T, eqns, ineqs, (struct bad_base_field *)0, (struct bad_splitting_control *)0);
   //ba0_printf (const_cast<char *>("%intersectof_regchain\n"), T);
 
+  bad_remove_redundant_components_intersectof_regchain(T, T, bad_new_base_field());
+
   for (int i=0; i < T->inter.size; i ++) {
     std::vector<RingElem> v;
 
