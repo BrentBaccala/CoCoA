@@ -28,12 +28,20 @@ template<typename A, typename B, class Compare = less<A> >
 class bimap : public std::map<A, B, Compare> {
 public:
   using std::map<A, B, Compare>::map;    // inherit the constructors
+
+  using std::map<A, B, Compare>::at;     // inherit the original A->B at()
   const A& at (const B& value)
   {
     for (auto it = std::map<A,B,Compare>::begin(); it != std::map<A,B,Compare>::end(); it++) {
       if (it->second == value) return it->first;
     }
     throw std::out_of_range("bimap");
+  }
+
+  using std::map<A, B, Compare>::operator[];   // inherit the original A->B operator[]
+  const A& operator[] (const B& value)
+  {
+    return at(value);
   }
 
   using typename std::map<A, B, Compare>::size_type;
@@ -2486,24 +2494,38 @@ class bladDifferentialRingBase {
 					    DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
   { }
 
-  char next_name_str[3] = {'a', 'a', '\0'};
-
-  std::string next_name(void)
-  {
-    if (next_name_str[1] != 'z') {
-      next_name_str[1] ++;
-    } else {
-      next_name_str[0] ++;
-      next_name_str[1] = 'a';
-    }
-    return std::string(next_name_str);
-  }
-
-  map<PPMonoidElem, std::string, globalCmp> dependent_strings;
+  bimap<PPMonoidElem, std::string, globalCmp> dependent_strings;
   bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
 
-  map<PPMonoidElem, std::string, globalCmp> independent_strings;
+  bimap<PPMonoidElem, std::string, globalCmp> independent_strings;
   bimap<PPMonoidElem, struct bav_variable *, globalCmp> independent_vars;
+
+  const std::string next_name(const std::string& orig)
+  {
+    const std::regex re("^\\w*$");
+
+    if (! std::regex_match(orig, re)) {
+      return next_name("");
+    }
+
+    if ((orig.length() > 0) && (dependent_strings.count(orig) == 0) && (independent_strings.count(orig) == 0)) {
+      return orig;
+    }
+
+    char next_name_str[3] = {'a', 'a', '\0'};
+
+    while ((dependent_strings.count(orig + std::string(next_name_str)) != 0)
+	   || (independent_strings.count(orig + std::string(next_name_str)) != 0)) {
+      if (next_name_str[1] != 'z') {
+	next_name_str[1] ++;
+      } else {
+	next_name_str[0] ++;
+	next_name_str[1] = 'a';
+      }
+    }
+
+    return orig + std::string(next_name_str);
+  }
 
   std::vector<std::string> insert_symbols_into_dependent_strings(const ring& R)
   {
@@ -2514,7 +2536,7 @@ class bladDifferentialRingBase {
       std::vector<std::string> results = insert_symbols_into_dependent_strings(CoeffRing(R));
       for (auto ind: indets(PPM(R))) {
 	if (dependent_strings.count(ind) == 0) {
-	  dependent_strings[ind] = next_name();
+	  dependent_strings[ind] = next_name(head(Symbol(ind)));
 	}
 	results.push_back(dependent_strings[ind]);
       }
@@ -2576,7 +2598,7 @@ public:
     for (auto ind: vderivations) {
       //vars2[ind] = head(Symbol(ind));
       if (independent_strings.count(ind) == 0) {
-	independent_strings[ind] = next_name();
+	independent_strings[ind] = next_name(head(Symbol(ind)));
       }
       blad_ordering += independent_strings[ind] + ",";
     }
@@ -2590,7 +2612,7 @@ public:
 
     for (auto ind: vbases) {
       if (dependent_strings.count(ind) == 0) {
-	dependent_strings[ind] = next_name();
+	dependent_strings[ind] = next_name(head(Symbol(ind)));
       }
       if (DR->ranking == DifferentialRanking::lex) {
 	blad_ordering += "[" + dependent_strings[ind] + "],";
