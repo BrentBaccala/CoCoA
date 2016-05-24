@@ -2527,6 +2527,8 @@ class bladDifferentialRingBase {
     return orig + std::string(next_name_str);
   }
 
+public:   // XXX only public so we can convert to strings for base field construction
+
   std::vector<std::string> insert_symbols_into_dependent_strings(const ring& R)
   {
     if (symbols(R).size() == 0) return std::vector<std::string> {};
@@ -2776,8 +2778,14 @@ public:
       } else {
 	throw "mistake";
       }
-    } else {
+    } else if (independent_vars.count(v) == 1) {
       return monomial(R, 1, independent_vars.at(v));
+    } else {
+      // This case happens when a symbol from the coefficient field
+      // has been added to the base field but was never present in any
+      // of the polynomials, in which case it was added as a string to
+      // the ordering but was never converted into a blad variable.
+      return zero(R);
     }
   }
 
@@ -2934,14 +2942,28 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
     (const_cast<char *> ("intersectof_regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
      const_cast<char *> ("%intersectof_regchain"), T);
 
+  /* Construct the base field
+   *
+   * If there is a non-trivial coefficient ring, add its elements as
+   * generators and parameters to the base field, which usually
+   * simplifies the results.
+   */
+
   bad_base_field * bf = bad_new_base_field();
 
-  if ((equations.size() == 4) && (IsZero(equations[2]))) {
+  //const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
+  const auto coeff_syms = bdr->insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
+  if (coeff_syms.size() != 0) {
+
+    std::stringstream cs;
+    cs << coeff_syms;
+    //std::cerr << cs.str() << endl;
+
     struct bav_tableof_variable * generators = (struct bav_tableof_variable *) ba0_new_table();
     struct bav_tableof_parameter * parameters = (struct bav_tableof_parameter *) ba0_new_table();
 
-    ba0_sscanf2 (const_cast<char *>("[a]"), const_cast<char *>("%t[%v]"), generators);
-    ba0_sscanf2 (const_cast<char *>("[a]"), const_cast<char *>("%t[%param]"), parameters);
+    ba0_sscanf2 (const_cast<char *>(cs.str().c_str()), const_cast<char *>("%t[%v]"), generators);
+    ba0_sscanf2 (const_cast<char *>(cs.str().c_str()), const_cast<char *>("%t[%param]"), parameters);
 
     bad_set_base_field_generators_and_relations(bf, generators, 0, parameters, false, false);
 
@@ -4922,13 +4944,13 @@ void program2()
   //			       num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
 
-  //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
-
   auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f),
-			       num(deriv(CanonicalHom(ExponentRing, K)(a), x)),
-			       num(deriv(CanonicalHom(ExponentRing, K)(a), t)));
+			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
+
+  //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f),
+  //			       num(deriv(CanonicalHom(ExponentRing, K)(a), x)),
+  //			       num(deriv(CanonicalHom(ExponentRing, K)(a), t)));
 
   for (auto s: RG) {
     cout << s << endl;
