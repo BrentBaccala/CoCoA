@@ -2935,28 +2935,17 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
      const_cast<char *> ("%intersectof_regchain"), T);
 
   bad_base_field * bf = bad_new_base_field();
+
   if ((equations.size() == 4) && (IsZero(equations[2]))) {
-    bad_regchain * A = bad_new_regchain();
-    struct bap_tableof_polynom_mpz * relations = (struct bap_tableof_polynom_mpz *) ba0_new_table();
     struct bav_tableof_variable * generators = (struct bav_tableof_variable *) ba0_new_table();
     struct bav_tableof_parameter * parameters = (struct bav_tableof_parameter *) ba0_new_table();
-    struct ba0_tableof_string * attributes = (struct ba0_tableof_string *) ba0_new_table();
-    ba0_sscanf2 (const_cast<char *>("[a[t], a[x]]"), const_cast<char *>("%t[%Az]"), relations);
+
     ba0_sscanf2 (const_cast<char *>("[a]"), const_cast<char *>("%t[%v]"), generators);
     ba0_sscanf2 (const_cast<char *>("[a]"), const_cast<char *>("%t[%param]"), parameters);
-    //ba0_sscanf2 (const_cast<char *>("[a[t], a[x], p[t], p[x], i[t], i[x], b[t], b[x], c[t], c[x]]"), const_cast<char *>("%t[%Az]"), relations);
-    ba0_sscanf2 (const_cast<char *>("[differential]"), const_cast<char *>("%t[%s]"), attributes);
-    bad_set_and_extend_regchain_tableof_polynom_mpz(A, relations, 0, 0, false, false);
-    bad_set_properties_attchain(& A->attrib, attributes);
-    bad_set_automatic_properties_attchain(& A->attrib);
-    //ba0_printf (const_cast<char *>("Base field: %regchain\n"), A);
-    //bad_set_base_field_generators_and_relations(bf, 0, A, 0, false, false);
-    //bad_set_base_field_generators_and_relations(bf, generators, 0, 0, false, false);
-    //bad_set_base_field_generators_and_relations(bf, 0, 0, parameters, false, false);
+
     bad_set_base_field_generators_and_relations(bf, generators, 0, parameters, false, false);
-    //bav_set_parameters(&bav_parameters, parameters);
-    //ba0_concat_table((ba0_table *) eqns, (ba0_table *) eqns, (ba0_table *) relations);
-    //ba0_printf (const_cast<char *>("Base field: %base_field\n"), bf);
+
+    // ba0_printf (const_cast<char *>("Base field: %base_field\n"), bf);
   }
 
   bad_Rosenfeld_Groebner(T, eqns, ineqs, bf, (struct bad_splitting_control *)0);
