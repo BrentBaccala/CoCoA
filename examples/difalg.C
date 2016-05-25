@@ -3035,7 +3035,12 @@ RingElem operator% (RingElem e, const RegularSystem& rs)
 	      const_cast<char *> ("%regchain"), A);
 #endif
 
-  bad_set_and_extend_regchain_tableof_polynom_mpz(A, eqns, 0, 0, false, false);
+  struct ba0_tableof_string * attributes = (struct ba0_tableof_string *) ba0_new_table();
+  ba0_sscanf2 (const_cast<char *>("[differential]"), const_cast<char *>("%t[%s]"), attributes);
+
+  bad_set_and_extend_regchain_tableof_polynom_mpz(A, eqns, 0, attributes, false, false);
+
+  // ba0_printf (const_cast<char *>("%regchain\n"), A);
 
   struct bap_polynom_mpz * F = bap_new_polynom_mpz();
 
@@ -4925,14 +4930,17 @@ void program2()
 
   const RingElem O = WA_dx*WA_dx - WA_dt;
 
-  // free exponential
-
   // q = f^a
-  //RingElem z_exp = n_e/(power(f,a) * d_e);
   // q_x = a f^(a-1) f_x = a q f_x / f
   // q_t = a f^(a-1) f_t = a q f_t / f
 
+  // free exponential
+
+  // z = exp(n_e/(power(f,a) * d_e))
+  // z = exp(n_e/(q * d_e))
+
   RingElem z_exp = n_e/(q * d_e);
+
   //RingElem e = N/power(z,p);
   RingElem e = N/(D*q);
 
@@ -4954,7 +4962,7 @@ void program2()
 
   for (auto s: RG) {
     cout << s << endl;
-    //cout << num(O*e) % s << endl;
+    cout << num(O*e) % s << endl;
   }
 
   //cout << dx(z) << endl;
