@@ -4942,7 +4942,7 @@ void program2()
   RingElem z_exp = n_e/(q * d_e);
 
   cout << endl;
-  cout << "try an irreducible factor q = f^a in denominator = D f^p" << endl;
+  cout << "try an irreducible factor q = f^a in denominator; N / (D f^a)" << endl;
   cout << endl;
 
   //RingElem e = N/(D*power(f,a));
@@ -4967,27 +4967,21 @@ void program2()
   for (auto s: RG) {
     cout << s << endl;
     RingHom h = num(q) >> num(power(f, a));
-    //RingHom hh = num(qx) >> num(CanonicalHom(ExponentRing, K)(a) * power(f, a-1) * fx);
-    //RingHom hhh = num(qxx) >> num(CanonicalHom(ExponentRing, K)(a*(a-1)) * power(f, a-2) * fx);
     RingHom hh = num(qx) >> num(dx(power(f, a)));
     RingHom hhh = num(qxx) >> num(dx(dx(power(f, a))));
-    RingHom hhhh = num(qt) >> num(CanonicalHom(ExponentRing, K)(a) * power(f, a-1) * ft);
-    RingElem eq = hhhh(hhh(hh(h(num(O*e) % s))));
-    RingElem eq4 = O*e;
-    RingElem eq5;
-    if (!IsZero(den(eq4) % s)) {
-      eq5 = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq4) % s))))) / CanonicalHom(R,K)(hhhh(hhh(hh(h(den(eq4) % s)))));
+    RingHom hhhh = num(qt) >> num(dt(power(f, a)));
+
+    RingElem eq = O*e;
+
+    if (!IsZero(den(eq) % s)) {
+      eq = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq) % s))))) / CanonicalHom(R,K)(hhhh(hhh(hh(h(den(eq) % s)))));
     } else {
-      eq5 = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq4) % s)))));
+      eq = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq) % s)))));
     }
 
-    RingHom h2 = q >> power(f, a);
-    RingElem eq2 = num(eq5);
-    cout << eq5 << endl;
-    cout << "minCoeff(eq, f) = " << minCoeff(eq2, f) << endl;
+    cout << eq << endl;
+    cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
   }
-
-  //cout << dx(z) << endl;
 
 }
 
