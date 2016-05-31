@@ -1811,6 +1811,8 @@ std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
 
   //out << gens(omega.I);
   out << omega.equations;
+  // out << "; ";
+  // out << omega.inequations;
 
   out << ")";
     
@@ -2995,6 +2997,10 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
 	v.push_back(e);
       }
     }
+
+    // XXX there are inequations here, but they're implicit - the
+    // initials and separants of the equations
+
     results.push_back(RegularSystem(v, std::vector<RingElem>()));
   }
 
@@ -4956,8 +4962,16 @@ void program2()
   //			       num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
 
-  auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx));
+  //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx));
+
+  auto RG = Rosenfeld_Groebner(std::vector<RingElem> {num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+	num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f)},
+    std::vector<RingElem> {q, f, D});
+
+  // auto RG = Rosenfeld_Groebner(std::vector<RingElem> {num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
+  //	num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx)},
+  //    std::vector<RingElem> {q, f});
 
   //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f),
@@ -4990,7 +5004,7 @@ void program2()
     if (!IsZero(den(eq) % s)) {
       eq = H(num(eq) % s) / H(den(eq) % s);
     } else {
-      eq = H(num(eq) % s);
+      CoCoA_ERROR(ERR::DivByZero, "Rosenfeld-Groebner reduced denominator to zero");
     }
 
     cout << eq << endl;
