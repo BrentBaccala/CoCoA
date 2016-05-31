@@ -4957,7 +4957,7 @@ void program2()
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
 
   auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
+			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx));
 
   //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f),
@@ -4966,17 +4966,31 @@ void program2()
 
   for (auto s: RG) {
     cout << s << endl;
-    RingHom h = num(q) >> num(power(f, a));
-    RingHom hh = num(qx) >> num(dx(power(f, a)));
-    RingHom hhh = num(qxx) >> num(dx(dx(power(f, a))));
-    RingHom hhhh = num(qt) >> num(dt(power(f, a)));
+
+    // Construct the homomorphism to map q (and its derivatives) back to f^a
+
+    // We want an R -> K mapping because our RegularSystem modulo
+    // reduction only works on R.
+
+    // Method 1: Construct the homomorphism in R and map the result into K.
+
+    //RingHom h = num(q) >> num(power(f, a));
+    //RingHom hh = num(qx) >> num(dx(power(f, a)));
+    //RingHom hhh = num(qxx) >> num(dx(dx(power(f, a))));
+    //RingHom hhhh = num(qt) >> num(dt(power(f, a)));
+    //RingHom H = CanonicalHom(R,K)(hhhh(hhh(hh(h))));
+
+    // Method 2: Construct the homomorphism in K and map the argument from R.
+
+    RingElem fa = power(f, a);
+    RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)))(EmbeddingHom(K));
 
     RingElem eq = O*e;
 
     if (!IsZero(den(eq) % s)) {
-      eq = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq) % s))))) / CanonicalHom(R,K)(hhhh(hhh(hh(h(den(eq) % s)))));
+      eq = H(num(eq) % s) / H(den(eq) % s);
     } else {
-      eq = CanonicalHom(R,K)(hhhh(hhh(hh(h(num(eq) % s)))));
+      eq = H(num(eq) % s);
     }
 
     cout << eq << endl;
