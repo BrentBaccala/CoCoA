@@ -3086,6 +3086,8 @@ RingElem operator% (RingElem e, const RegularSystem& rs)
     struct bap_ratfrac_mpz * Rn = bap_new_ratfrac_mpz();
     struct bap_ratfrac_mpz * Rd = bap_new_ratfrac_mpz();
 
+    // XXX these normal form reductions could throw BAD_EXRNUL or BAD_EXRDDZ
+
     // bad_reduced_form_polynom_mod_regchain(Rn, Fn, 0, A);
     // bad_reduced_form_polynom_mod_regchain(Rd, Fd, 0, A);
     bad_normal_form_polynom_mod_regchain(Rn, Fn, A, 0);
@@ -4996,13 +4998,6 @@ void program2()
   RingElem fa = power(f, a);
   RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
 
-  // free exponential
-
-  // z = exp(n_e/(power(f,a) * d_e))
-  // z = exp(n_e/(q * d_e))
-
-  // RingElem z_exp = n_e/(q * d_e);
-
   cout << endl;
   cout << "try an irreducible factor q = f^a in denominator; N / (D f^a)" << endl;
   cout << endl;
@@ -5011,15 +5006,6 @@ void program2()
   RingElem e = N/(D*q);
 
   //cout << O*e << endl;
-
-  //auto RG = Rosenfeld_Groebner(num(z_x - z*deriv(z_exp,x)), num(z_t - z*deriv(z_exp,t)));
-
-  //auto RG = Rosenfeld_Groebner(num(z_x - z*deriv(z_exp,x)), num(z_t - z*deriv(z_exp,t)),
-  //			       num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f));
-
-  //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx));
 
   auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
 			       std::vector<RingElem> {q, f, D});
@@ -5070,6 +5056,17 @@ void program2()
   cout << "try a power of f = exp(-x^2/4t) in denominator; N / (D f^a)" << endl;
   cout << endl;
 
+  // free exponential
+
+  // z = exp(n_e/(power(f,a) * d_e))
+  // z = exp(n_e/(q * d_e))
+
+  // RingElem z_exp = n_e/(q * d_e);
+
+  // bound exponential
+
+  // f = exp(-x^2/4t)
+
   RingElem f_exp = -x*x/(4*t);
 
   // RingElem e = N/(D*power(f,a));
@@ -5094,13 +5091,6 @@ void program2()
 
     RingElem eq = O*e;
 
-    RingHom H2 = (fx >> f*dx(f_exp))(ft >> f*dt(f_exp))(fxx >> dx(f*dx(f_exp)));
-
-    // Modulo reduction has to occur with power substitutions present,
-    // since the blad library can't reduce otherwise, then we map
-    // back into the original field.
-
-    //eq = H2(H(eq % s));
     eq = H(eq % s);
 
     cout << eq << endl;
