@@ -3080,18 +3080,27 @@ RingElem operator% (RingElem e, const RegularSystem& rs)
     bdr->RingElem_to_blad_polynomial(num(e), Fn);
     bdr->RingElem_to_blad_polynomial(den(e), Fd);
 
+    // ba0_printf(const_cast<char *>("numerator: %Az\n"), Fn);
+    // ba0_printf(const_cast<char *>("denominator: %Az\n"), Fd);
+
     struct bap_ratfrac_mpz * Rn = bap_new_ratfrac_mpz();
     struct bap_ratfrac_mpz * Rd = bap_new_ratfrac_mpz();
 
-    bad_reduced_form_polynom_mod_regchain(Rn, Fn, 0, A);
-    bad_reduced_form_polynom_mod_regchain(Rd, Fd, 0, A);
+    // bad_reduced_form_polynom_mod_regchain(Rn, Fn, 0, A);
+    // bad_reduced_form_polynom_mod_regchain(Rd, Fd, 0, A);
+    bad_normal_form_polynom_mod_regchain(Rn, Fn, A, 0);
+    bad_normal_form_polynom_mod_regchain(Rd, Fd, A, 0);
 
-    CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rn->denom)));
-    CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rd->denom)));
+    // ba0_printf(const_cast<char *>("numerator: %Qz\n"), Rn);
+    // ba0_printf(const_cast<char *>("denominator: %Qz\n"), Rd);
+
+    // CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rn->denom)));
+    // CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rd->denom)));
 
     return EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rn->numer)))
-      / EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->numer)));
-
+      * EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->denom)))
+      / ( EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->numer)))
+	  * EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rn->denom))));
   } else {
     CoCoA_ERROR(ERR::MixedRings, "RegularSystem reduction");
   }
@@ -4992,7 +5001,7 @@ void program2()
   // z = exp(n_e/(power(f,a) * d_e))
   // z = exp(n_e/(q * d_e))
 
-  RingElem z_exp = n_e/(q * d_e);
+  // RingElem z_exp = n_e/(q * d_e);
 
   cout << endl;
   cout << "try an irreducible factor q = f^a in denominator; N / (D f^a)" << endl;
@@ -5055,6 +5064,47 @@ void program2()
 
     cout << eq << endl;
     cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
+  }
+
+  cout << endl;
+  cout << "try a power of f = exp(-x^2/4t) in denominator; N / (D f^a)" << endl;
+  cout << endl;
+
+  RingElem f_exp = -x*x/(4*t);
+
+  // RingElem e = N/(D*power(f,a));
+  // RingElem e = N/(D*q);
+
+  //cout << O*e << endl;
+
+  // ordering x > t > f > q
+  // grlexA: f_xx > q_xx > f_x > f_t > q_x > q_t > x > t > f > q
+  // this tends to eliminate the f's and leave the q's
+
+  // ordering x > t > f > q > D
+  // grlexA: f_xx > q_xx > D_xx > f_x > f_t > q_x > q_t > D_x > D_t > x > t > f > q > D
+  // this tends to eliminate the f's and leave the q's
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f,
+	fx - f*dx(f_exp), ft - f*dt(f_exp), dx(t), dt(x)},
+			  std::vector<RingElem> {x, t, q, f, D});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    RingElem eq = O*e;
+
+    RingHom H2 = (fx >> f*dx(f_exp))(ft >> f*dt(f_exp))(fxx >> dx(f*dx(f_exp)));
+
+    // Modulo reduction has to occur with power substitutions present,
+    // since the blad library can't reduce otherwise, then we map
+    // back into the original field.
+
+    //eq = H2(H(eq % s));
+    eq = H(eq % s);
+
+    cout << eq << endl;
+    cout << "minCoeff(eq, D) = " << minCoeff(num(eq), D) << endl;
   }
 
 }
