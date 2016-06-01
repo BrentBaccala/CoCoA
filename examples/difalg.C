@@ -6,6 +6,12 @@
 #include <string>
 #include <regex>
 
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+
+#if GCC_VERSION < 40900
+#error C++ std::regex not implemented prior to g++ 4.9
+#endif
+
 #define USE_BLAD 1
 
 #ifdef USE_BLAD
@@ -1500,8 +1506,6 @@ public:
     // ordering on the base symbols, then total degree on the
     // derivatives, then lexiographic on the derivatives
 
-    // C++ regex doesn't work prior to gcc 4.9
-
     // const std::regex re("([^_]+)(_\\{?(.+)\\}?)?");
     // std::smatch newsymbol;
     // CoCoA_ASSERT(std::regex_match (head(s), newsymbol, re));
@@ -2511,7 +2515,7 @@ class bladDifferentialRingBase {
 
   const std::string next_name(const std::string& orig)
   {
-    const std::regex re("^\\w*$");
+    static const std::regex re("^\\w*$");
 
     if (! std::regex_match(orig, re)) {
       return next_name("");
