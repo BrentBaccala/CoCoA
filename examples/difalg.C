@@ -4903,6 +4903,9 @@ void program2()
   const RingElem z_t = deriv(z,t);
 
   const RingElem r(K, "r");
+  const RingElem rx = deriv(r,x);
+  const RingElem rxx = deriv(rx,x);
+  const RingElem rt = deriv(r,t);
 
   const RingElem tpo(K, "(t+1)");
 
@@ -4966,6 +4969,7 @@ void program2()
   // Sometimes we want our coefficients mapped into the field
 
   const RingElem Ka = CanonicalHom(ExponentRing, K)(a);
+  const RingElem Kb = CanonicalHom(ExponentRing, K)(b);
 
   // setup our differentials (acting on K)
 
@@ -5095,6 +5099,50 @@ void program2()
 
     cout << eq << endl;
     cout << "minCoeff(eq, D) = " << minCoeff(num(eq), D) << endl;
+    cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
+  }
+
+  cout << endl;
+  cout << "try a power of f = exp(-x^2/4t) in denominator; N / f^a" << endl;
+  cout << endl;
+
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f,
+	fx - f*dx(f_exp), ft - f*dt(f_exp), dx(t), dt(x), D - 1},
+			  std::vector<RingElem> {x, t, q, f, D});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    RingElem eq = O*e;
+
+    eq = H(eq % s);
+
+    cout << eq << endl;
+    cout << "minCoeff(eq, t) = " << minCoeff(num(eq), t) << endl;
+  }
+
+  cout << endl;
+  cout << "add a factor of t in numerator; N t^b / f^a" << endl;
+  cout << endl;
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f,
+	rx, rt - Kb * r / t,
+	fx - f*dx(f_exp), ft - f*dt(f_exp), dx(t), dt(x)},
+			  std::vector<RingElem> {x, t, q, f});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    RingElem eq = O*((N*r)/q);
+
+    RingElem tb = power(t, b);
+    RingHom H2 = (r >> tb)(rt >> dt(tb));
+
+    eq = H2(H(eq % s));
+
+    cout << eq << endl;
+    cout << "minCoeff(eq, t) = " << minCoeff(num(eq), t) << endl;
   }
 
 }
