@@ -3034,8 +3034,9 @@ std::vector<RegularSystem> Rosenfeld_Groebner(Args... rest) {
 
 RingElem operator% (RingElem e, const RegularSystem& rs)
 {
-  // XXX assumes that equations is not an empty vector
-  bladDifferentialRing bdr(owner(rs.equations[0]));
+  CoCoA_ASSERT(rs.equations.size() > 0);
+  const ring& R = owner(rs.equations[0]);
+  bladDifferentialRing bdr(R);
 
   struct bap_tableof_polynom_mpz * eqns;
   bad_regchain * A = bad_new_regchain();
@@ -3055,15 +3056,43 @@ RingElem operator% (RingElem e, const RegularSystem& rs)
 
   // ba0_printf (const_cast<char *>("%regchain\n"), A);
 
-  struct bap_polynom_mpz * F = bap_new_polynom_mpz();
+  if (owner(e) == R) {
 
-  bdr->RingElem_to_blad_polynomial(e, F);
+    struct bap_polynom_mpz * F = bap_new_polynom_mpz();
 
-  struct bap_ratfrac_mpz * R = bap_new_ratfrac_mpz();
+    bdr->RingElem_to_blad_polynomial(e, F);
 
-  bad_reduced_form_polynom_mod_regchain(R, F, 0, A);
+    struct bap_ratfrac_mpz * R = bap_new_ratfrac_mpz();
 
-  return bdr->blad_polynomial_to_RingElem(& (R->numer));
+    bad_reduced_form_polynom_mod_regchain(R, F, 0, A);
+
+    CoCoA_ASSERT(bap_is_one_polynom_mpz(& (R->denom)));
+
+    return bdr->blad_polynomial_to_RingElem(& (R->numer));
+
+  } else if (IsFractionField(owner(e)) && (BaseRing(owner(e)) == R)) {
+
+    struct bap_polynom_mpz * Fn = bap_new_polynom_mpz();
+    struct bap_polynom_mpz * Fd = bap_new_polynom_mpz();
+
+    bdr->RingElem_to_blad_polynomial(num(e), Fn);
+    bdr->RingElem_to_blad_polynomial(den(e), Fd);
+
+    struct bap_ratfrac_mpz * Rn = bap_new_ratfrac_mpz();
+    struct bap_ratfrac_mpz * Rd = bap_new_ratfrac_mpz();
+
+    bad_reduced_form_polynom_mod_regchain(Rn, Fn, 0, A);
+    bad_reduced_form_polynom_mod_regchain(Rd, Fd, 0, A);
+
+    CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rn->denom)));
+    CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rd->denom)));
+
+    return EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rn->numer)))
+      / EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->numer)));
+
+  } else {
+    CoCoA_ERROR(ERR::MixedRings, "RegularSystem reduction");
+  }
 }
 #endif
 
@@ -4990,26 +5019,16 @@ void program2()
 
     // Construct the homomorphism to map q (and its derivatives) back to f^a
 
-    // We want an R -> K mapping because our RegularSystem modulo
-    // reduction only works on R.
-
-    // Method 1: Construct the homomorphism in R and map the result into K.
-
-    //RingHom h = num(q) >> num(power(f, a));
-    //RingHom hh = num(qx) >> num(dx(power(f, a)));
-    //RingHom hhh = num(qxx) >> num(dx(dx(power(f, a))));
-    //RingHom hhhh = num(qt) >> num(dt(power(f, a)));
-    //RingHom H = CanonicalHom(R,K)(hhhh(hhh(hh(h))));
-
-    // Method 2: Construct the homomorphism in K and map the argument from R.
-
     RingElem fa = power(f, a);
-    RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)))(EmbeddingHom(K));
+    RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
 
     RingElem eq = O*e;
 
+    // modulo reduction has to occur with power substitutions present,
+    // since the blad library can't reduce otherwise.
+
     if (!IsZero(den(eq) % s)) {
-      eq = H(num(eq) % s) / H(den(eq) % s);
+      eq = H(eq % s);
     } else {
       CoCoA_ERROR(ERR::DivByZero, "Rosenfeld-Groebner reduced denominator to zero");
     }
