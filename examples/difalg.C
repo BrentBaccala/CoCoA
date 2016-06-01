@@ -5001,7 +5001,7 @@ void program2()
   //RingElem e = N/(D*power(f,a));
   RingElem e = N/(D*q);
 
-  cout << O*e << endl;
+  //cout << O*e << endl;
 
   //auto RG = Rosenfeld_Groebner(num(z_x - z*deriv(z_exp,x)), num(z_t - z*deriv(z_exp,t)));
 
@@ -5014,6 +5014,33 @@ void program2()
 
   auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
 			       std::vector<RingElem> {q, f, D});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    RingElem eq = O*e;
+
+    // Modulo reduction has to occur with power substitutions present,
+    // since the blad library can't reduce otherwise, then we map
+    // back into the original field.
+
+    eq = H(eq % s);
+
+    cout << eq << endl;
+    cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
+  }
+
+  cout << endl;
+  cout << "try an irreducible factor q = f^a with f_x = 0 in denominator; N / (D f^a)" << endl;
+  cout << endl;
+
+  //RingElem e = N/(D*power(f,a));
+  // RingElem e = N/(D*q);
+
+  //cout << O*e << endl;
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f, fx, qx},
+			  std::vector<RingElem> {q, f, D});
 
   for (auto s: RG) {
     cout << s << endl;
