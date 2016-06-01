@@ -1219,6 +1219,12 @@ public:
       return;
     }
 
+    //for (auto it=exponentMap.begin(); it!=exponentMap.end(); ++it) {
+    //for (auto it2=it->second.begin(); it2!=it->second.end(); ++it2) {
+    //cout << it->first << " " << it2->first << " " << it2->second.upper_indet << " " << it2->second.constant_term << endl;
+    //}
+    //}
+
     /* Assign indet numbers in the newring to the exponentMap */
     long tmpring_indet_number = NumIndets(myPPM());
     for (auto it=exponentMap.begin(); it != exponentMap.end(); it++) {
@@ -1238,6 +1244,7 @@ public:
 
     RingElem newx = myGcd_rewrite_polynomial(rawx, NewPR, exponentMap);
     RingElem newy = myGcd_rewrite_polynomial(rawy, NewPR, exponentMap);
+    // cout << newx << " " << newy << endl;
 
     RingElem GCD = gcd(newx, newy);
 
