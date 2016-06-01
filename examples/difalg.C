@@ -2737,7 +2737,9 @@ public:
     }
 
     if (IsFractionField(owner(x))) {
-      CoCoA_ASSERT(IsOne(den(x)));
+      // XXX for equations, just using the numerator is fine
+      // for inequations, both num and den should be non-zero
+      // CoCoA_ASSERT(IsOne(den(x)));
       RingElem_to_blad_polynomial(num(x), result);
       return;
     }
@@ -2920,8 +2922,8 @@ std::vector<RegularSystem> Rosenfeld_Groebner(std::vector<RingElem> equations, s
   struct bad_intersectof_regchain * T;
   std::vector<RegularSystem> results;
 
-  // XXX assumes that equations is not an empty vector
-  const ring& R = owner(equations[0]);
+  CoCoA_ASSERT(equations.size() > 0);
+  const ring& R = IsFractionField(owner(equations[0])) ? BaseRing(owner(equations[0])) : owner(equations[0]);
   bladDifferentialRing bdr(R);
 
   // memory management (see blad docs §2.2.4.1)
@@ -4950,6 +4952,10 @@ void program2()
   const RingElem n_ixx = deriv(n_ix,x);
   const RingElem n_it = deriv(n_i,t);
 
+  // Sometimes we want our coefficients mapped into the field
+
+  const RingElem Ka = CanonicalHom(ExponentRing, K)(a);
+
   // setup our differentials (acting on K)
 
   BasicDifferential dx(x);
@@ -4976,6 +4982,11 @@ void program2()
   // q_x = a f^(a-1) f_x = a q f_x / f
   // q_t = a f^(a-1) f_t = a q f_t / f
 
+  // Construct the homomorphism to map q (and its derivatives) back to f^a
+
+  RingElem fa = power(f, a);
+  RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
+
   // free exponential
 
   // z = exp(n_e/(power(f,a) * d_e))
@@ -5001,37 +5012,19 @@ void program2()
   //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
   //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx));
 
-  auto RG = Rosenfeld_Groebner(std::vector<RingElem> {num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-	num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f)},
-    std::vector<RingElem> {q, f, D});
-
-  // auto RG = Rosenfeld_Groebner(std::vector<RingElem> {num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-  //	num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f), num(fx), num(qx)},
-  //    std::vector<RingElem> {q, f});
-
-  //auto RG = Rosenfeld_Groebner(num(qx - CanonicalHom(ExponentRing, K)(a) * q * fx / f),
-  //			       num(qt - CanonicalHom(ExponentRing, K)(a) * q * ft / f),
-  //			       num(deriv(CanonicalHom(ExponentRing, K)(a), x)),
-  //			       num(deriv(CanonicalHom(ExponentRing, K)(a), t)));
+  auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
+			       std::vector<RingElem> {q, f, D});
 
   for (auto s: RG) {
     cout << s << endl;
 
-    // Construct the homomorphism to map q (and its derivatives) back to f^a
-
-    RingElem fa = power(f, a);
-    RingHom H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
-
     RingElem eq = O*e;
 
-    // modulo reduction has to occur with power substitutions present,
-    // since the blad library can't reduce otherwise.
+    // Modulo reduction has to occur with power substitutions present,
+    // since the blad library can't reduce otherwise, then we map
+    // back into the original field.
 
-    if (!IsZero(den(eq) % s)) {
-      eq = H(eq % s);
-    } else {
-      CoCoA_ERROR(ERR::DivByZero, "Rosenfeld-Groebner reduced denominator to zero");
-    }
+    eq = H(eq % s);
 
     cout << eq << endl;
     cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
