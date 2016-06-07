@@ -1033,6 +1033,10 @@ ring owner(const Differential& D) {
   return D.R;
 }
 
+/* BasicDifferential - a Differential constructed by differentiating
+ * with respect to a given indeterminate
+ */
+
 class BasicDifferential : public Differential {
 private:
   ConstRefRingElem d;
