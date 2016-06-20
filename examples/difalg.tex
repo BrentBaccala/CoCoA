@@ -1026,7 +1026,12 @@ For the same reason, $K[Z[p]]$ is not a unique factorization domain:
 
 $$x^p = x^{p-10}x^{10} = x^{p-20}x^{20} = \cdots$$
 
-However, $K[Z[p]]$ is a GCD domain.  PROOF NEEDED.
+However, $K[Z[p]]$ is a GCD domain.  [Gi73] theorem 6.4 states that a semigroup
+ring is a GCD domain if its coefficient field is a GCD domain and its semigroup
+is a torsion-free GCD-semigroup with zero.  A GCD-semigroup has the property
+that for any $a$ and $b$ in the semigroup $S$, there exists a $c$ such that
+$(a + S) \cap (b + S) = c + S$.  Our monoid's strict ordering ensures that
+this condition is met with $c = \max(a,b)$.
 
 We can compute GCDs (needed for normalisation in the fraction field) using a
 simple modification to Buchberger's algorithm.  Introduce new indeterminates
@@ -1211,5 +1216,14 @@ print, but it's packed with relevant, terse information.
 
 [Ma91] Mansfield, Differential Groebner Bases, Ph.D thesis, University
 of Sidney, 1991.
+
+[Gi73] Gilmer, Robert, and Tom Parker.  Divisibility properties in semigroup rings.
+The Michigan Mathematical Journal 21.1 (1974): 65-86.
+
+\begin{quote}
+  A nice paper in an obscure journal that establishes necessary and
+  sufficient conditions for commutative semigroup rings to be GCD
+  domains, unique factorization domains, and principle ideal domains.
+\end{quote}
 
 \end{document}
