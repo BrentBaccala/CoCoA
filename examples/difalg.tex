@@ -611,9 +611,10 @@ Now things are starting to get really complicated!  We want to put
 everything in a computer algebra system that can handle differential
 algebra.  Specifically, we want to solve systems of
 differential/polynomial equations with simple polynomials in their
-exponents.  I call polynomials with polynomial exponents a $K[Z[p]]$
-ring; there's a latter section in this paper about them.  The next
-section is about handling systems of poly-differential equations.
+exponents.  Following Jacobson's notation for semigroup rings, I call
+polynomials with polynomial exponents a $K[x; Z[p]^+]$ ring; there's a
+latter section in this paper about them.  The next section is about
+handling systems of poly-differential equations.
 
 
 \vfill\eject
@@ -629,7 +630,7 @@ However, a theorem of Raudenbush (and Ritt) states that radical ideals
 admit finite bases.
 
 Are radical ideals adequate for our purposes?  A radical ideal is one
-with no ``missing roots''.  If $f$ exists in the $K[Z[p]]$ ring and
+with no ``missing roots''.  If $f$ exists in the $K[x; Z[p]^+]$ ring and
 $f^p$ is in the ideal, for some integer $p$, then $f$ must itself be
 in the ideal.  A radical ideal can't contain $f^p$ without also
 containing $f$.
@@ -1003,30 +1004,34 @@ system of Diophantine equations.
 
 
 \vfill\eject
-\section*{Operating in K[Z[p]]}
+\section*{Operating in $K[x; Z[p]^+]$}
 
-Often we need to operate in a monoid ring like $K[Z[p]]$, i.e, a
-polynomial ring whose exponents are polynomials.  For example:
+Often we need to operate in a monoid ring like $K[x; Z[p]^+]$, i.e, a
+polynomial ring whose exponents are polynomials.  The notation is
+borrowed from Robert Gilmer [Gi73], who adopted it from
+D. G. Northcott.  $K[x; S]$ denotes a semigroup ring with coefficients
+from $K$, a transcendental $x$ and exponents from the semigroup $S$.
+
+To order the monomials, an ordering is required on the exponents.  I use a ``high''
+ordering where the coefficient of the highest power determines the comparison to zero.\footnote{\tt http://math.arizona.edu/$\sim$rwilliams/math415A-fall2013/Ordered\_Rings\_and\_Fields.pdf}
+Only monoid elements greater than zero are allowed as exponents (thus the superscript plus sign),
+so $x^{p-50}$ is in $K[x; Z[p]^+]$, but $x^{-1}$ is not.
+
+For example, here's a simple factorization in this ring:
 
 $$x^{2p}+2x^p+1=(x^p+1)^2$$
 
-To order the monomials, an ordering is required on the exponents.  I use a ``high''
-ordering where the coefficient of the highest power determines the comparison to zero.
-\footnote{\tt http://math.arizona.edu/$\sim$rwilliams/math415A-fall2013/Ordered\_Rings\_and\_Fields.pdf}
-Only monoid elements greater than zero are allowed as exponents, so $x^{p-50}$ is
-in $K[Z[p]]$, but $x^{-1}$ is not.
-
 We can't use Buchberger's algorithm directly, because it may not terminate since
-the ring is not Noetherian.
+the ring is not Noetherian.  For example,
 
 $$(x^p) \subset (x^{p-1}) \subset (x^{p-2}) \subset \cdots$$
 
 is an ascending chain of ideals that never stabilises.
-For the same reason, $K[Z[p]]$ is not a unique factorization domain:
+For the same reason, $K[x; Z[p]^+]$ is not a unique factorization domain:
 
 $$x^p = x^{p-10}x^{10} = x^{p-20}x^{20} = \cdots$$
 
-However, $K[Z[p]]$ is a GCD domain.  [Gi73] theorem 6.4 states that a semigroup
+However, $K[x; Z[p]^+]$ is a GCD domain.  [Gi73] theorem 6.4 states that a semigroup
 ring is a GCD domain if its coefficient field is a GCD domain and its semigroup
 is a torsion-free GCD-semigroup with zero.  A GCD-semigroup has the property
 that for any $a$ and $b$ in the semigroup $S$, there exists a $c$ such that
@@ -1049,13 +1054,13 @@ How do we deal with monomials like $x^{p-1}$?  We can't factor it like
 $x^px^{-1}$ because $x^{-1}$ isn't in our ring.  Instead, we map
 $x^{p-1} \to a$ and then write $x^{p-1}$ as $a$ and $x^p$ as $xa$.
 This implies that we can't construct a single derived ring that can
-handle all polynomials in $K[Z[p]]$.  Instead, we construct a
+handle all polynomials in $K[x; Z[p]^+]$.  Instead, we construct a
 derived ring for any particular GCD calculation.
 
-The derived ring is Noetherian, but is not isomorphic to $K[Z[p]]$.
-Instead, it is isomorphic to a subring of $K[Z[p]]$ and we can adjust
+The derived ring is Noetherian, but is not isomorphic to $K[x; Z[p]^+]$.
+Instead, it is isomorphic to a subring of $K[x; Z[p]^+]$ and we can adjust
 the construction so that the subring encompasses any finite number of
-elements from $K[Z[p]]$.
+elements from $K[x; Z[p]^+]$.
 
 Theorem.  (Hopefully) Given a ring R, if every pair of elements from R can be
 embedded in a subring that is a GCD domain, then R is a GCD domain.
