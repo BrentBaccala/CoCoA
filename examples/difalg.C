@@ -1117,6 +1117,7 @@ private:
    * indets correspond to that lower indet.
    *
    * exponentmap[lower_indet_number][upper_indet_PPMonoid]
+   *     i.e. exponentMap[1][p]
    */
 
   struct indet_in_exponent {
@@ -1246,6 +1247,8 @@ public:
     /* Otherwise, construct a new ring with a newly appended
      * indeterminate, map our two arguments into the new ring, compute
      * their GCD, then map the result back.
+     *
+     * XXX I'm not sure we want WDegPosTO
      */
 
     const std::vector<symbol> IndetNames = NewSymbols(tmpring_indet_number);
