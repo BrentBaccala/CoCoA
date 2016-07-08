@@ -1347,13 +1347,14 @@ void testPowerPolyRing(void)
 
   RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
 
-  cout << gcd(num(power(f,p)),num(f)) << endl;
-  cout << power(f,p)/f << endl;
+  //cout << gcd(num(power(f,p)),num(f)) << endl;
+  //cout << power(f,p)/f << endl;
   //cout << (power(f,p)) /power(f,2*p) << endl;
   //cout << (power(f,p-1))/power(f,2*p) << endl;
   //cout << (power(f,p) + power(f,p-1))/power(f,2*p) << endl;
   //cout << (power(f,2*p) - 1)/(power(f,p)-1) << endl;
 
+  CoCoA_ASSERT(gcd(num(power(f,p)),num(f)) == num(f));
   CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
   CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
   CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
