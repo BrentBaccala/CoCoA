@@ -1128,6 +1128,19 @@ private:
 
   typedef std::map<long, std::map<PPMonoidElem, indet_in_exponent>> ExponentMap;
 
+  /* myGcd_find_RingElem_exponent()
+   *
+   * Populate an exponentMap with the data from one polynomial.  We
+   * can call this function multiple times on multiple polynomials to
+   * populate a single exponentMap with the data needed to process
+   * all of the polynomials simultaneously.
+   *
+   * Returns a PPMonoidElem (the GCD of the polynomial's monomials)
+   * that can be factored out of the polynomial to produce an
+   * exponent-primitive polynomial, i.e, the GCD of the monomial
+   * exponents is 1.
+   */
+
   PPMonoidElem myGcd_find_RingElem_exponent(ConstRawPtr raw, ExponentMap& exponentMap) const {
 
     // Compute the gcd of the polynomial's monomials
