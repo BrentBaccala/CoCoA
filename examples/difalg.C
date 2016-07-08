@@ -1128,11 +1128,23 @@ private:
 
   typedef std::map<long, std::map<PPMonoidElem, indet_in_exponent>> ExponentMap;
 
-  void myGcd_find_RingElem_exponent(ConstRawPtr raw, ExponentMap& exponentMap) const {
+  PPMonoidElem myGcd_find_RingElem_exponent(ConstRawPtr raw, ExponentMap& exponentMap) const {
+
+    // Compute the gcd of the polynomial's monomials
+
+    PPMonoidElem ppcontent(myPPM());
+
+    for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
+      if (it == myBeginIter(raw)) {
+	ppcontent = PP(it);
+      } else {
+	ppcontent = gcd(PP(it), ppcontent);
+      }
+    }
 
     for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
       for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
-	RingElem exp = RingElemExponent(PP(it), indet);
+	RingElem exp = RingElemExponent(PP(it)/ppcontent, indet);
 
 	if (! IsInteger(exp)) {
 	  /* exp is a RingElem in PPM's exponent ring.  We expect it
@@ -1177,6 +1189,8 @@ private:
 	}
       }
     }
+
+    return ppcontent;
   }
 
   RingElem myGcd_rewrite_polynomial(ConstRawPtr raw, const SparsePolyRing& newRing, ExponentMap& exponentMap) const {
@@ -1216,17 +1230,28 @@ public:
 
   void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
 
+    SparsePolyRing P(this);
+
     ExponentMap exponentMap;
 
-    myGcd_find_RingElem_exponent(rawx, exponentMap);
-    myGcd_find_RingElem_exponent(rawy, exponentMap);
+    PPMonoidElem ppcontent(myPPM());
+
+    ppcontent = myGcd_find_RingElem_exponent(rawx, exponentMap);
+    ppcontent = gcd(ppcontent, myGcd_find_RingElem_exponent(rawy, exponentMap));
+
+    RingElemRawPtr newrawx = myNew(rawx);
+    RingElemRawPtr newrawy = myNew(rawy);
+    RingElem recontent = monomial(P, one(myCoeffRing()), ppcontent);
+    myDiv(newrawx, newrawx, raw(recontent));
+    myDiv(newrawy, newrawy, raw(recontent));
 
     /* If we didn't find an exponent that has to be modified, use our
      * underlying GCD implementation.
      */
 
     if (exponentMap.size() == 0) {
-      RingDistrMPolyCleanImpl::myGcd(rawlhs, rawx, rawy);
+      RingDistrMPolyCleanImpl::myGcd(rawlhs, newrawx, newrawy);
+      myMul(rawlhs, rawlhs, raw(recontent));
       return;
     }
 
@@ -1255,13 +1280,11 @@ public:
     PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
     SparsePolyRing NewPR(NewPolyRing(myCoeffRing(), NewPPM));
 
-    RingElem newx = myGcd_rewrite_polynomial(rawx, NewPR, exponentMap);
-    RingElem newy = myGcd_rewrite_polynomial(rawy, NewPR, exponentMap);
+    RingElem newx = myGcd_rewrite_polynomial(newrawx, NewPR, exponentMap);
+    RingElem newy = myGcd_rewrite_polynomial(newrawy, NewPR, exponentMap);
     // cout << newx << " " << newy << endl;
 
     RingElem GCD = gcd(newx, newy);
-
-    SparsePolyRing P(this);
 
     myAssignZero(rawlhs);
 
@@ -1283,6 +1306,7 @@ public:
       myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
     }
 
+    myMul(rawlhs, rawlhs, raw(recontent));
   }
 };
 
