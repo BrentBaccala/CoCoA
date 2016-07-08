@@ -1143,8 +1143,9 @@ private:
     }
 
     for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
+      PPMonoidElem reducedPP = PP(it)/ppcontent;
       for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
-	RingElem exp = RingElemExponent(PP(it)/ppcontent, indet);
+	RingElem exp = RingElemExponent(reducedPP, indet);
 
 	if (! IsInteger(exp)) {
 	  /* exp is a RingElem in PPM's exponent ring.  We expect it
