@@ -4,7 +4,7 @@ COCOA_ROOT=..
 include $(COCOA_ROOT)/configuration/autoconf.mk
 CWD=examples/
 
-CXXFLAGS += --std=c++11
+CXXFLAGS += --std=c++11 -fno-omit-frame-pointer
 
 # Francois Boulier's blad libraries (used for difalg's Rosenfeld-Groebner algorithm)
 LDLIBS += -lbad -lbap -lbav -lba0
