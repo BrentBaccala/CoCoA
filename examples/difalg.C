@@ -1356,6 +1356,8 @@ void testPowerPolyRing(void)
 
   CoCoA_ASSERT(gcd(num(power(f,p)),num(f)) == num(f));
   CoCoA_ASSERT(power(f,p)/f == power(f,p-1));
+  // this next test differs from the last in that it checks proper cancellation in the fraction
+  CoCoA_ASSERT(num(power(f,p)/f) == num(power(f,p-1)));
   CoCoA_ASSERT(power(f,p) / power(f,2*p) == 1 / power(f,p));
   CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
   CoCoA_ASSERT((power(f,p) + power(f,p-1)) / power(f,2*p) == (f+1) / power(f,p+1));
