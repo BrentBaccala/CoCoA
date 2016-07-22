@@ -1101,34 +1101,49 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 
 private:
 
-  /* Track indets in our exponents.  Something like f^(p-1) would map
-   * into g, with f as the lower indet, p as the upper indet, g as the
-   * tmpring indet, and -1 as the constant term.
+  /* class ExponentMap - Track indets in our exponents.  Something
+   * like f^(p-1) would map into g, with f as the lower indet, p as
+   * the upper indet, and -1 as the constant term.
+   *
+   * If, for example, f^(p-1) appears, then f^(p-2) appears later, we
+   * should map f^(p-2) as g and f^(p-1) as fg.  Therefore, we scan
+   * through the monomials in a set of polynomials, updating an
+   * exponentMap as we go.  Once we're done, the final exponentMap
+   * contains the mapping that we'll use to alter the polynomials.
+   *
+   * We track lower indets by their index number in the lower ring's
+   * PPMonoid, and upper indets as RingElem's, because it's most
+   * convenient that way.
+   *
+   * When we construct an exponentMap, we specify an initial index
+   * (the indet number in the newRing), all additional indices
+   * increment by one.
    *
    * When we're inserting elements, or mapping into the temporary
    * ring, we want to map by the lower indet and the upper indet
    * together.
    *
-   * We want to count how many total inserts we're made to figure
-   * how many new indets to add to our temporary ring.
+   * exponentmap.fromOldRing(lower_indet, upper_indet)
+   *     i.e. exponentMap.fromOldRing(1, p)
    *
    * When we're mapping back from the temporary ring, we want to
-   * map by the lower indet only, and find out all temporary
-   * indets correspond to that lower indet.
+   * map by the indet number only.
    *
-   * exponentmap[lower_indet_number][upper_indet_PPMonoid]
-   *     i.e. exponentMap[1][p]
+   * exponentMap.fromNewRing(indet_number)
+   *
+   * We want to count how many total inserts we're made to figure
+   * how many new indets to add to our temporary ring, so we have
+   * a size() function.
+   *
+   * exponentMap.size()
    */
 
   struct indet_in_exponent {
     int index;
-    long lower_indet_number;
-    long tmpring_indet_number;
+    long lower_indet;
     RingElem upper_indet;
     long constant_term;
   };
-
-  // typedef std::map<long, std::map<PPMonoidElem, indet_in_exponent>> ExponentMap;
 
   class ExponentMap {
     std::map<long, std::map<RingElem, indet_in_exponent>> mymap;
@@ -1142,14 +1157,14 @@ private:
       return mymap_count;
     }
 
-    indet_in_exponent & fromOldRing(int lower_indet_number, ConstRefRingElem upper_indet) {
-      if (mymap[lower_indet_number].count(upper_indet) == 0) {
-	mymap[lower_indet_number][upper_indet].index = initial_index + mymap_count;
-	mymap[lower_indet_number][upper_indet].lower_indet_number = lower_indet_number;
-	mymap[lower_indet_number][upper_indet].upper_indet = upper_indet;
+    indet_in_exponent & fromOldRing(int lower_indet, ConstRefRingElem upper_indet) {
+      if (mymap[lower_indet].count(upper_indet) == 0) {
+	mymap[lower_indet][upper_indet].index = initial_index + mymap_count;
+	mymap[lower_indet][upper_indet].lower_indet = lower_indet;
+	mymap[lower_indet][upper_indet].upper_indet = upper_indet;
 	mymap_count ++;
       }
-      return mymap[lower_indet_number][upper_indet];
+      return mymap[lower_indet][upper_indet];
     }
 
     indet_in_exponent fromNewRing(int index) {
@@ -1256,7 +1271,6 @@ private:
 	    b += long(coeff(expit));
 	  } else {
 	    a = long(coeff(expit));
-	    //auto em = exponentMap.fromOldRing(indet, exp/a); // XXX wrong
 	    auto em = exponentMap.fromOldRing(indet, monomial(owner(exp), 1, PP(expit)));
 	    newPP *= IndetPower(PPM(newRing), em.index, a);
 	    b -= a * em.constant_term;
@@ -1307,25 +1321,9 @@ public:
       return;
     }
 
-    //for (auto it=exponentMap.begin(); it!=exponentMap.end(); ++it) {
-    //for (auto it2=it->second.begin(); it2!=it->second.end(); ++it2) {
-    //cout << it->first << " " << it2->first << " " << it2->second.upper_indet << " " << it2->second.constant_term << endl;
-    //}
-    //}
-
-#if 0
-    /* Assign indet numbers in the newring to the exponentMap */
-    long tmpring_indet_number = NumIndets(myPPM());
-    for (auto it=exponentMap.begin(); it != exponentMap.end(); it++) {
-      for (auto it2=it->second.begin(); it2 != it->second.end(); it2++) {
-	it2->second.tmpring_indet_number = tmpring_indet_number ++;
-      }
-    }
-#endif
-
-    /* Otherwise, construct a new ring with a newly appended
-     * indeterminate, map our two arguments into the new ring, compute
-     * their GCD, then map the result back.
+    /* Otherwise, construct a new ring with newly appended
+     * indeterminates, map our two arguments into the new ring,
+     * compute their GCD, then map the result back.
      *
      * XXX I'm not sure we want WDegPosTO
      */
@@ -1346,7 +1344,7 @@ public:
       PPMonoidElem newPP(myPPM());
 
       for (long i=0; i < NumIndets(NewPPM); i ++) {
-	//RingElem exp(exponentRing);
+
 	if (i < NumIndets(myPPM())) {
 	  long exp = exponent(PP(it), i);
 	  newPP *= power(indet(myPPM(), i), exp);
@@ -1354,25 +1352,9 @@ public:
 	  auto em = exponentMap.fromNewRing(i);
 	  long pow = exponent(PP(it), i);
 	  RingElem exp = pow * (em.upper_indet + em.constant_term);
-	  newPP *= power(indet(myPPM(), em.lower_indet_number), exp);
+	  newPP *= power(indet(myPPM(), em.lower_indet), exp);
 	}
       }
-
-#if 0
-      for (long i=0; i < NumIndets(myPPM()); i ++) {
-	if (exponentMap.count(i) == 0) {
-	  newPP *= IndetPower(myPPM(), i, exponent(PP(it), i));
-	} else {
-	  RingElem exp(owner(exponentMap[i].begin()->second.upper_indet));
-	  exp += exponent(PP(it), i);
-	  for (auto it2=exponentMap[i].begin(); it2 != exponentMap[i].end(); it2++) {
-	    long pow = exponent(PP(it), it2->second.tmpring_indet_number);
-	    exp += pow * (it2->second.upper_indet + it2->second.constant_term);
-	  }
-	  newPP *= power(indet(myPPM(), i), exp);
-	}
-      }
-#endif
 
       myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
     }
