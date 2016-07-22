@@ -1164,6 +1164,7 @@ private:
      */
 
     indet_in_exponent & fromOldRing(const int lower_indet, ConstRefRingElem upper_indet) {
+      CoCoA_ASSERT(IsIndet(upper_indet));
       if (mymap[lower_indet].count(upper_indet) == 0) {
 	mymap[lower_indet][upper_indet].index = initial_index + mymap_count;
 	mymap[lower_indet][upper_indet].lower_indet = lower_indet;
@@ -1174,6 +1175,7 @@ private:
     }
 
     const indet_in_exponent & fromOldRing(const int lower_indet, ConstRefRingElem upper_indet) const {
+      CoCoA_ASSERT(IsIndet(upper_indet));
       return mymap.at(lower_indet).at(upper_indet);
     }
 
@@ -1210,6 +1212,11 @@ private:
 
     PPMonoidElem populate(ConstRawPtr raw) {
 
+      // find exponentRing by extracting the exponent of one's first
+      // indet, which will be zero, but its owner is the ring we want
+
+      const SparsePolyRing exponentRing(owner(RingElemExponent(one(old_ring.myPPM()), 0)));
+
       // Compute the gcd of the polynomial's monomials
 
       PPMonoidElem ppcontent(old_ring.myPPM());
@@ -1221,6 +1228,9 @@ private:
 	  ppcontent = gcd(PP(it), ppcontent);
 	}
       }
+
+      // run through the polynomial again, dividing out by ppcontent
+      // and populating our map
 
       for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
 	PPMonoidElem reducedPP = PP(it)/ppcontent;
@@ -1234,6 +1244,7 @@ private:
 	     * constant terms can be properly handled.
 	     */
 	    long a=1,b=0;
+	    RingElem linear_indet;
 
 	    for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
 	      long i;
@@ -1245,6 +1256,9 @@ private:
 	      } else {
 		/* linear term - throws conversion exception if it isn't a long */
 		a = long(coeff(expit));
+		linear_indet = monomial(exponentRing, 1, PP(expit));
+		/* insert a map element if it doesn't already exist */
+		fromOldRing(indet, linear_indet);
 	      }
 	    }
 
@@ -1260,11 +1274,12 @@ private:
 	      } else {
 		b = (b/a);
 	      }
-	    }
 
-	    auto em = fromOldRing(indet, exp/a);
-	    if (b < em.constant_term) {
-	      em.constant_term = b;
+	      auto em = fromOldRing(indet, linear_indet);
+
+	      if (b < em.constant_term) {
+		em.constant_term = b;
+	      }
 	    }
 	  }
 	}
@@ -1342,8 +1357,6 @@ public:
 
   void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
 
-    SparsePolyRing P(this);
-
     ExponentMap exponentMap(*this);
 
     exponentMap.populate(rawx);
@@ -1371,7 +1384,6 @@ public:
 
     RingElem newx = exponentMap.toNewRing(rawx, NewPR);
     RingElem newy = exponentMap.toNewRing(rawy, NewPR);
-    // cout << newx << " " << newy << endl;
 
     RingElem GCD = gcd(newx, newy);
 
@@ -1430,6 +1442,7 @@ void testPowerPolyRing(void)
   CoCoA_ASSERT(power(f,p-1) / power(f,2*p) == 1 / power(f,p+1));
   CoCoA_ASSERT((power(f,p) + power(f,p-1)) / power(f,2*p) == (f+1) / power(f,p+1));
   CoCoA_ASSERT((power(f,2*p) - 1) / (power(f,p) - 1) == power(f,p) + 1);
+  CoCoA_ASSERT((power(f,2*p+2) - 1) / (power(f,p+1) - 1) == power(f,p+1) + 1);
 
   // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
 
