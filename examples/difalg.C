@@ -1101,9 +1101,10 @@ class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
 
 private:
 
-  /* class ExponentMap - Track indets in our exponents.  Something
-   * like f^(p-1) would map into g, with f as the lower indet, p as
-   * the upper indet, and -1 as the constant term.
+  /* private inner class ExponentMap - Track indets in our exponents.
+   *
+   * Something like f^(p-1) would map into g, with f as the lower
+   * indet, p as the upper indet, and -1 as the constant term.
    *
    * If, for example, f^(p-1) appears, then f^(p-2) appears later, we
    * should map f^(p-2) as g and f^(p-1) as fg.  Therefore, we scan
@@ -1139,25 +1140,28 @@ private:
    * exponentMap.size()
    */
 
-  struct indet_in_exponent {
-    int index;
-    long lower_indet;
-    RingElem upper_indet;
-    long constant_term;
-  };
-
   class ExponentMap {
+
+    struct indet_in_exponent {
+      int index;
+      long lower_indet;
+      RingElem upper_indet;
+      long constant_term;
+    };
+
     const PowerPolyRingBase & old_ring;
     long initial_index;
+
     std::map<long, std::map<RingElem, indet_in_exponent>> mymap;
     int mymap_count = 0;
 
-  public:
-    ExponentMap(const PowerPolyRingBase & old_ring) : old_ring(old_ring), initial_index(NumIndets(old_ring.myPPM())) { }
-
-    int size(void) {
-      return mymap_count;
-    }
+    /* Private functions that access the private std::map
+     *
+     * We can search it by either the "old ring"'s lower/upper indet
+     * pair, or by the "new ring"'s indet number.  There's also a
+     * non-const version of fromOldRing() for when we're populating
+     * the map.
+     */
 
     indet_in_exponent & fromOldRing(const int lower_indet, ConstRefRingElem upper_indet) {
       if (mymap[lower_indet].count(upper_indet) == 0) {
@@ -1173,7 +1177,7 @@ private:
       return mymap.at(lower_indet).at(upper_indet);
     }
 
-    const indet_in_exponent fromNewRing(const int index) {
+    const indet_in_exponent & fromNewRing(const int index) const {
       for (auto it=mymap.begin(); it != mymap.end(); it++) {
 	for (auto it2=it->second.begin(); it2 != it->second.end(); it2++) {
 	  if (it2->second.index == index) {
@@ -1182,6 +1186,13 @@ private:
 	}
       }
       throw "Bug";
+    }
+
+  public:
+    ExponentMap(const PowerPolyRingBase & old_ring) : old_ring(old_ring), initial_index(NumIndets(old_ring.myPPM())) { }
+
+    int size(void) {
+      return mymap_count;
     }
 
     /* populate()
@@ -1262,6 +1273,13 @@ private:
       return ppcontent;
     }
 
+    /* toNewRing() / fromNewRing()
+     *
+     * These functions convert back and forth between raw polynomials
+     * in the original ring and RingElems in the new ring, with the
+     * additional indeterminates.
+     */
+
     RingElem toNewRing(ConstRawPtr raw, const SparsePolyRing& newRing) const {
 
       RingElem newpoly(newRing);
@@ -1290,6 +1308,32 @@ private:
       return newpoly;
     }
 
+    void fromNewRing(RawPtr rawlhs, ConstRefRingElem re) const {
+
+      SparsePolyRing P(&old_ring);
+      SparsePolyRing new_ring(owner(re));
+
+      old_ring.myAssignZero(rawlhs);
+
+      for (SparsePolyIter it=BeginIter(re); !IsEnded(it); ++it) {
+	PPMonoidElem newPP(old_ring.myPPM());
+
+	for (long i=0; i < NumIndets(PPM(new_ring)); i ++) {
+
+	  if (i < NumIndets(old_ring.myPPM())) {
+	    long exp = exponent(PP(it), i);
+	    newPP *= power(indet(old_ring.myPPM(), i), exp);
+	  } else {
+	    auto em = fromNewRing(i);
+	    long pow = exponent(PP(it), i);
+	    RingElem exp = pow * (em.upper_indet + em.constant_term);
+	    newPP *= power(indet(old_ring.myPPM(), em.lower_indet), exp);
+	  }
+	}
+
+	old_ring.myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
+      }
+    }
   };
 
 public:
@@ -1331,26 +1375,7 @@ public:
 
     RingElem GCD = gcd(newx, newy);
 
-    myAssignZero(rawlhs);
-
-    for (SparsePolyIter it=BeginIter(GCD); !IsEnded(it); ++it) {
-      PPMonoidElem newPP(myPPM());
-
-      for (long i=0; i < NumIndets(NewPPM); i ++) {
-
-	if (i < NumIndets(myPPM())) {
-	  long exp = exponent(PP(it), i);
-	  newPP *= power(indet(myPPM(), i), exp);
-	} else {
-	  auto em = exponentMap.fromNewRing(i);
-	  long pow = exponent(PP(it), i);
-	  RingElem exp = pow * (em.upper_indet + em.constant_term);
-	  newPP *= power(indet(myPPM(), em.lower_indet), exp);
-	}
-      }
-
-      myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
-    }
+    exponentMap.fromNewRing(rawlhs, GCD);
   }
 };
 
