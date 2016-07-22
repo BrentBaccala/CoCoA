@@ -1946,30 +1946,6 @@ std::ostream & operator<<(std::ostream &out, const RegularSystem omega)
   return out;
 }
 
-class RegularDifferentialIdeal {
-
-  friend std::ostream & operator<<(std::ostream &out, const RegularDifferentialIdeal);
-
-protected:
-
-  const ring R;
-  std::vector<RingElem> gens;
-
-public:
-
-  RegularDifferentialIdeal(const ring R, std::vector<RingElem> gens) :
-    R(R), gens(gens) { }
-
-  RegularDifferentialIdeal(const RingElem& r1) : R(owner(r1)) {
-    gens.push_back(r1);
-  }
-
-  template<typename... Args>
-  RegularDifferentialIdeal(const RingElem& r1, Args... rest) : RegularDifferentialIdeal(rest...) {
-    gens.push_back(r1);
-  }
-};
-
 namespace diffalg {
 
   // HDT - highest derivative term
