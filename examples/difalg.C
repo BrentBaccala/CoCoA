@@ -1115,9 +1115,10 @@ private:
    * PPMonoid, and upper indets as RingElem's, because it's most
    * convenient that way.
    *
-   * When we construct an exponentMap, we specify an initial index
-   * (the indet number in the newRing), all additional indices
-   * increment by one.
+   * When we construct an exponentMap, we specify the enclosing ring,
+   * since C++ lacks inner class support, and use its number of indets
+   * as an initial index (the indet number in the newRing), all
+   * additional indices increment by one.
    *
    * When we're inserting elements, or mapping into the temporary
    * ring, we want to map by the lower indet and the upper indet
@@ -1146,18 +1147,19 @@ private:
   };
 
   class ExponentMap {
+    const PowerPolyRingBase & old_ring;
+    long initial_index;
     std::map<long, std::map<RingElem, indet_in_exponent>> mymap;
     int mymap_count = 0;
-    long initial_index;
 
   public:
-    ExponentMap(long initial_index) : initial_index(initial_index) { }
+    ExponentMap(const PowerPolyRingBase & old_ring) : old_ring(old_ring), initial_index(NumIndets(old_ring.myPPM())) { }
 
     int size(void) {
       return mymap_count;
     }
 
-    indet_in_exponent & fromOldRing(int lower_indet, ConstRefRingElem upper_indet) {
+    indet_in_exponent & fromOldRing(const int lower_indet, ConstRefRingElem upper_indet) {
       if (mymap[lower_indet].count(upper_indet) == 0) {
 	mymap[lower_indet][upper_indet].index = initial_index + mymap_count;
 	mymap[lower_indet][upper_indet].lower_indet = lower_indet;
@@ -1167,7 +1169,11 @@ private:
       return mymap[lower_indet][upper_indet];
     }
 
-    indet_in_exponent fromNewRing(int index) {
+    const indet_in_exponent & fromOldRing(const int lower_indet, ConstRefRingElem upper_indet) const {
+      return mymap.at(lower_indet).at(upper_indet);
+    }
+
+    const indet_in_exponent fromNewRing(const int index) {
       for (auto it=mymap.begin(); it != mymap.end(); it++) {
 	for (auto it2=it->second.begin(); it2 != it->second.end(); it2++) {
 	  if (it2->second.index == index) {
@@ -1177,113 +1183,114 @@ private:
       }
       throw "Bug";
     }
-  };
 
-  /* myGcd_find_RingElem_exponent()
-   *
-   * Populate an exponentMap with the data from one polynomial.  We
-   * can call this function multiple times on multiple polynomials to
-   * populate a single exponentMap with the data needed to process
-   * all of the polynomials simultaneously.
-   *
-   * Returns a PPMonoidElem (the GCD of the polynomial's monomials)
-   * that can be factored out of the polynomial to produce an
-   * exponent-primitive polynomial, i.e, the GCD of the monomial
-   * exponents is 1.
-   */
+    /* populate()
+     *
+     * Populate an exponentMap with the data from one polynomial.  We
+     * can call this function multiple times on multiple polynomials to
+     * populate a single exponentMap with the data needed to process
+     * all of the polynomials simultaneously.
+     *
+     * Returns a PPMonoidElem (the GCD of the polynomial's monomials)
+     * that can be factored out of the polynomial to produce an
+     * exponent-primitive polynomial, i.e, the GCD of the monomial
+     * exponents is 1.
+     */
 
-  PPMonoidElem myGcd_find_RingElem_exponent(ConstRawPtr raw, ExponentMap& exponentMap) const {
+    PPMonoidElem populate(ConstRawPtr raw) {
 
-    // Compute the gcd of the polynomial's monomials
+      // Compute the gcd of the polynomial's monomials
 
-    PPMonoidElem ppcontent(myPPM());
+      PPMonoidElem ppcontent(old_ring.myPPM());
 
-    for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
-      if (it == myBeginIter(raw)) {
-	ppcontent = PP(it);
-      } else {
-	ppcontent = gcd(PP(it), ppcontent);
+      for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
+	if (it == old_ring.myBeginIter(raw)) {
+	  ppcontent = PP(it);
+	} else {
+	  ppcontent = gcd(PP(it), ppcontent);
+	}
       }
+
+      for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
+	PPMonoidElem reducedPP = PP(it)/ppcontent;
+	for (long indet=0; indet < NumIndets(old_ring.myPPM()); indet ++) {
+	  RingElem exp = RingElemExponent(reducedPP, indet);
+
+	  if (! IsInteger(exp)) {
+	    /* exp is a RingElem in PPM's exponent ring.  We expect it
+	     * to be a linear polynomial.  One of the linear terms (the
+	     * last one processed) is adjusted to ensure that negative
+	     * constant terms can be properly handled.
+	     */
+	    long a=1,b=0;
+
+	    for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
+	      long i;
+	      if (IsOne(PP(expit))) {
+		/* constant term - throws conversion exception if it isn't a long */
+		b = long(coeff(expit));
+	      } else if (!IsIndet(i, PP(expit))) {
+		CoCoA_ERROR(ERR::NYI, "exponent is not a linear polynomial in PowerPolyRing GCD");
+	      } else {
+		/* linear term - throws conversion exception if it isn't a long */
+		a = long(coeff(expit));
+	      }
+	    }
+
+	    /* we track the minimum constant term, so if both f^p and f^(p-1)
+	     * appear, we'll use g=f^(p-1) and write f^p as fg.  What about
+	     * f^(2p-2)?  Then we want to use g=f^(p-1).  f^(2p-3) requires
+	     * g=f^(p-2).  f^(2p+3) requires f^(p+1).
+	     */
+
+	    if (a > 1) {
+	      if ((b < 0) && (b/a)*a != b) {
+		b = (b/a) - 1;
+	      } else {
+		b = (b/a);
+	      }
+	    }
+
+	    auto em = fromOldRing(indet, exp/a);
+	    if (b < em.constant_term) {
+	      em.constant_term = b;
+	    }
+	  }
+	}
+      }
+
+      return ppcontent;
     }
 
-    for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
-      PPMonoidElem reducedPP = PP(it)/ppcontent;
-      for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
-	RingElem exp = RingElemExponent(reducedPP, indet);
+    RingElem toNewRing(ConstRawPtr raw, const SparsePolyRing& newRing) const {
 
-	if (! IsInteger(exp)) {
-	  /* exp is a RingElem in PPM's exponent ring.  We expect it
-	   * to be a linear polynomial.  One of the linear terms (the
-	   * last one processed) is adjusted to ensure that negative
-	   * constant terms can be properly handled.
-	   */
-	  long a=1,b=0;
+      RingElem newpoly(newRing);
 
+      for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
+	PPMonoidElem newPP(PPM(newRing));
+	for (long indet=0; indet < NumIndets(old_ring.myPPM()); indet ++) {
+	  RingElem exp = RingElemExponent(PP(it), indet);
+	  long a=0, b=0;
 	  for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
-	    long i;
 	    if (IsOne(PP(expit))) {
-	      /* constant term - throws conversion exception if it isn't a long */
-	      b = long(coeff(expit));
-	    } else if (!IsIndet(i, PP(expit))) {
-	      CoCoA_ERROR(ERR::NYI, "exponent is not a linear polynomial in PowerPolyRing GCD");
+	      b += long(coeff(expit));
 	    } else {
-	      /* linear term - throws conversion exception if it isn't a long */
 	      a = long(coeff(expit));
+	      auto em = fromOldRing(indet, monomial(owner(exp), 1, PP(expit)));
+	      newPP *= IndetPower(PPM(newRing), em.index, a);
+	      b -= a * em.constant_term;
 	    }
 	  }
-
-	  /* we track the minimum constant term, so if both f^p and f^(p-1)
-	   * appear, we'll use g=f^(p-1) and write f^p as fg.  What about
-	   * f^(2p-2)?  Then we want to use g=f^(p-1).  f^(2p-3) requires
-	   * g=f^(p-2).  f^(2p+3) requires f^(p+1).
-	   */
-
-	  if (a > 1) {
-	    if ((b < 0) && (b/a)*a != b) {
-	      b = (b/a) - 1;
-	    } else {
-	      b = (b/a);
-	    }
-	  }
-
-	  auto em = exponentMap.fromOldRing(indet, exp/a);
-	  if (b < em.constant_term) {
-	    em.constant_term = b;
-	  }
+	  // if everything was done right in this function and the last, b should non-negative now
+	  newPP *= IndetPower(PPM(newRing), indet, b);
 	}
+	newpoly += monomial(newRing, coeff(it), newPP);
       }
+
+      return newpoly;
     }
 
-    return ppcontent;
-  }
-
-  RingElem myGcd_rewrite_polynomial(ConstRawPtr raw, const SparsePolyRing& newRing, ExponentMap& exponentMap) const {
-
-    RingElem newpoly(newRing);
-
-    for (SparsePolyIter it=myBeginIter(raw); !IsEnded(it); ++it) {
-      PPMonoidElem newPP(PPM(newRing));
-      for (long indet=0; indet < NumIndets(myPPM()); indet ++) {
-	RingElem exp = RingElemExponent(PP(it), indet);
-	long a=0, b=0;
-	for (auto expit = BeginIter(exp); !IsEnded(expit); ++expit) {
-	  if (IsOne(PP(expit))) {
-	    b += long(coeff(expit));
-	  } else {
-	    a = long(coeff(expit));
-	    auto em = exponentMap.fromOldRing(indet, monomial(owner(exp), 1, PP(expit)));
-	    newPP *= IndetPower(PPM(newRing), em.index, a);
-	    b -= a * em.constant_term;
-	  }
-	}
-	// if everything was done right in this function and the last, b should non-negative now
-	newPP *= IndetPower(PPM(newRing), indet, b);
-      }
-      newpoly += monomial(newRing, coeff(it), newPP);
-    }
-
-    return newpoly;
-  }
+  };
 
 public:
 
@@ -1293,31 +1300,17 @@ public:
 
     SparsePolyRing P(this);
 
-    ExponentMap exponentMap(NumIndets(myPPM()));
+    ExponentMap exponentMap(*this);
 
-    // find exponentRing by extracting the exponent of 1's first indet
-    // (if we actually needed it)
-
-    // const ring & exponentRing = owner(RingElemExponent(one(myPPM()), 0));
-
-    PPMonoidElem ppcontent(myPPM());
-
-    ppcontent = myGcd_find_RingElem_exponent(rawx, exponentMap);
-    ppcontent = gcd(ppcontent, myGcd_find_RingElem_exponent(rawy, exponentMap));
-
-    RingElemRawPtr newrawx = myNew(rawx);
-    RingElemRawPtr newrawy = myNew(rawy);
-    RingElem recontent = monomial(P, one(myCoeffRing()), ppcontent);
-    myDiv(newrawx, newrawx, raw(recontent));
-    myDiv(newrawy, newrawy, raw(recontent));
+    exponentMap.populate(rawx);
+    exponentMap.populate(rawy);
 
     /* If we didn't find an exponent that has to be modified, use our
      * underlying GCD implementation.
      */
 
     if (exponentMap.size() == 0) {
-      RingDistrMPolyCleanImpl::myGcd(rawlhs, newrawx, newrawy);
-      myMul(rawlhs, rawlhs, raw(recontent));
+      RingDistrMPolyCleanImpl::myGcd(rawlhs, rawx, rawy);
       return;
     }
 
@@ -1332,8 +1325,8 @@ public:
     PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
     SparsePolyRing NewPR(NewPolyRing(myCoeffRing(), NewPPM));
 
-    RingElem newx = myGcd_rewrite_polynomial(newrawx, NewPR, exponentMap);
-    RingElem newy = myGcd_rewrite_polynomial(newrawy, NewPR, exponentMap);
+    RingElem newx = exponentMap.toNewRing(rawx, NewPR);
+    RingElem newy = exponentMap.toNewRing(rawy, NewPR);
     // cout << newx << " " << newy << endl;
 
     RingElem GCD = gcd(newx, newy);
@@ -1358,8 +1351,6 @@ public:
 
       myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
     }
-
-    myMul(rawlhs, rawlhs, raw(recontent));
   }
 };
 
