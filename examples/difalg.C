@@ -1097,7 +1097,7 @@ SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbo
  * using the standard algorithm, then substituting back.
  */
 
-class PowerPolyRingBase : public RingDistrMPolyCleanImpl {
+class PowerPolyRingBase : public virtual RingDistrMPolyCleanImpl {
 
 private:
 
@@ -1353,7 +1353,8 @@ private:
 
 public:
 
-  using RingDistrMPolyCleanImpl::RingDistrMPolyCleanImpl;
+  // using RingDistrMPolyCleanImpl::RingDistrMPolyCleanImpl;
+  PowerPolyRingBase(const ring& R, const PPMonoid& PPM) : RingDistrMPolyCleanImpl(R, PPM) { }
 
   void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
 
@@ -1529,7 +1530,7 @@ const symbol& Symbol(ConstRefPPMonoidElem indet)
 // scoped enum to avoid conflicting with existing 'lex'
 enum class DifferentialRanking { lex, grlexA };
 
-class PowerPolyDifferentialRingBase : public PowerPolyRingBase {
+class DifferentialRingBase : public virtual RingDistrMPolyCleanImpl {
 
 private:
 
@@ -1591,8 +1592,8 @@ public:
   // XXX don't really use this right now; only passed to the blad library
   DifferentialRanking ranking;
 
-  PowerPolyDifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
-    : PowerPolyRingBase(R, PPM), ranking(ranking)
+  DifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
+    : RingDistrMPolyCleanImpl(R, PPM), ranking(ranking)
   { }
 
   /* We're inheriting from SparsePolyRing, whose implementation of
@@ -1692,7 +1693,7 @@ public:
     //RingElem r = monomial(ring(this), 1, const_cast<PPMonoid&>(myPPM())->myNewSymbolValue(s, after));
     RingElem r = monomial(ring(this), 1, myPPM()->myNewSymbolValue(s, after));
 
-    const_cast<PowerPolyDifferentialRingBase *>(this)->myIndetVector.push_back(r);
+    const_cast<DifferentialRingBase *>(this)->myIndetVector.push_back(r);
     //myIndetVector.push_back(r);
 
     return r;
@@ -1701,7 +1702,7 @@ public:
 
   void myDeriv(RawPtr rawlhs, ConstRawPtr rawf, ConstRawPtr rawx) const override
   {
-    auto non_const_this = const_cast<PowerPolyDifferentialRingBase *>(this);
+    auto non_const_this = const_cast<DifferentialRingBase *>(this);
 
     if (myIsOne(rawx)) { myAssign(rawlhs, rawf); return; }
 
@@ -1752,6 +1753,15 @@ public:
     }
     mySwap(raw(ans), rawlhs); // really an assignment
   }
+
+};
+
+class PowerPolyDifferentialRingBase : public PowerPolyRingBase, public DifferentialRingBase {
+
+public:
+  PowerPolyDifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
+    : RingDistrMPolyCleanImpl(R, PPM), PowerPolyRingBase(R, PPM), DifferentialRingBase(R, PPM, ranking)
+  { }
 
 };
 
