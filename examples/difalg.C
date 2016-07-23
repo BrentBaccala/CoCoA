@@ -1099,9 +1099,9 @@ SparsePolyRing NewOrderedPolyRing(const ring& CoeffRing, const std::vector<symbo
 
 class PowerPolyRingBase : public virtual RingDistrMPolyCleanImpl {
 
-private:
+protected:
 
-  /* private inner class ExponentMap - Track indets in our exponents.
+  /* protected inner class ExponentMap - Track indets in our exponents.
    *
    * Something like f^(p-1) would map into g, with f as the lower
    * indet, p as the upper indet, and -1 as the constant term.
@@ -3102,9 +3102,38 @@ std::vector<RegularDifferentialChain> Rosenfeld_Groebner(std::vector<RingElem> e
   const ring& R = IsFractionField(owner(equations[0])) ? BaseRing(owner(equations[0])) : owner(equations[0]);
   const DifferentialRingBase * DR = dynamic_cast<const DifferentialRingBase *>(R.myRawPtr());
 
-  // XXX probably should check that all equations and inequations are in the same ring
+  /* Check that all equations and inequations are in the same ring,
+   * and extract numerators and denominators from fraction fields.
+   */
 
-  return DR->my_Rosenfeld_Groebner(equations, inequations);
+  std::vector<RingElem> equation_polynomials;
+  std::vector<RingElem> inequation_polynomials;
+
+  for (auto e: equations) {
+    if (owner(e) != owner(equations[0])) {
+      CoCoA_ERROR(ERR::MixedRings, "Rosenfeld-Groebner: all equations and inequations must be in the same ring");
+    }
+    if (IsFractionField(owner(e))) {
+      equation_polynomials.push_back(num(e));
+      inequation_polynomials.push_back(den(e));
+    } else {
+      equation_polynomials.push_back(e);
+    }
+  }
+
+  for (auto e: inequations) {
+    if (owner(e) != owner(equations[0])) {
+      CoCoA_ERROR(ERR::MixedRings, "Rosenfeld-Groebner: all equations and inequations must be in the same ring");
+    }
+    if (IsFractionField(owner(e))) {
+      inequation_polynomials.push_back(num(e));
+      inequation_polynomials.push_back(den(e));
+    } else {
+      inequation_polynomials.push_back(e);
+    }
+  }
+
+  return DR->my_Rosenfeld_Groebner(equation_polynomials, inequation_polynomials);
 }
 
 // Passing RingElem's directly to Rosenfeld_Groebner constructs them
@@ -3326,6 +3355,28 @@ public:
     : RingDistrMPolyCleanImpl(R, PPM), PowerPolyRingBase(R, PPM), DifferentialRingBase(R, PPM, ranking)
   { }
 
+  std::vector<RegularDifferentialChain> my_Rosenfeld_Groebner(std::vector<RingElem> equations,
+							      std::vector<RingElem> inequations) const
+  {
+    ExponentMap exponentMap(*this);
+
+    for (auto e: equations) {
+      exponentMap.populate(raw(e));
+    }
+    for (auto e: inequations) {
+      exponentMap.populate(raw(e));
+    }
+
+    /* If we didn't find an exponent that has to be modified, use our
+     * underlying GCD implementation.
+     */
+
+    if (exponentMap.size() == 0) {
+      return DifferentialRingBase::my_Rosenfeld_Groebner(equations, inequations);
+    }
+
+    CoCoA_ERROR(ERR::NYI, "Rosenfeld Groebner with polynomial exponents");
+  }
 };
 
 SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM, DifferentialRanking ranking = DifferentialRanking::lex) {
