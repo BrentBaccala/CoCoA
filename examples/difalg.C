@@ -1460,9 +1460,9 @@ void testPowerPolyRing(void)
   CoCoA_ASSERT(deriv(power(f,p), f) == pK*power(f,p-1));
 }
 
-/* PowerPolyDifferentialRing - a polynomial ring whose exponents are
- * polynomials, and whose differentiation operator generates an
- * infinite number of indeterminates.
+/* DifferentialRing - a polynomial ring whose differentiation operator
+ * generates an infinite number of indeterminates.  Rosenfeld-Groebner
+ * is implemented.
  *
  * The symbols in the ring have the form head_{tail} (LaTeX jet
  * notation).
@@ -1861,97 +1861,6 @@ public:
   }
 
 };
-
-class PowerPolyDifferentialRingBase : public PowerPolyRingBase, public DifferentialRingBase {
-
-public:
-  PowerPolyDifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
-    : RingDistrMPolyCleanImpl(R, PPM), PowerPolyRingBase(R, PPM), DifferentialRingBase(R, PPM, ranking)
-  { }
-
-};
-
-SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM, DifferentialRanking ranking = DifferentialRanking::lex) {
-  return SparsePolyRing(new PowerPolyDifferentialRingBase(CoeffRing, PPM, ranking));
-}
-
-void testPowerPolyDifferentialRing(void)
-{
-  ring ZZ = RingZZ();
-  ring QQ = RingQQ();
-
-  // ExponentRing - these are the indeterminates that can appear in powers
-
-  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
-  RingElem p(ExponentRing, "p");
-
-  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
-  // along with its fraction field.
-
-  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q"}, lex, ExponentRing);
-  ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
-  ring K = NewFractionField(R);
-
-  RingElem f(K, "f");
-  RingElem t(K, "t");
-  RingElem q(K, "q");
-
-  // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
-  // different from 'p' in K, which we now create.
-
-  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
-
-  // Funny syntax - the derivatives don't exist in the ring until we
-  // call 'deriv', so we do that first and then check to see if
-  // they're right, instead of the other way around.
-
-  RingElem ft = deriv(f,t);
-  RingElem ftt = deriv(deriv(f,t),t);
-  RingElem fqt = deriv(deriv(f,q),t);
-
-  CoCoA_ASSERT(ft == RingElem(K, "f_t"));
-  CoCoA_ASSERT(ftt == RingElem(K, "f_{tt}"));
-  CoCoA_ASSERT(fqt == RingElem(K, "f_{qt}"));
-  CoCoA_ASSERT(deriv(deriv(f,t),q) == fqt);
-
-  // Test the ranking on the derivative terms.
-
-  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ft)));
-  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ftt)));
-  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(ftt)));
-  CoCoA_ASSERT(LPP(num(f)) < LPP(num(fqt)));
-  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(fqt)));
-
-  //cout << deriv(power(f,p),f) << endl;
-  //cout << deriv(power(f,p),t) << endl;
-  //cout << deriv(deriv(power(f,p),t),t) << endl;
-  //cout << deriv(power(f,p)*q,t) << endl;
-  //cout << deriv(power(f,p)/q,t) << endl;
-  //cout << deriv(f/q,t) << endl;
-
-  RingElem qt = deriv(q,t);
-
-  CoCoA_ASSERT(deriv(power(f,p),f) == pK*power(f,p-1));
-  CoCoA_ASSERT(deriv(power(f,p),t) == pK*power(f,p-1)*ft);
-  CoCoA_ASSERT(deriv(deriv(power(f,p),t),t) == pK*power(f,p-1)*ftt + pK*(pK-1)*power(f,p-2)*ft*ft);
-  CoCoA_ASSERT(deriv(power(f,p)*q,t) == power(f,p)*qt + pK*power(f,p-1)*q*ft);
-  CoCoA_ASSERT(deriv(power(f,p)/q,t) == -(power(f,p)*qt - pK*power(f,p-1)*q*ft)/power(q,2));
-  CoCoA_ASSERT(deriv(f/q,t) == -(f*qt - q*ft)/power(q,2));
-
-  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
-
-  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
-  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << " " << content(num(8*q)) << endl;
-  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
-  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
-
-  CoCoA_ASSERT(gcd(num(32*t*t + 64*t + 32), num(8*q)) == 8);
-  CoCoA_ASSERT(gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) == 32);
-
-  //cout << deriv(power(f,p),f) << endl;
-
-  CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
-}
 
 namespace diffalg {
 
@@ -2607,7 +2516,7 @@ struct globalCmp {
 class bladDifferentialRing {
 
   const ring R;
-  const PowerPolyDifferentialRingBase * DR;
+  const DifferentialRingBase * DR;
 
   bimap<PPMonoidElem, std::string, globalCmp> dependent_strings;
   bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
@@ -2780,7 +2689,7 @@ public:
 
 public:
   bladDifferentialRing(const ring& R) : R(R),
-					DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
+					DR(dynamic_cast<const DifferentialRingBase *>(R.myRawPtr()))
   {
     bad_restart(0,0);
     bav_R_init();
@@ -3191,7 +3100,7 @@ std::vector<RegularDifferentialChain> Rosenfeld_Groebner(std::vector<RingElem> e
 {
   CoCoA_ASSERT(equations.size() > 0);
   const ring& R = IsFractionField(owner(equations[0])) ? BaseRing(owner(equations[0])) : owner(equations[0]);
-  const PowerPolyDifferentialRingBase * DR = dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr());
+  const DifferentialRingBase * DR = dynamic_cast<const DifferentialRingBase *>(R.myRawPtr());
 
   // XXX probably should check that all equations and inequations are in the same ring
 
@@ -3212,7 +3121,7 @@ RingElem operator% (RingElem e, const RegularDifferentialChain& rs)
   CoCoA_ASSERT(rs.equations.size() > 0);
   const ring& R = owner(rs.equations[0]);
 
-  const PowerPolyDifferentialRingBase * DR = dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr());
+  const DifferentialRingBase * DR = dynamic_cast<const DifferentialRingBase *>(R.myRawPtr());
 
   // XXX probably should check that e is in R or its fraction field
 
@@ -3232,7 +3141,11 @@ std::ostream & operator<<(std::ostream &out, const RegularDifferentialIdeal idea
 }
 #endif
 
-void testRegularDifferentialIdeal(void)
+SparsePolyRing NewDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM, DifferentialRanking ranking = DifferentialRanking::lex) {
+  return SparsePolyRing(new DifferentialRingBase(CoeffRing, PPM, ranking));
+}
+
+void testDifferentialRing(void)
 {
   ring ZZ = RingZZ();
   ring QQ = RingQQ();
@@ -3270,7 +3183,7 @@ void testRegularDifferentialIdeal(void)
   // Most significant first: f > t > q > u > v > z > y > x
 
   PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q", "u", "v", "z", "y", "x"}, lex, QQ);
-  ring R = NewPowerPolyDifferentialRing(QQ, PPM);
+  ring R = NewDifferentialRing(QQ, PPM);
 
   RingElem f(R, "f");
   RingElem t(R, "t");
@@ -3393,6 +3306,108 @@ void testRegularDifferentialIdeal(void)
   // Sixth example from Mansfield thesis
 
   // std::cerr << Rosenfeld_Groebner(power(fx,2) - 1, power(fy,2) - 1, (fx+fy)*fz - 1) << endl;
+}
+
+/* PowerPolyDifferentialRing - a polynomial ring whose exponents are
+ * polynomials, and whose differentiation operator generates an
+ * infinite number of indeterminates.
+ *
+ * The symbols in the ring have the form head_{tail} (LaTeX jet
+ * notation).
+ *
+ * We assume that everything in the coefficient ring is a constant
+ * (i.e, differentiates to zero).
+ */
+
+class PowerPolyDifferentialRingBase : public PowerPolyRingBase, public DifferentialRingBase {
+
+public:
+  PowerPolyDifferentialRingBase(const ring& R, const PPMonoid& PPM, DifferentialRanking ranking)
+    : RingDistrMPolyCleanImpl(R, PPM), PowerPolyRingBase(R, PPM), DifferentialRingBase(R, PPM, ranking)
+  { }
+
+};
+
+SparsePolyRing NewPowerPolyDifferentialRing(const ring& CoeffRing, const PPMonoid& PPM, DifferentialRanking ranking = DifferentialRanking::lex) {
+  return SparsePolyRing(new PowerPolyDifferentialRingBase(CoeffRing, PPM, ranking));
+}
+
+void testPowerPolyDifferentialRing(void)
+{
+  ring ZZ = RingZZ();
+  ring QQ = RingQQ();
+
+  // ExponentRing - these are the indeterminates that can appear in powers
+
+  ring ExponentRing = NewOrderedPolyRing(ZZ, vector<symbol> {symbol("p")});
+  RingElem p(ExponentRing, "p");
+
+  // We now create a K[Z[p]] ring whose coefficient and exponent rings are ExponentRing,
+  // along with its fraction field.
+
+  PPMonoid PPM = NewPPMonoidRing(vector<string> {"f", "t", "q"}, lex, ExponentRing);
+  ring R = NewPowerPolyDifferentialRing(ExponentRing, PPM);
+  ring K = NewFractionField(R);
+
+  RingElem f(K, "f");
+  RingElem t(K, "t");
+  RingElem q(K, "q");
+
+  // CoCoA forbids mixed ring operations. 'p' in ExponentRing is
+  // different from 'p' in K, which we now create.
+
+  RingElem pK = EmbeddingHom(K)(CoeffEmbeddingHom(R)(p));
+
+  // Funny syntax - the derivatives don't exist in the ring until we
+  // call 'deriv', so we do that first and then check to see if
+  // they're right, instead of the other way around.
+
+  RingElem ft = deriv(f,t);
+  RingElem ftt = deriv(deriv(f,t),t);
+  RingElem fqt = deriv(deriv(f,q),t);
+
+  CoCoA_ASSERT(ft == RingElem(K, "f_t"));
+  CoCoA_ASSERT(ftt == RingElem(K, "f_{tt}"));
+  CoCoA_ASSERT(fqt == RingElem(K, "f_{qt}"));
+  CoCoA_ASSERT(deriv(deriv(f,t),q) == fqt);
+
+  // Test the ranking on the derivative terms.
+
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ft)));
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(ftt)));
+  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(ftt)));
+  CoCoA_ASSERT(LPP(num(f)) < LPP(num(fqt)));
+  CoCoA_ASSERT(LPP(num(ft)) < LPP(num(fqt)));
+
+  //cout << deriv(power(f,p),f) << endl;
+  //cout << deriv(power(f,p),t) << endl;
+  //cout << deriv(deriv(power(f,p),t),t) << endl;
+  //cout << deriv(power(f,p)*q,t) << endl;
+  //cout << deriv(power(f,p)/q,t) << endl;
+  //cout << deriv(f/q,t) << endl;
+
+  RingElem qt = deriv(q,t);
+
+  CoCoA_ASSERT(deriv(power(f,p),f) == pK*power(f,p-1));
+  CoCoA_ASSERT(deriv(power(f,p),t) == pK*power(f,p-1)*ft);
+  CoCoA_ASSERT(deriv(deriv(power(f,p),t),t) == pK*power(f,p-1)*ftt + pK*(pK-1)*power(f,p-2)*ft*ft);
+  CoCoA_ASSERT(deriv(power(f,p)*q,t) == power(f,p)*qt + pK*power(f,p-1)*q*ft);
+  CoCoA_ASSERT(deriv(power(f,p)/q,t) == -(power(f,p)*qt - pK*power(f,p-1)*q*ft)/power(q,2));
+  CoCoA_ASSERT(deriv(f/q,t) == -(f*qt - q*ft)/power(q,2));
+
+  // This next problem's solved by making ExponentRing Z[p] instead of Q[p]
+
+  //cout << "GCD: " << gcd(num(32*t*t + 64*t + 32), num(8*q)) << endl;
+  //cout << "GCD: " << content(num(32*t*t + 64*t + 32)) << " " << content(num(8*q)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+  //cout << "GCD: " << gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) << endl;
+
+  CoCoA_ASSERT(gcd(num(32*t*t + 64*t + 32), num(8*q)) == 8);
+  CoCoA_ASSERT(gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) == 32);
+
+  //cout << deriv(power(f,p),f) << endl;
+
+  CoCoA_ASSERT(deriv(power(f,p), f) == EmbeddingHom(K)(CoeffEmbeddingHom(R)(p))*power(f,p-1));
 }
 
 /* Smith Normal Form
@@ -5266,8 +5281,8 @@ int main()
   try
   {
     testPowerPolyRing();
+    testDifferentialRing();
     testPowerPolyDifferentialRing();
-    testRegularDifferentialIdeal();
     testSmithFactor();
     testDiophantineSolvable();
     program2();
