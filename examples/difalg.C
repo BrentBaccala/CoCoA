@@ -2594,17 +2594,20 @@ struct globalCmp {
   }
 };
 
-class bladDifferentialRing;
+/* I'd like to keep libblad context around, but that turns out to be
+ * problematic.  My library's ability to create new differential
+ * variables on the fly wrecks havoc with libblad, because we can't
+ * change orderings without creating brand new variables that aren't
+ * compatible with the ones we had before.
+ *
+ * So we create a new libblad context every time we create a
+ * bladDifferentialRing.
+ */
 
-class bladDifferentialRingBase {
-  friend bladDifferentialRing;
+class bladDifferentialRing {
 
   const ring R;
   const PowerPolyDifferentialRingBase * DR;
-
-  bladDifferentialRingBase(const ring& R) : R(R),
-					    DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
-  { }
 
   bimap<PPMonoidElem, std::string, globalCmp> dependent_strings;
   bimap<PPMonoidElem, struct bav_variable *, globalCmp> dependent_vars;
@@ -2773,6 +2776,24 @@ public:
 
     // blad doesn't use const qualifiers when declaring ba0_sscanf2()
     ba0_sscanf2 (const_cast<char *>(blad_ordering.c_str()), const_cast<char *>("%ordering"), r);
+  }
+
+public:
+  bladDifferentialRing(const ring& R) : R(R),
+					DR(dynamic_cast<const PowerPolyDifferentialRingBase *>(R.myRawPtr()))
+  {
+    bad_restart(0,0);
+    bav_R_init();
+
+    bav_Iordering r;
+
+    blad_ordering(&r);
+    bav_R_push_ordering (r);
+  }
+
+  ~bladDifferentialRing()
+  {
+    bad_terminate(ba0_done_level);
   }
 
   struct bav_variable * PPMonoidElem_to_blad_variable(ConstRefPPMonoidElem ind, bool independent = false)
@@ -2973,44 +2994,6 @@ public:
 
 };
 
-// static map<const PowerPolyDifferentialRingBase *, bladDifferentialRingBase *> bDRcache;
-
-/* I'd like to keep libblad context around, but that turns out to be
- * problematic.  My library's ability to create new differential
- * variables on the fly wrecks havoc with libblad, because we can't
- * change orderings without creating brand new variables that aren't
- * compatible with the ones we had before.
- *
- * So we create a new libblad context every time we create a
- * bladDifferentialRing.
- */
-
-class bladDifferentialRing {
-  bladDifferentialRingBase * bDRbase;
-
-public:
-  bladDifferentialRing(const ring& R)
-  {
-    bDRbase = new bladDifferentialRingBase(R);
-    bad_restart(0,0);
-    bav_R_init();
-
-    bav_Iordering r;
-
-    bDRbase->blad_ordering(&r);
-    bav_R_push_ordering (r);
-
-  }
-
-  ~bladDifferentialRing()
-  {
-    bad_terminate(ba0_done_level);
-  }
-
-  //const bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow const member fns to be called.
-  bladDifferentialRingBase* operator->() const { return bDRbase; }  ///< Allow all member fns to be called.
-};
-
 // We need to first map our indeterminates to the strings we use to
 // name them in the blad ordering, then set the ordering, then
 // create the blad variables and map them back and forth.
@@ -3042,8 +3025,8 @@ std::vector<RegularDifferentialChain> DifferentialRingBase::my_Rosenfeld_Groebne
   ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(equations).c_str()), const_cast<char *>("%t[%Az]"), eqns);
   ba0_sscanf2 (const_cast<char *>(RingElems_to_blad_string(inequations).c_str()), const_cast<char *>("%t[%Az]"), ineqs);
 #else
-  bdr->RingElems_to_blad_polynomial_table(equations, eqns);
-  bdr->RingElems_to_blad_polynomial_table(inequations, ineqs);
+  bdr.RingElems_to_blad_polynomial_table(equations, eqns);
+  bdr.RingElems_to_blad_polynomial_table(inequations, ineqs);
 #endif
 
   // ba0_printf(const_cast<char *>("Equations: %t[%Az]\n"), eqns);
@@ -3066,7 +3049,7 @@ std::vector<RegularDifferentialChain> DifferentialRingBase::my_Rosenfeld_Groebne
   bad_base_field * bf = bad_new_base_field();
 
   //const auto coeff_syms = symbols(CoeffRing(PolyRing(R)));
-  const auto coeff_syms = bdr->insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
+  const auto coeff_syms = bdr.insert_symbols_into_dependent_strings(CoeffRing(PolyRing(R)));
   if (coeff_syms.size() != 0) {
 
     std::stringstream cs;
@@ -3103,7 +3086,7 @@ std::vector<RegularDifferentialChain> DifferentialRingBase::my_Rosenfeld_Groebne
       // it will translate to zero, since our coefficients are
       // assumed to be constants, but libblad doesn't know that.
 
-      RingElem e = bdr->blad_polynomial_to_RingElem(P);
+      RingElem e = bdr.blad_polynomial_to_RingElem(P);
       //std::cout << e << endl;
       if (!IsZero(e)) {
 	v.push_back(e);
@@ -3135,7 +3118,7 @@ RingElem DifferentialRingBase::myReduce (RingElem e, const RegularDifferentialCh
   bad_regchain * A = bad_new_regchain();
 
   eqns = (struct bap_tableof_polynom_mpz *) ba0_new_table ();
-  bdr->RingElems_to_blad_polynomial_table(rs.equations, eqns);
+  bdr.RingElems_to_blad_polynomial_table(rs.equations, eqns);
 
 #if 0
   ba0_sscanf2(const_cast<char *> ("regchain ([], [differential, squarefree, coherent, primitive, autoreduced])"),
@@ -3153,7 +3136,7 @@ RingElem DifferentialRingBase::myReduce (RingElem e, const RegularDifferentialCh
 
     struct bap_polynom_mpz * F = bap_new_polynom_mpz();
 
-    bdr->RingElem_to_blad_polynomial(e, F);
+    bdr.RingElem_to_blad_polynomial(e, F);
 
     struct bap_ratfrac_mpz * R = bap_new_ratfrac_mpz();
 
@@ -3161,15 +3144,15 @@ RingElem DifferentialRingBase::myReduce (RingElem e, const RegularDifferentialCh
 
     CoCoA_ASSERT(bap_is_one_polynom_mpz(& (R->denom)));
 
-    return bdr->blad_polynomial_to_RingElem(& (R->numer));
+    return bdr.blad_polynomial_to_RingElem(& (R->numer));
 
   } else if (IsFractionField(owner(e)) && (BaseRing(owner(e)) == R)) {
 
     struct bap_polynom_mpz * Fn = bap_new_polynom_mpz();
     struct bap_polynom_mpz * Fd = bap_new_polynom_mpz();
 
-    bdr->RingElem_to_blad_polynomial(num(e), Fn);
-    bdr->RingElem_to_blad_polynomial(den(e), Fd);
+    bdr.RingElem_to_blad_polynomial(num(e), Fn);
+    bdr.RingElem_to_blad_polynomial(den(e), Fd);
 
     // ba0_printf(const_cast<char *>("numerator: %Az\n"), Fn);
     // ba0_printf(const_cast<char *>("denominator: %Az\n"), Fd);
@@ -3190,10 +3173,10 @@ RingElem DifferentialRingBase::myReduce (RingElem e, const RegularDifferentialCh
     // CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rn->denom)));
     // CoCoA_ASSERT(bap_is_one_polynom_mpz(& (Rd->denom)));
 
-    return EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rn->numer)))
-      * EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->denom)))
-      / ( EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rd->numer)))
-	  * EmbeddingHom(owner(e))(bdr->blad_polynomial_to_RingElem(& (Rn->denom))));
+    return EmbeddingHom(owner(e))(bdr.blad_polynomial_to_RingElem(& (Rn->numer)))
+      * EmbeddingHom(owner(e))(bdr.blad_polynomial_to_RingElem(& (Rd->denom)))
+      / ( EmbeddingHom(owner(e))(bdr.blad_polynomial_to_RingElem(& (Rd->numer)))
+	  * EmbeddingHom(owner(e))(bdr.blad_polynomial_to_RingElem(& (Rn->denom))));
   } else {
     CoCoA_ERROR(ERR::MixedRings, "RegularDifferentialChain reduction");
   }
