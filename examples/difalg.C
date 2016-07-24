@@ -1210,7 +1210,7 @@ protected:
      * exponents is 1.
      */
 
-    PPMonoidElem populate(ConstRawPtr raw) {
+    PPMonoidElem populate(ConstRawPtr raw, bool factor_gcd = true) {
 
       // find exponentRing by extracting the exponent of one's first
       // indet, which will be zero, but its owner is the ring we want
@@ -1219,13 +1219,15 @@ protected:
 
       // Compute the gcd of the polynomial's monomials
 
-      PPMonoidElem ppcontent(old_ring.myPPM());
+      PPMonoidElem ppcontent(one(old_ring.myPPM()));
 
-      for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
-	if (it == old_ring.myBeginIter(raw)) {
-	  ppcontent = PP(it);
-	} else {
-	  ppcontent = gcd(PP(it), ppcontent);
+      if (factor_gcd) {
+	for (SparsePolyIter it=old_ring.myBeginIter(raw); !IsEnded(it); ++it) {
+	  if (it == old_ring.myBeginIter(raw)) {
+	    ppcontent = PP(it);
+	  } else {
+	    ppcontent = gcd(PP(it), ppcontent);
+	  }
 	}
       }
 
@@ -1348,6 +1350,13 @@ protected:
 
 	old_ring.myAdd(rawlhs, rawlhs, raw(monomial(P, coeff(it), newPP)));
       }
+    }
+
+    RingElem fromNewRing(ConstRefRingElem re) const {
+      SparsePolyRing P(&old_ring);
+      RingElemRawPtr result = old_ring.myNew();
+      fromNewRing(result, re);
+      return RingElem(P, result);
     }
   };
 
@@ -3098,8 +3107,9 @@ RingElem DifferentialRingBase::myReduce (RingElem e, const RegularDifferentialCh
 
 std::vector<RegularDifferentialChain> Rosenfeld_Groebner(std::vector<RingElem> equations, std::vector<RingElem> inequations)
 {
-  CoCoA_ASSERT(equations.size() > 0);
-  const ring& R = IsFractionField(owner(equations[0])) ? BaseRing(owner(equations[0])) : owner(equations[0]);
+  CoCoA_ASSERT((equations.size() > 0) || (inequations.size() > 0));
+  ConstRefRingElem re = (equations.size() > 0) ? equations[0] : inequations[0];
+  const ring& R = IsFractionField(owner(re)) ? BaseRing(owner(re)) : owner(re);
   const DifferentialRingBase * DR = dynamic_cast<const DifferentialRingBase *>(R.myRawPtr());
 
   /* Check that all equations and inequations are in the same ring,
@@ -3110,7 +3120,7 @@ std::vector<RegularDifferentialChain> Rosenfeld_Groebner(std::vector<RingElem> e
   std::vector<RingElem> inequation_polynomials;
 
   for (auto e: equations) {
-    if (owner(e) != owner(equations[0])) {
+    if (owner(e) != owner(re)) {
       CoCoA_ERROR(ERR::MixedRings, "Rosenfeld-Groebner: all equations and inequations must be in the same ring");
     }
     if (IsFractionField(owner(e))) {
@@ -3122,7 +3132,7 @@ std::vector<RegularDifferentialChain> Rosenfeld_Groebner(std::vector<RingElem> e
   }
 
   for (auto e: inequations) {
-    if (owner(e) != owner(equations[0])) {
+    if (owner(e) != owner(re)) {
       CoCoA_ERROR(ERR::MixedRings, "Rosenfeld-Groebner: all equations and inequations must be in the same ring");
     }
     if (IsFractionField(owner(e))) {
@@ -3358,13 +3368,14 @@ public:
   std::vector<RegularDifferentialChain> my_Rosenfeld_Groebner(std::vector<RingElem> equations,
 							      std::vector<RingElem> inequations) const
   {
+    const SparsePolyRing P(this);
     ExponentMap exponentMap(*this);
 
-    for (auto e: equations) {
-      exponentMap.populate(raw(e));
+    for (auto &e: equations) {
+      exponentMap.populate(raw(e), false);
     }
-    for (auto e: inequations) {
-      exponentMap.populate(raw(e));
+    for (auto &e: inequations) {
+      exponentMap.populate(raw(e), false);
     }
 
     /* If we didn't find an exponent that has to be modified, use our
@@ -3375,7 +3386,83 @@ public:
       return DifferentialRingBase::my_Rosenfeld_Groebner(equations, inequations);
     }
 
-    CoCoA_ERROR(ERR::NYI, "Rosenfeld Groebner with polynomial exponents");
+    // CoCoA_ERROR(ERR::NYI, "Rosenfeld Groebner with polynomial exponents");
+
+    /* Otherwise, construct a new ring with newly appended
+     * indeterminates, map our arguments into the new ring, run
+     * Rosenfeld-Groebner, then map the result back.
+     *
+     * XXX I'm not sure we want WDegPosTO
+     */
+
+    const std::vector<symbol> IndetNames = NewSymbols(NumIndets(myPPM()) + exponentMap.size());
+    PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
+    SparsePolyRing NewPR(NewDifferentialRing(myCoeffRing(), NewPPM, ranking));
+
+    std::vector<RingElem> new_equations;
+    std::vector<RingElem> new_inequations;
+
+    for (auto &e: equations) {
+      new_equations.push_back(exponentMap.toNewRing(raw(e), NewPR));
+    }
+    for (auto &e: inequations) {
+      new_inequations.push_back(exponentMap.toNewRing(raw(e), NewPR));
+    }
+
+    // add auxilary equations telling us how the extra symbols map under
+    // differentiation.  need to know the derivatives to do this.
+
+    PPMonoidElem indets(myPPM());
+
+    for (auto &v: {equations, inequations}) {
+      for (auto &e: v) {
+	for (auto it=BeginIter(e); !IsEnded(it); ++it) {
+	  indets = lcm(indets, radical(PP(it)));
+	}
+      }
+    }
+
+    std::cerr << indets << endl;
+
+    PPMonoidElem derivs(myPPM());
+    PPMonoidElem base(myPPM());
+    PPMonoidElem der(myPPM());
+
+    for (int ii = 0; ii < NumIndets(myPPM()); ii ++) {
+      if (exponent(indets, ii) > 0) {
+	split_differential_indet(indet(myPPM(), ii), base, der);
+	derivs = lcm(derivs, radical(der));
+      }
+    }
+
+    std::cerr << derivs << endl;
+
+    for (int i = 0; i < exponentMap.size(); i++) {
+      RingElem NewRingIndet = indet(NewPR, i);
+      RingElem OldRingElement = exponentMap.fromNewRing(NewRingIndet);
+      for (int ii = 0; ii < NumIndets(myPPM()); ii ++) {
+	if (exponent(derivs, ii) > 0) {
+	  RingElem OldRingDeriv = deriv(OldRingElement, monomial(P, 1, indet(myPPM(), ii)));
+	  RingElem NewRingDeriv = deriv(NewRingIndet, monomial(NewPR, 1, indet(NewPPM, ii)));
+	  new_equations.push_back(NewRingDeriv - exponentMap.toNewRing(raw(OldRingDeriv), NewPR));
+	}
+      }
+    }
+
+    auto result = Rosenfeld_Groebner(new_equations, new_inequations);
+    std::vector<RegularDifferentialChain> new_result;
+
+    for (auto &rs: result) {
+      std::vector<RingElem> rs_equations;
+
+      for (auto &e: rs.equations) {
+	rs_equations.push_back(exponentMap.fromNewRing(e));
+      }
+
+      new_result.push_back(RegularDifferentialChain(rs_equations));
+    }
+
+    return new_result;
   }
 };
 
@@ -5189,6 +5276,8 @@ void program2()
 
   auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
 			       std::vector<RingElem> {q, f, D});
+
+  //auto RG = Rosenfeld_Groebner(std::vector<RingElem> { }, std::vector<RingElem> {power(f,a), f, D});
 
   for (auto s: RG) {
     cout << s << endl;
