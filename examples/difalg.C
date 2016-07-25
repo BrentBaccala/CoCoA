@@ -3371,11 +3371,10 @@ public:
     const SparsePolyRing P(this);
     ExponentMap exponentMap(*this);
 
-    for (auto &e: equations) {
-      exponentMap.populate(raw(e), false);
-    }
-    for (auto &e: inequations) {
-      exponentMap.populate(raw(e), false);
+    for (auto &v: {equations, inequations}) {
+      for (auto &e: v) {
+	exponentMap.populate(raw(e), false);
+      }
     }
 
     /* If we didn't find an exponent that has to be modified, use our
@@ -3448,7 +3447,7 @@ public:
       //      }
     }
 
-    std::cerr << derivs << endl;
+    // std::cerr << derivs << endl;
 
     for (int i = 0; i < exponentMap.size(); i++) {
       RingElem NewRingIndet = indet(NewPR, i);
