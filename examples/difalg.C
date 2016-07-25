@@ -3379,7 +3379,7 @@ public:
     }
 
     /* If we didn't find an exponent that has to be modified, use our
-     * underlying GCD implementation.
+     * underlying Rosenfeld-Groebner implementation.
      */
 
     if (exponentMap.size() == 0) {
@@ -3387,6 +3387,11 @@ public:
     }
 
     // CoCoA_ERROR(ERR::NYI, "Rosenfeld Groebner with polynomial exponents");
+
+    // find exponentRing by extracting the exponent of one's first
+    // indet, which will be zero, but its owner is the ring we want
+
+    // const SparsePolyRing exponentRing(owner(RingElemExponent(one(myPPM()), 0)));
 
     /* Otherwise, construct a new ring with newly appended
      * indeterminates, map our arguments into the new ring, run
@@ -3396,7 +3401,15 @@ public:
      */
 
     const std::vector<symbol> IndetNames = NewSymbols(NumIndets(myPPM()) + exponentMap.size());
+
     PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
+
+    // XXX ordering() includes number of indets, so this doesn't work
+    // PPMonoid NewPPM = NewPPMonoidRing(IndetNames, ordering(myPPM()), exponentRing);
+
+    // XXX assumes lex ordering
+    // PPMonoid NewPPM = NewPPMonoidRing(IndetNames, lex, exponentRing);
+
     SparsePolyRing NewPR(NewDifferentialRing(myCoeffRing(), NewPPM, ranking));
 
     std::vector<RingElem> new_equations;
@@ -3422,17 +3435,17 @@ public:
       }
     }
 
-    std::cerr << indets << endl;
+    // std::cerr << indets << endl;
 
     PPMonoidElem derivs(myPPM());
     PPMonoidElem base(myPPM());
     PPMonoidElem der(myPPM());
 
     for (int ii = 0; ii < NumIndets(myPPM()); ii ++) {
-      if (exponent(indets, ii) > 0) {
-	split_differential_indet(indet(myPPM(), ii), base, der);
-	derivs = lcm(derivs, radical(der));
-      }
+      //      if (exponent(indets, ii) > 0) {
+      split_differential_indet(indet(myPPM(), ii), base, der);
+      derivs = lcm(derivs, radical(der));
+      //      }
     }
 
     std::cerr << derivs << endl;
@@ -5269,15 +5282,15 @@ void program2()
   cout << "try an irreducible factor q = f^a in denominator; N / (D f^a)" << endl;
   cout << endl;
 
-  //RingElem e = N/(D*power(f,a));
-  RingElem e = N/(D*q);
+  RingElem e = N/(D*power(f,a));
+  //RingElem e = N/(D*q);
 
   //cout << O*e << endl;
 
-  auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
-			       std::vector<RingElem> {q, f, D});
+  //auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
+  //			       std::vector<RingElem> {q, f, D});
 
-  //auto RG = Rosenfeld_Groebner(std::vector<RingElem> { }, std::vector<RingElem> {power(f,a), f, D});
+  auto RG = Rosenfeld_Groebner(std::vector<RingElem> { }, std::vector<RingElem> {power(f,a), f, D});
 
   for (auto s: RG) {
     cout << s << endl;
