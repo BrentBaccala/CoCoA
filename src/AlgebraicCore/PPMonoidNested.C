@@ -386,11 +386,11 @@ bool PPMonoidNestedImpl::myIsOne(ConstRawPtr rawpp) const
 bool PPMonoidNestedImpl::myIsIndet(long& index, ConstRawPtr rawpp) const
 {
   const PPMonoidNestedElem * const elem = myElem(rawpp);
-  long j = myNumIndets;
 
-  if (! nestedPPM->myIsOne(rawpp)) {
-    return nestedPPM->myIsIndet(j, elem->nestedRawElem);
+  if (! nestedPPM->myIsOne(elem->nestedRawElem)) {
+    return nestedPPM->myIsIndet(index, elem->nestedRawElem);
   } else {
+    long j = myNumIndets;
     for (long i = 0; i < numExtraIndets; ++i) {
       if (elem->exponents[i] == 0) continue;
       if (j != myNumIndets || (elem->exponents[i] != 1)) return false;
