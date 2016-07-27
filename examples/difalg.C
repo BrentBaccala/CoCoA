@@ -1276,13 +1276,15 @@ protected:
 	      } else {
 		b = (b/a);
 	      }
-
-	      auto em = fromOldRing(indet, linear_indet);
-
-	      if (b < em.constant_term) {
-		em.constant_term = b;
-	      }
 	    }
+
+	    auto & em = fromOldRing(indet, linear_indet);
+
+	    if (b < em.constant_term) {
+	      em.constant_term = b;
+	    }
+
+	    // std::cerr << reducedPP << ": a=" << a << ", b=" << b << ", constant_term=" << em.constant_term << endl;
 	  }
 	}
       }
@@ -1463,6 +1465,9 @@ void testPowerPolyRing(void)
 
   CoCoA_ASSERT(gcd(num(32*t*t + 64*t + 32), num(8*q)) == 8);
   CoCoA_ASSERT(gcd(RingElem(ExponentRing, 32), RingElem(ExponentRing, 64)) == 32);
+
+  // BUG TEST: make sure a negative constant_term is corrected adjusted in populate()
+  CoCoA_ASSERT(IsOne(gcd(num(power(f,p-2)-1), 1)));
 
   //cout << deriv(power(f,p),f) << endl;
 
