@@ -5192,8 +5192,8 @@ void program2()
   const RingElem t(K, "t");
 
   const RingElem z(K, "z");
-  const RingElem z_x = deriv(z,x);
-  const RingElem z_t = deriv(z,t);
+  const RingElem zx = deriv(z,x);
+  const RingElem zt = deriv(z,t);
 
   const RingElem r(K, "r");
   const RingElem rx = deriv(r,x);
@@ -5299,15 +5299,15 @@ void program2()
   cout << "try an irreducible factor q = f^a in denominator; N / (D f^a)" << endl;
   cout << endl;
 
-  RingElem e = N/(D*power(f,a));
-  //RingElem e = N/(D*q);
+  //RingElem e = N/(D*power(f,a));
+  RingElem e = N/(D*q);
 
   //cout << O*e << endl;
 
-  //auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
-  //			       std::vector<RingElem> {q, f, D});
+  auto RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f},
+			       std::vector<RingElem> {q, f, D});
 
-  auto RG = Rosenfeld_Groebner(std::vector<RingElem> { }, std::vector<RingElem> {power(f,a), f, D});
+  //auto RG = Rosenfeld_Groebner(std::vector<RingElem> { }, std::vector<RingElem> {power(f,a), f, D});
 
   for (auto s: RG) {
     cout << s << endl;
@@ -5438,6 +5438,43 @@ void program2()
 
     cout << eq << endl;
     cout << "minCoeff(eq, t) = " << minCoeff(num(eq), t) << endl;
+  }
+
+  cout << endl;
+  cout << "z = exp(n_e / f^a d_e) ; solution = N / z^b" << endl;
+  cout << endl;
+
+  // q = f^a
+  // q_x = a f^(a-1) f_x = a q f_x / f
+  // q_t = a f^(a-1) f_t = a q f_t / f
+
+  // Construct the homomorphism to map q (and its derivatives) back to f^a
+
+  fa = power(f, a);
+  H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
+
+  RingElem z_exp = n_e / (q * d_e);
+
+  // r = z^b
+
+  RingElem zb = power(z,b);
+  RingHom H2 = (r >> zb)(rt >> dt(zb))(rx >> dx(zb))(rxx >> dx(dx(zb)));
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {qx - Ka * q * fx / f, qt - Ka * q * ft / f,
+	rx - Kb * r * zx / z, rt - Kb * r * zt / z,
+	zx - z*dx(z_exp), zt - z*dt(z_exp), dx(t), dt(x)},
+    std::vector<RingElem> {x, t, q, f, z});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    //RingElem eq = O*(N/power(z,b));
+    RingElem eq = O*(N/r);
+
+    eq = H2(H(eq % s));
+
+    cout << eq << endl;
+    //cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
   }
 
 }
