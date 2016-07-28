@@ -1369,17 +1369,28 @@ public:
 
   void myGcd(RawPtr rawlhs, ConstRawPtr rawx, ConstRawPtr rawy) const override {
 
+    SparsePolyRing P(this);
+
     ExponentMap exponentMap(*this);
 
-    exponentMap.populate(rawx);
-    exponentMap.populate(rawy);
+    PPMonoidElem xcontent(exponentMap.populate(rawx));
+    PPMonoidElem ycontent(exponentMap.populate(rawy));
+
+    PPMonoidElem gcdcontent(gcd(xcontent, ycontent));
+
+    RingElemRawPtr newrawx = myNew(rawx);
+    RingElemRawPtr newrawy = myNew(rawy);
+
+    myDiv(newrawx, newrawx, raw(monomial(P, one(myCoeffRing()), xcontent)));
+    myDiv(newrawy, newrawy, raw(monomial(P, one(myCoeffRing()), ycontent)));
 
     /* If we didn't find an exponent that has to be modified, use our
      * underlying GCD implementation.
      */
 
     if (exponentMap.size() == 0) {
-      RingDistrMPolyCleanImpl::myGcd(rawlhs, rawx, rawy);
+      RingDistrMPolyCleanImpl::myGcd(rawlhs, newrawx, newrawy);
+      myMul(rawlhs, rawlhs, raw(monomial(P, one(myCoeffRing()), gcdcontent)));
       return;
     }
 
@@ -1394,12 +1405,14 @@ public:
     PPMonoid NewPPM = NewPPMonoidNested(myPPM(), IndetNames, 0, WDegPosTO);
     SparsePolyRing NewPR(NewPolyRing(myCoeffRing(), NewPPM));
 
-    RingElem newx = exponentMap.toNewRing(rawx, NewPR);
-    RingElem newy = exponentMap.toNewRing(rawy, NewPR);
+    RingElem newx = exponentMap.toNewRing(newrawx, NewPR);
+    RingElem newy = exponentMap.toNewRing(newrawy, NewPR);
 
     RingElem GCD = gcd(newx, newy);
 
     exponentMap.fromNewRing(rawlhs, GCD);
+
+    myMul(rawlhs, rawlhs, raw(monomial(P, one(myCoeffRing()), gcdcontent)));
   }
 };
 
