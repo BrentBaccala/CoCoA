@@ -4524,26 +4524,49 @@ RingElem minCoeff(RingElem in, RingElem myindet)
     poly = in;
   }
 
-  bool valid = false;
-  RingElem minexp;
-  RingElem result(owner(poly));
+  class comparable_exponents {
+  public:
+    RingElem minexp;
+    RingElem factor;
+    comparable_exponents(RingElem minexp, RingElem factor) : minexp(minexp), factor(factor) { }
+  };
+
+  std::vector<comparable_exponents> comparable_list;
 
   for (SparsePolyIter it=BeginIter(poly); !IsEnded(it); ++it) {
+
     RingElem myexp = RingElemExponent(PP(it), index);
-    if (valid && !IsInteger(myexp - minexp)) {
-      CoCoA_ERROR(ERR::NYI, "incompatible exponents in minCoeff");
+    RingElem nextelem = monomial(owner(poly), coeff(it), PP(it)/power(indet(owner(PP(it)), index), myexp));
+
+    for (auto &v : comparable_list) {
+      if (IsInteger(myexp - v.minexp)) {
+	if (myexp < v.minexp) {
+	  v.minexp = myexp;
+	  v.factor = nextelem;
+	} else if (myexp == v.minexp) {
+	  v.factor += nextelem;
+	}
+	goto found_comparable_exponent;
+      }
     }
-    if (!valid || (myexp < minexp)) {
-      minexp = myexp;
-      valid = true;
-      result = 0;
-    }
-    if (myexp == minexp) {
-      result += monomial(owner(poly), coeff(it), PP(it)/power(indet(owner(PP(it)), index), minexp));
-    }
+
+    comparable_list.emplace_back(myexp, nextelem);
+
+  found_comparable_exponent:
+    continue;
   }
 
-  return result;
+  if (comparable_list.size() == 1) {
+    return comparable_list[0].factor;
+  } else {
+    for (auto &v : comparable_list) {
+      if (IsZero(v.minexp)) {
+	return v.factor;
+      }
+    }
+    CoCoA_ERROR(ERR::NYI, "incompatible exponents in minCoeff");
+  }
+
 }
 
 /* This variant of minCoeff doesn't require the indeterminate to be
