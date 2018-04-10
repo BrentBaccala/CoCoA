@@ -5464,6 +5464,30 @@ void program2()
   }
 
   cout << endl;
+  cout << "z = exp(n_e / f d_e) ; solution = N / z with f_x = d_ex = 0" << endl;
+  cout << endl;
+
+  RingElem z_exp = n_e / (f * d_e);
+  //RingElem z_exp = (f * n_e) / d_e;
+
+  RG = Rosenfeld_Groebner(std::vector<RingElem> {
+      zx - z*dx(z_exp), zt - z*dt(z_exp), dx(t), dt(x), fx, d_ex},
+    std::vector<RingElem> {x, t, f, z});
+
+  for (auto s: RG) {
+    cout << s << endl;
+
+    //RingElem eq = O*(N/power(z,b));
+    RingElem eq = O*(N/z);
+
+    eq = eq % s;
+
+    cout << eq << endl;
+    cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
+    cout << "minCoeff(eq, de) = " << minCoeff(num(eq), d_e) << endl;
+  }
+
+  cout << endl;
   cout << "z = exp(n_e / f^a d_e) ; solution = N / z^b" << endl;
   cout << endl;
 
@@ -5476,7 +5500,7 @@ void program2()
   fa = power(f, a);
   H = (q >> fa)(qt >> dt(fa))(qx >> dx(fa))(qxx >> dx(dx(fa)));
 
-  RingElem z_exp = n_e / (q * d_e);
+  z_exp = n_e / (q * d_e);
 
   // r = z^b
 
@@ -5497,7 +5521,7 @@ void program2()
     eq = H2(H(eq % s));
 
     cout << eq << endl;
-    //cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
+    cout << "minCoeff(eq, f) = " << minCoeff(num(eq), f) << endl;
   }
 
 }
